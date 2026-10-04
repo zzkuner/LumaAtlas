@@ -57,6 +57,10 @@ export const photos = sqliteTable('photos', {
   thumbnailHash: text('thumbnail_hash'),
   tags: text('tags', { mode: 'json' }).$type<string[]>(),
   exif: text('exif', { mode: 'json' }).$type<NeededExif>(),
+  isVisible: integer('is_visible', { mode: 'boolean' }).default(true).notNull(),
+  isFeatured: integer('is_featured', { mode: 'boolean' })
+    .default(false)
+    .notNull(),
   // 地理位置信息
   latitude: real('latitude'),
   longitude: real('longitude'),

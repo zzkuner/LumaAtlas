@@ -463,6 +463,8 @@
           "title": "写真のタイトル",
           "tags": "キーワード",
           "rating": "評価",
+          "isVisible": "公開状態",
+          "isFeatured": "ホームページ",
           "isLivePhoto": "ライブフォト",
           "location": "位置情報",
           "dateTaken": "撮影日",
@@ -478,7 +480,11 @@
           "noGps": "GPS情報なし",
           "unknown": "不明",
           "staticPhoto": "静止画",
-          "noReactions": "リアクションなし"
+          "noReactions": "リアクションなし",
+          "public": "公開",
+          "hidden": "非公開",
+          "featured": "おすすめ",
+          "notFeatured": "おすすめではない"
         },
         "columnVisibility": {
           "button": "列設定",
@@ -498,7 +504,44 @@
         "batchReprocess": "一括再処理",
         "batchEraseLocation": "位置情報を抹消",
         "batchDownload": "一括ダウンロード",
-        "batchDelete": "一括削除"
+        "batchDelete": "一括削除",
+        "batchOrganize": "整理"
+      },
+      "batchOrganizer": {
+        "title": "選択した写真を整理",
+        "description": "選択した {count} 枚の写真にライブラリ設定を適用します。",
+        "unchanged": "変更なし",
+        "visibility": {
+          "label": "公開状態",
+          "description": "非公開写真は公開ページに表示されません。",
+          "public": "公開",
+          "hidden": "非公開"
+        },
+        "featured": {
+          "label": "ホームページのおすすめ",
+          "description": "おすすめ写真だけでホームページを構成できます。",
+          "yes": "おすすめに設定",
+          "no": "おすすめを解除"
+        },
+        "tags": {
+          "label": "タグ",
+          "description": "選択したすべての写真のタグを追加、削除、または置換します。",
+          "add": "タグを追加",
+          "remove": "タグを削除",
+          "replace": "タグを置換",
+          "placeholder": "タグを入力して Enter を押す"
+        },
+        "albums": {
+          "add": "アルバムに追加",
+          "addDescription": "現在のアルバムを保持したまま、新しいアルバムに追加します。",
+          "remove": "アルバムから削除",
+          "removeDescription": "選択したアルバムからのみ削除します。",
+          "placeholder": "アルバムを選択"
+        },
+        "reset": "リセット",
+        "apply": "変更を適用",
+        "success": "{count} 枚の写真を更新しました",
+        "failed": "選択した写真を更新できませんでした"
       },
       "slideover": {
         "title": "写真をアップロード",
@@ -881,6 +924,10 @@
         "description": "インスタンスのスローガン",
         "help": "スローガンはホームページのタイトルの下に表示されます"
       },
+      "description": {
+        "label": "サイトの説明",
+        "description": "ホームページと共有メタデータに使用する詳しい紹介文"
+      },
       "author": {
         "label": "オーナー",
         "description": "インスタンスのオーナー名"
@@ -898,6 +945,74 @@
           "light": "ライト",
           "dark": "ダーク",
           "system": "システム"
+        },
+        "home": {
+          "style": {
+            "label": "ホームページスタイル",
+            "description": "ギャラリー上部の紹介表示を選択します",
+            "minimal": "ミニマル",
+            "editorial": "エディトリアル"
+          },
+          "layout": {
+            "label": "ギャラリーレイアウト",
+            "description": "ホームページでの写真の配置を選択します",
+            "masonry": "メイソンリー",
+            "grid": "グリッド",
+            "feed": "フォトフィード"
+          },
+          "source": {
+            "label": "ホームページの写真",
+            "description": "公開写真をすべて表示するか、おすすめ写真のみ表示します",
+            "all": "すべての公開写真",
+            "featured": "おすすめのみ"
+          },
+          "imageRatio": {
+            "label": "画像比率",
+            "description": "元の比率を維持するか、統一した比率で切り抜きます",
+            "natural": "元の比率",
+            "square": "正方形",
+            "landscape": "横向き 4:3"
+          },
+          "contentWidth": {
+            "label": "コンテンツ幅",
+            "description": "ワイド画面でのギャラリー最大幅を調整します",
+            "contained": "コンパクト",
+            "wide": "ワイド",
+            "full": "フル幅"
+          },
+          "density": {
+            "label": "ギャラリー密度",
+            "description": "画像の目標幅とページ全体の余白を調整します",
+            "compact": "コンパクト",
+            "comfortable": "標準",
+            "airy": "ゆったり"
+          },
+          "galleryGap": {
+            "label": "画像間隔",
+            "description": "ホームページの画像間のスペース",
+            "help": "4 から 24 ピクセルで指定します"
+          },
+          "maxColumns": {
+            "label": "最大列数",
+            "description": "ワイド画面で表示するギャラリーの最大列数",
+            "help": "2 から 8 列で指定します"
+          },
+          "showSlogan": {
+            "label": "スローガンを表示",
+            "description": "ギャラリー上部にサイトのスローガンを表示します"
+          },
+          "showStats": {
+            "label": "写真の概要を表示",
+            "description": "ギャラリー上部に写真数と日付範囲を表示します"
+          },
+          "showGlobeNav": {
+            "label": "グローブナビを表示",
+            "description": "ホームページのナビゲーションにグローブを表示します"
+          },
+          "showAlbumsNav": {
+            "label": "アルバムナビを表示",
+            "description": "ホームページのナビゲーションにアルバムを表示します"
+          }
         }
       },
       "upload": {
@@ -1178,9 +1293,9 @@
       "completeSetup": "設定を完了"
     },
     "welcome": {
-      "title": "ChronoFrame へようこそ",
+      "title": "LumaAtlas へようこそ",
       "description": "ウィザードに従って、数分でギャラリーを設定できます。",
-      "intro": "ChronoFrame は多機能な個人ギャラリーアプリです。写真をアップロードする前に、いくつかの項目を設定しましょう。",
+      "intro": "LumaAtlas は多機能な個人ギャラリーアプリです。写真をアップロードする前に、いくつかの項目を設定しましょう。",
       "cards": {
         "admin": {
           "title": "管理者アカウント",
@@ -1199,7 +1314,7 @@
           "description": "位置の可視化と撮影地点の表示"
         }
       },
-      "privacyNotice": "ChronoFrame はあなたのデータを収集しません。",
+      "privacyNotice": "LumaAtlas はあなたのデータを収集しません。",
       "start": "はじめる"
     },
     "admin": {
@@ -1220,7 +1335,7 @@
     },
     "complete": {
       "title": "まもなく完了です！",
-      "description": "ChronoFrame ギャラリーの準備ができました。",
+      "description": "LumaAtlas ギャラリーの準備ができました。",
       "body": "基本設定はすべて完了しました。管理者アカウントでログインして写真のアップロードを開始できます。",
       "goToDashboard": "ダッシュボードへ",
       "setupFailedTitle": "セットアップ失敗",

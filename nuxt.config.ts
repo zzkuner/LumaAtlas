@@ -35,7 +35,7 @@ export default defineNuxtConfig({
         accessToken: '',
       },
       app: {
-        title: 'ChronoFrame',
+        title: 'LumaAtlas',
         slogan: '',
         author: '',
         avatarUrl: '',

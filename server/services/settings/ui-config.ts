@@ -12,13 +12,17 @@ import type { FieldUIConfig } from '~~/shared/types/settings'
 export const APP_SETTINGS_UI: Record<string, FieldUIConfig> = {
   title: {
     type: 'input',
-    placeholder: 'ChronoFrame',
+    placeholder: 'LumaAtlas',
     required: true,
   },
   slogan: {
     type: 'input',
     placeholder: 'Your gallery slogan',
     help: 'settings.app.slogan.help',
+  },
+  description: {
+    type: 'textarea',
+    placeholder: 'A short introduction to your photo archive',
   },
   author: {
     type: 'input',
@@ -49,6 +53,140 @@ export const APP_SETTINGS_UI: Record<string, FieldUIConfig> = {
       },
     ],
     help: 'settings.app.appearance.theme.help',
+  },
+  'appearance.home.style': {
+    type: 'tabs',
+    options: [
+      {
+        label: 'settings.app.appearance.home.style.minimal',
+        value: 'minimal',
+        icon: 'lucide:gallery-horizontal-end',
+      },
+      {
+        label: 'settings.app.appearance.home.style.editorial',
+        value: 'editorial',
+        icon: 'lucide:newspaper',
+      },
+    ],
+  },
+  'appearance.home.layout': {
+    type: 'tabs',
+    options: [
+      {
+        label: 'settings.app.appearance.home.layout.masonry',
+        value: 'masonry',
+        icon: 'lucide:layout-dashboard',
+      },
+      {
+        label: 'settings.app.appearance.home.layout.grid',
+        value: 'grid',
+        icon: 'lucide:grid-3x3',
+      },
+      {
+        label: 'settings.app.appearance.home.layout.feed',
+        value: 'feed',
+        icon: 'lucide:rows-3',
+      },
+    ],
+  },
+  'appearance.home.source': {
+    type: 'tabs',
+    options: [
+      {
+        label: 'settings.app.appearance.home.source.all',
+        value: 'all',
+        icon: 'lucide:images',
+      },
+      {
+        label: 'settings.app.appearance.home.source.featured',
+        value: 'featured',
+        icon: 'lucide:sparkles',
+      },
+    ],
+  },
+  'appearance.home.imageRatio': {
+    type: 'tabs',
+    options: [
+      {
+        label: 'settings.app.appearance.home.imageRatio.natural',
+        value: 'natural',
+        icon: 'lucide:scaling',
+      },
+      {
+        label: 'settings.app.appearance.home.imageRatio.square',
+        value: 'square',
+        icon: 'lucide:square',
+      },
+      {
+        label: 'settings.app.appearance.home.imageRatio.landscape',
+        value: 'landscape',
+        icon: 'lucide:rectangle-horizontal',
+      },
+    ],
+  },
+  'appearance.home.contentWidth': {
+    type: 'tabs',
+    options: [
+      {
+        label: 'settings.app.appearance.home.contentWidth.contained',
+        value: 'contained',
+        icon: 'lucide:panel-top-close',
+      },
+      {
+        label: 'settings.app.appearance.home.contentWidth.wide',
+        value: 'wide',
+        icon: 'lucide:panel-top',
+      },
+      {
+        label: 'settings.app.appearance.home.contentWidth.full',
+        value: 'full',
+        icon: 'lucide:fullscreen',
+      },
+    ],
+  },
+  'appearance.home.density': {
+    type: 'tabs',
+    options: [
+      {
+        label: 'settings.app.appearance.home.density.compact',
+        value: 'compact',
+        icon: 'lucide:grip',
+      },
+      {
+        label: 'settings.app.appearance.home.density.comfortable',
+        value: 'comfortable',
+        icon: 'lucide:grid-3x3',
+      },
+      {
+        label: 'settings.app.appearance.home.density.airy',
+        value: 'airy',
+        icon: 'lucide:square',
+      },
+    ],
+  },
+  'appearance.home.galleryGap': {
+    type: 'number',
+    min: 4,
+    max: 24,
+    help: 'settings.app.appearance.home.galleryGap.help',
+  },
+  'appearance.home.maxColumns': {
+    type: 'number',
+    min: 2,
+    max: 8,
+    help: 'settings.app.appearance.home.maxColumns.help',
+  },
+  'appearance.home.showSlogan': {
+    type: 'toggle',
+  },
+  'appearance.home.showStats': {
+    type: 'toggle',
+  },
+  'appearance.home.showGlobeNav': {
+    type: 'toggle',
+  },
+  'appearance.home.showAlbumsNav': {
+    type: 'toggle',
   },
 }
 

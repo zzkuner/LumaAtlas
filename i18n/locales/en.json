@@ -520,6 +520,8 @@
           "title": "Photo Title",
           "tags": "Keywords",
           "rating": "Rating",
+          "isVisible": "Visibility",
+          "isFeatured": "Homepage",
           "isLivePhoto": "Live Photo",
           "location": "Location",
           "dateTaken": "Date Taken",
@@ -535,7 +537,11 @@
           "noGps": "No GPS info",
           "unknown": "Unknown",
           "staticPhoto": "Static Photo",
-          "noReactions": "No reactions"
+          "noReactions": "No reactions",
+          "public": "Public",
+          "hidden": "Hidden",
+          "featured": "Featured",
+          "notFeatured": "Not featured"
         },
         "columnVisibility": {
           "button": "Columns",
@@ -555,7 +561,44 @@
         "batchReprocess": "Reprocess",
         "batchEraseLocation": "Erase location info",
         "batchDownload": "Download",
-        "batchDelete": "Batch Delete"
+        "batchDelete": "Batch Delete",
+        "batchOrganize": "Organize"
+      },
+      "batchOrganizer": {
+        "title": "Organize Selected Photos",
+        "description": "Apply library changes to {count} selected photos.",
+        "unchanged": "No Change",
+        "visibility": {
+          "label": "Public Visibility",
+          "description": "Hidden photos are excluded from all public pages.",
+          "public": "Public",
+          "hidden": "Hidden"
+        },
+        "featured": {
+          "label": "Homepage Featured",
+          "description": "Featured photos can be used as a curated homepage collection.",
+          "yes": "Featured",
+          "no": "Not Featured"
+        },
+        "tags": {
+          "label": "Tags",
+          "description": "Add, remove, or replace library tags for every selected photo.",
+          "add": "Add Tags",
+          "remove": "Remove Tags",
+          "replace": "Replace Tags",
+          "placeholder": "Type a tag and press Enter"
+        },
+        "albums": {
+          "add": "Add to Albums",
+          "addDescription": "Keep current album membership and add new ones.",
+          "remove": "Remove from Albums",
+          "removeDescription": "Remove only from the selected albums.",
+          "placeholder": "Select albums"
+        },
+        "reset": "Reset",
+        "apply": "Apply Changes",
+        "success": "Updated {count} photos",
+        "failed": "Failed to update selected photos"
       },
       "slideover": {
         "title": "Upload Photos",
@@ -946,6 +989,10 @@
         "description": "The slogan of the instance",
         "help": "The slogan displayed below the title on the homepage"
       },
+      "description": {
+        "label": "Site Description",
+        "description": "A longer introduction used on the homepage and in share metadata"
+      },
       "author": {
         "label": "Owner",
         "description": "The owner name of the instance"
@@ -963,6 +1010,74 @@
           "light": "Light",
           "dark": "Dark",
           "system": "System"
+        },
+        "home": {
+          "style": {
+            "label": "Homepage Style",
+            "description": "Choose how the introduction above the gallery is presented",
+            "minimal": "Minimal",
+            "editorial": "Editorial"
+          },
+          "layout": {
+            "label": "Gallery Layout",
+            "description": "Choose how photos are arranged on the homepage",
+            "masonry": "Masonry",
+            "grid": "Grid",
+            "feed": "Photo Feed"
+          },
+          "source": {
+            "label": "Homepage Photos",
+            "description": "Show every public photo or only photos marked as featured",
+            "all": "All Public",
+            "featured": "Featured Only"
+          },
+          "imageRatio": {
+            "label": "Image Ratio",
+            "description": "Keep original proportions or use a consistent crop",
+            "natural": "Original",
+            "square": "Square",
+            "landscape": "Landscape"
+          },
+          "contentWidth": {
+            "label": "Content Width",
+            "description": "Control the maximum width of the homepage gallery",
+            "contained": "Contained",
+            "wide": "Wide",
+            "full": "Full"
+          },
+          "density": {
+            "label": "Gallery Density",
+            "description": "Adjust the target image width and overall rhythm",
+            "compact": "Compact",
+            "comfortable": "Comfortable",
+            "airy": "Airy"
+          },
+          "galleryGap": {
+            "label": "Image Gap",
+            "description": "Space between images in the homepage gallery",
+            "help": "Choose a value from 4 to 24 pixels"
+          },
+          "maxColumns": {
+            "label": "Maximum Columns",
+            "description": "Maximum number of gallery columns on wide screens",
+            "help": "Choose a value from 2 to 8"
+          },
+          "showSlogan": {
+            "label": "Show Slogan",
+            "description": "Display the site slogan above the gallery"
+          },
+          "showStats": {
+            "label": "Show Photo Summary",
+            "description": "Display the photo count and date range above the gallery"
+          },
+          "showGlobeNav": {
+            "label": "Show Globe Navigation",
+            "description": "Display the globe entry in the homepage navigation"
+          },
+          "showAlbumsNav": {
+            "label": "Show Albums Navigation",
+            "description": "Display the albums entry in the homepage navigation"
+          }
         }
       },
       "upload": {
@@ -1243,9 +1358,9 @@
       "completeSetup": "Complete Setup"
     },
     "welcome": {
-      "title": "Welcome to ChronoFrame",
+      "title": "Welcome to LumaAtlas",
       "description": "Follow the wizard to set up your gallery in a few minutes.",
-      "intro": "ChronoFrame is a versatile personal gallery app. Before uploading photos, we need to configure a few essentials:",
+      "intro": "LumaAtlas is a versatile personal gallery app. Before uploading photos, we need to configure a few essentials:",
       "cards": {
         "admin": {
           "title": "Admin Account",
@@ -1264,7 +1379,7 @@
           "description": "Visualize locations and mark shooting spots"
         }
       },
-      "privacyNotice": "ChronoFrame does not collect any of your data.",
+      "privacyNotice": "LumaAtlas does not collect any of your data.",
       "start": "Get Started"
     },
     "admin": {
@@ -1285,7 +1400,7 @@
     },
     "complete": {
       "title": "Almost Done!",
-      "description": "Your ChronoFrame gallery is ready to use.",
+      "description": "Your LumaAtlas gallery is ready to use.",
       "body": "You have completed all essential setup steps. You can now sign in with your admin account and start uploading photos.",
       "goToDashboard": "Go to Dashboard",
       "setupFailedTitle": "Setup Failed",

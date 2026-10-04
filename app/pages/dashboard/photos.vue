@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import type { FormSubmitEvent, TableColumn } from '@nuxt/ui'
-import type { Photo, PipelineQueueItem } from '~~/server/utils/db'
+import type { Album, Photo, PipelineQueueItem } from '~~/server/utils/db'
 import { h, resolveComponent } from 'vue'
 import { Icon, UBadge } from '#components'
 import ThumbImage from '~/components/ui/ThumbImage.vue'
@@ -15,6 +15,8 @@ const columnNameMap: Record<string, string> = {
   title: $t('dashboard.photos.table.columns.title'),
   tags: $t('dashboard.photos.table.columns.tags'),
   rating: $t('dashboard.photos.table.columns.rating'),
+  isVisible: $t('dashboard.photos.table.columns.isVisible'),
+  isFeatured: $t('dashboard.photos.table.columns.isFeatured'),
   isLivePhoto: $t('dashboard.photos.table.columns.isLivePhoto'),
   location: $t('dashboard.photos.table.columns.location'),
   dateTaken: $t('dashboard.photos.table.columns.dateTaken'),
@@ -47,6 +49,13 @@ const dayjs = useDayjs()
 
 const { status, refresh } = usePhotos()
 const { filteredPhotos, selectedCounts, hasActiveFilters } = usePhotoFilters()
+
+interface AlbumOption extends Album {
+  photoIds: string[]
+}
+
+const { data: albumsData, refresh: refreshAlbums } =
+  await useFetch<AlbumOption[]>('/api/albums')
 
 const totalSelectedFilters = computed(() => {
   return Object.values(selectedCounts.value).reduce(
@@ -560,6 +569,8 @@ const columnVisibility = ref({
   title: true,
   tags: true,
   rating: true,
+  isVisible: true,
+  isFeatured: true,
   isLivePhoto: true,
   location: true,
   dateTaken: true,
@@ -576,6 +587,124 @@ const selectedRowsCount = computed((): number => {
 const totalRowsCount = computed((): number => {
   return table.value?.tableApi?.getFilteredRowModel().rows.length || 0
 })
+
+type BatchToggle = 'unchanged' | 'yes' | 'no'
+type BatchTagMode = 'unchanged' | 'add' | 'remove' | 'replace'
+
+const isBatchOrganizeOpen = ref(false)
+const isBatchOrganizeSaving = ref(false)
+const batchOrganizeState = reactive<{
+  tagMode: BatchTagMode
+  tags: string[]
+  visibility: BatchToggle
+  featured: BatchToggle
+  addToAlbumIds: number[]
+  removeFromAlbumIds: number[]
+}>({
+  tagMode: 'unchanged',
+  tags: [],
+  visibility: 'unchanged',
+  featured: 'unchanged',
+  addToAlbumIds: [],
+  removeFromAlbumIds: [],
+})
+
+const albumOptions = computed(() =>
+  (albumsData.value ?? []).map((album) => ({
+    label: album.title,
+    value: album.id,
+    icon: album.isHidden ? 'lucide:eye-off' : 'lucide:images',
+  })),
+)
+
+const hasBatchOrganizeChanges = computed(
+  () =>
+    batchOrganizeState.tagMode !== 'unchanged' ||
+    batchOrganizeState.visibility !== 'unchanged' ||
+    batchOrganizeState.featured !== 'unchanged' ||
+    batchOrganizeState.addToAlbumIds.length > 0 ||
+    batchOrganizeState.removeFromAlbumIds.length > 0,
+)
+
+const resetBatchOrganizeState = () => {
+  batchOrganizeState.tagMode = 'unchanged'
+  batchOrganizeState.tags = []
+  batchOrganizeState.visibility = 'unchanged'
+  batchOrganizeState.featured = 'unchanged'
+  batchOrganizeState.addToAlbumIds = []
+  batchOrganizeState.removeFromAlbumIds = []
+}
+
+const getSelectedPhotos = (): Photo[] =>
+  table.value?.tableApi
+    ?.getFilteredSelectedRowModel()
+    .rows.map((row: { original: Photo }) => row.original) ?? []
+
+const openBatchOrganizer = () => {
+  if (getSelectedPhotos().length === 0) {
+    toast.add({
+      title: $t('dashboard.photos.messages.batchSelectRequired'),
+      color: 'warning',
+    })
+    return
+  }
+
+  resetBatchOrganizeState()
+  isBatchOrganizeOpen.value = true
+}
+
+const submitBatchOrganizer = async () => {
+  const selectedPhotos = getSelectedPhotos()
+  if (selectedPhotos.length === 0 || !hasBatchOrganizeChanges.value) return
+
+  const body: Record<string, unknown> = {
+    photoIds: selectedPhotos.map((photo) => photo.id),
+  }
+
+  if (batchOrganizeState.tagMode !== 'unchanged') {
+    body.tags = {
+      mode: batchOrganizeState.tagMode,
+      values: normalizeTagList(batchOrganizeState.tags),
+    }
+  }
+  if (batchOrganizeState.visibility !== 'unchanged') {
+    body.isVisible = batchOrganizeState.visibility === 'yes'
+  }
+  if (batchOrganizeState.featured !== 'unchanged') {
+    body.isFeatured = batchOrganizeState.featured === 'yes'
+  }
+  if (batchOrganizeState.addToAlbumIds.length > 0) {
+    body.addToAlbumIds = batchOrganizeState.addToAlbumIds
+  }
+  if (batchOrganizeState.removeFromAlbumIds.length > 0) {
+    body.removeFromAlbumIds = batchOrganizeState.removeFromAlbumIds
+  }
+
+  isBatchOrganizeSaving.value = true
+  try {
+    await $fetch('/api/photos/batch', {
+      method: 'PATCH',
+      body,
+    })
+    await Promise.all([refresh(), refreshAlbums()])
+    rowSelection.value = {}
+    isBatchOrganizeOpen.value = false
+    toast.add({
+      title: $t('dashboard.photos.batchOrganizer.success', {
+        count: selectedPhotos.length,
+      }),
+      color: 'success',
+    })
+  } catch (error) {
+    toast.add({
+      title: $t('dashboard.photos.batchOrganizer.failed'),
+      description: error instanceof Error ? error.message : undefined,
+      color: 'error',
+    })
+  } finally {
+    isBatchOrganizeSaving.value = false
+  }
+}
 
 const livePhotoStats = computed(() => {
   if (!filteredPhotos.value) return { total: 0, livePhotos: 0, staticPhotos: 0 }
@@ -884,6 +1013,37 @@ const columns: TableColumn<Photo>[] = [
             ),
       ])
     },
+  },
+  {
+    accessorKey: 'isVisible',
+    header: $t('dashboard.photos.table.columns.isVisible'),
+    cell: ({ row }) =>
+      h(
+        UBadge,
+        {
+          size: 'sm',
+          variant: 'soft',
+          color: row.original.isVisible ? 'success' : 'neutral',
+        },
+        () =>
+          row.original.isVisible
+            ? $t('dashboard.photos.table.cells.public')
+            : $t('dashboard.photos.table.cells.hidden'),
+      ),
+  },
+  {
+    accessorKey: 'isFeatured',
+    header: $t('dashboard.photos.table.columns.isFeatured'),
+    cell: ({ row }) =>
+      row.original.isFeatured
+        ? h(UBadge, { size: 'sm', variant: 'soft', color: 'warning' }, () =>
+            $t('dashboard.photos.table.cells.featured'),
+          )
+        : h(
+            'span',
+            { class: 'text-neutral-400 text-xs' },
+            $t('dashboard.photos.table.cells.notFeatured'),
+          ),
   },
   {
     accessorKey: 'isLivePhoto',
@@ -2242,300 +2402,522 @@ onUnmounted(() => {
                 {{ $t('dashboard.photos.toolbar.title') }}
               </span>
               <div class="flex items-center gap-1 sm:gap-2 sm:ml-1">
-              <UBadge
-                v-if="livePhotoStats.staticPhotos > 0"
-                variant="soft"
-                color="neutral"
-                size="sm"
-              >
-                <span class="hidden sm:inline"
-                  >{{ livePhotoStats.staticPhotos }}
-                  {{ $t('dashboard.photos.stats.photos') }}</span
-                >
-                <span class="sm:hidden"
-                  >{{ livePhotoStats.staticPhotos }}P</span
-                >
-              </UBadge>
-              <UBadge
-                v-if="livePhotoStats.livePhotos > 0"
-                variant="soft"
-                color="warning"
-                size="sm"
-              >
-                <span class="hidden sm:inline"
-                  >{{ livePhotoStats.livePhotos }}
-                  {{ $t('dashboard.photos.stats.livePhotos') }}</span
-                >
-                <span class="sm:hidden">{{ livePhotoStats.livePhotos }}LP</span>
-              </UBadge>
-            </div>
-          </div>
-
-          <div class="flex items-center gap-2">
-            <UPopover>
-              <UTooltip :text="$t('ui.action.filter.tooltip')">
-                <UChip
-                  inset
+                <UBadge
+                  v-if="livePhotoStats.staticPhotos > 0"
+                  variant="soft"
+                  color="neutral"
                   size="sm"
-                  color="info"
-                  :show="totalSelectedFilters > 0"
                 >
-                  <UButton
-                    variant="soft"
-                    :color="hasActiveFilters ? 'info' : 'neutral'"
-                    class="bg-transparent rounded-full cursor-pointer relative"
-                    icon="tabler:filter"
+                  <span class="hidden sm:inline"
+                    >{{ livePhotoStats.staticPhotos }}
+                    {{ $t('dashboard.photos.stats.photos') }}</span
+                  >
+                  <span class="sm:hidden"
+                    >{{ livePhotoStats.staticPhotos }}P</span
+                  >
+                </UBadge>
+                <UBadge
+                  v-if="livePhotoStats.livePhotos > 0"
+                  variant="soft"
+                  color="warning"
+                  size="sm"
+                >
+                  <span class="hidden sm:inline"
+                    >{{ livePhotoStats.livePhotos }}
+                    {{ $t('dashboard.photos.stats.livePhotos') }}</span
+                  >
+                  <span class="sm:hidden"
+                    >{{ livePhotoStats.livePhotos }}LP</span
+                  >
+                </UBadge>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <UPopover>
+                <UTooltip :text="$t('ui.action.filter.tooltip')">
+                  <UChip
+                    inset
                     size="sm"
-                  />
-                </UChip>
-              </UTooltip>
+                    color="info"
+                    :show="totalSelectedFilters > 0"
+                  >
+                    <UButton
+                      variant="soft"
+                      :color="hasActiveFilters ? 'info' : 'neutral'"
+                      class="bg-transparent rounded-full cursor-pointer relative"
+                      icon="tabler:filter"
+                      size="sm"
+                    />
+                  </UChip>
+                </UTooltip>
 
-              <template #content>
-                <UCard variant="glassmorphism">
-                  <OverlayFilterPanel />
-                </UCard>
-              </template>
-            </UPopover>
-            <!-- 过滤器 -->
-            <USelectMenu
-              v-model="photoFilter"
-              class="w-full sm:w-48"
-              :items="[
-                {
-                  label: $t('dashboard.photos.photoFilter.all'),
-                  value: 'all',
-                  icon: 'tabler:photo-scan',
-                },
-                {
-                  label: $t('dashboard.photos.photoFilter.livephoto'),
-                  value: 'livephoto',
-                  icon: 'tabler:live-photo',
-                },
-                {
-                  label: $t('dashboard.photos.photoFilter.static'),
-                  value: 'static',
-                  icon: 'tabler:photo',
-                },
-              ]"
-              value-key="value"
-              label-key="label"
-              size="sm"
-            >
-            </USelectMenu>
-
-            <!-- 刷新按钮 -->
-            <UButton
-              variant="soft"
-              color="info"
-              size="sm"
-              icon="tabler:refresh"
-              :loading="reactionsLoading"
-              @click="
-                async () => {
-                  await refresh()
-                  if (filteredData.length > 0) {
-                    await fetchReactions(filteredData.map((p: Photo) => p.id))
-                  }
-                }
-              "
-            >
-              <span class="hidden sm:inline">{{
-                $t('dashboard.photos.toolbar.refresh')
-              }}</span>
-            </UButton>
-
-            <!-- 列可见性按钮 -->
-            <UDropdownMenu
-              :items="
-                table?.tableApi
-                  ?.getAllColumns()
-                  .filter((column: any) => column.getCanHide())
-                  .map((column: any) => ({
-                    label: columnNameMap[column.id] || column.id,
-                    type: 'checkbox' as const,
-                    checked: column.getIsVisible(),
-                    disabled:
-                      !column.getCanHide() ||
-                      column.id === 'thumbnailUrl' ||
-                      column.id === 'id' ||
-                      column.id === 'actions',
-                    onUpdateChecked(checked: boolean) {
-                      table?.tableApi
-                        ?.getColumn(column.id)
-                        ?.toggleVisibility(!!checked)
-                    },
-                    onSelect(e: Event) {
-                      e.preventDefault()
-                    },
-                  }))
-              "
-              :content="{ align: 'end' }"
-            >
-              <UButton
-                label=""
-                color="neutral"
-                variant="outline"
+                <template #content>
+                  <UCard variant="glassmorphism">
+                    <OverlayFilterPanel />
+                  </UCard>
+                </template>
+              </UPopover>
+              <!-- 过滤器 -->
+              <USelectMenu
+                v-model="photoFilter"
+                class="w-full sm:w-48"
+                :items="[
+                  {
+                    label: $t('dashboard.photos.photoFilter.all'),
+                    value: 'all',
+                    icon: 'tabler:photo-scan',
+                  },
+                  {
+                    label: $t('dashboard.photos.photoFilter.livephoto'),
+                    value: 'livephoto',
+                    icon: 'tabler:live-photo',
+                  },
+                  {
+                    label: $t('dashboard.photos.photoFilter.static'),
+                    value: 'static',
+                    icon: 'tabler:photo',
+                  },
+                ]"
+                value-key="value"
+                label-key="label"
                 size="sm"
-                icon="tabler:columns-3"
-                :title="
-                  $t('dashboard.photos.table.columnVisibility.description')
+              >
+              </USelectMenu>
+
+              <!-- 刷新按钮 -->
+              <UButton
+                variant="soft"
+                color="info"
+                size="sm"
+                icon="tabler:refresh"
+                :loading="reactionsLoading"
+                @click="
+                  async () => {
+                    await refresh()
+                    if (filteredData.length > 0) {
+                      await fetchReactions(filteredData.map((p: Photo) => p.id))
+                    }
+                  }
                 "
               >
                 <span class="hidden sm:inline">{{
-                  $t('dashboard.photos.table.columnVisibility.button')
+                  $t('dashboard.photos.toolbar.refresh')
                 }}</span>
               </UButton>
-            </UDropdownMenu>
+
+              <!-- 列可见性按钮 -->
+              <UDropdownMenu
+                :items="
+                  table?.tableApi
+                    ?.getAllColumns()
+                    .filter((column: any) => column.getCanHide())
+                    .map((column: any) => ({
+                      label: columnNameMap[column.id] || column.id,
+                      type: 'checkbox' as const,
+                      checked: column.getIsVisible(),
+                      disabled:
+                        !column.getCanHide() ||
+                        column.id === 'thumbnailUrl' ||
+                        column.id === 'id' ||
+                        column.id === 'actions',
+                      onUpdateChecked(checked: boolean) {
+                        table?.tableApi
+                          ?.getColumn(column.id)
+                          ?.toggleVisibility(!!checked)
+                      },
+                      onSelect(e: Event) {
+                        e.preventDefault()
+                      },
+                    }))
+                "
+                :content="{ align: 'end' }"
+              >
+                <UButton
+                  label=""
+                  color="neutral"
+                  variant="outline"
+                  size="sm"
+                  icon="tabler:columns-3"
+                  :title="
+                    $t('dashboard.photos.table.columnVisibility.description')
+                  "
+                >
+                  <span class="hidden sm:inline">{{
+                    $t('dashboard.photos.table.columnVisibility.button')
+                  }}</span>
+                </UButton>
+              </UDropdownMenu>
+            </div>
+          </div>
+
+          <!-- 照片列表 -->
+          <div class="relative flex-1 min-h-0 flex flex-col">
+            <UTable
+              ref="table"
+              v-model:row-selection="rowSelection"
+              v-model:column-visibility="columnVisibility"
+              :column-pinning="{
+                right: ['actions'],
+              }"
+              :data="filteredData as Photo[]"
+              :columns="columns"
+              :loading="status === 'pending'"
+              sticky
+              class="h-full flex-1"
+              :ui="{
+                wrapper: 'relative scroll-smooth h-full overflow-auto',
+                base: 'min-w-full table-fixed',
+                divide:
+                  'divide-y divide-neutral-200/80 dark:divide-neutral-800/80',
+                thead:
+                  'bg-neutral-50/80 dark:bg-neutral-900/80 backdrop-blur-md sticky top-0 z-10 whitespace-nowrap',
+                tbody:
+                  'divide-y divide-neutral-200/80 dark:divide-neutral-800/80 bg-white dark:bg-neutral-900',
+                tr: {
+                  base: 'hover:bg-neutral-50/50 dark:hover:bg-neutral-800/50 transition-colors',
+                  selected: 'bg-primary-50/50 dark:bg-primary-900/20',
+                },
+                th: {
+                  base: 'text-left rtl:text-right ',
+                  padding: 'px-4 py-3.5',
+                  color: 'text-neutral-500 dark:text-neutral-400',
+                  font: 'font-medium text-sm',
+                },
+                td: {
+                  padding: 'px-4 py-3',
+                  color: 'text-neutral-700 dark:text-neutral-300 text-sm',
+                },
+                separator: 'bg-neutral-200/80 dark:bg-neutral-800/80',
+              }"
+            >
+              <template #actions-cell="{ row }">
+                <div class="flex justify-end">
+                  <UDropdownMenu
+                    size="sm"
+                    :content="{
+                      align: 'end',
+                    }"
+                    :items="getRowActions(row.original)"
+                  >
+                    <UButton
+                      variant="outline"
+                      color="neutral"
+                      size="sm"
+                      icon="tabler:dots-vertical"
+                    />
+                  </UDropdownMenu>
+                </div>
+              </template>
+            </UTable>
+
+            <!-- 悬浮版批量操作菜单 -->
+            <transition
+              enter-active-class="transition-all duration-300 ease-out"
+              enter-from-class="translate-y-8 opacity-0 scale-95"
+              enter-to-class="translate-y-0 opacity-100 scale-100"
+              leave-active-class="transition-all duration-200 ease-in"
+              leave-from-class="translate-y-0 opacity-100 scale-100"
+              leave-to-class="translate-y-8 opacity-0 scale-95"
+            >
+              <div
+                v-if="selectedRowsCount > 0"
+                class="fixed bottom-8 left-1/2 -translate-x-1/2 px-2 py-1.5 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-xl shadow-xl rounded-full border border-neutral-200/80 dark:border-neutral-800/80 z-60 flex items-center gap-3 sm:gap-6 shadow-black/5 dark:shadow-black/20"
+              >
+                <div
+                  class="pl-4 pr-1 border-r border-neutral-200 dark:border-neutral-800 min-w-max"
+                >
+                  <p
+                    class="text-sm font-medium tracking-wide text-neutral-700 dark:text-neutral-200"
+                  >
+                    {{
+                      $t('dashboard.photos.selection.selected', {
+                        count: selectedRowsCount,
+                        total: totalRowsCount,
+                      })
+                    }}
+                  </p>
+                </div>
+
+                <div class="flex items-center gap-1 sm:gap-1.5 pr-2">
+                  <UButton
+                    color="neutral"
+                    variant="ghost"
+                    size="sm"
+                    class="rounded-full text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-white dark:hover:bg-neutral-800"
+                    icon="lucide:folder-cog"
+                    @click="openBatchOrganizer"
+                  >
+                    <span class="hidden sm:inline">{{
+                      $t('dashboard.photos.selection.batchOrganize')
+                    }}</span>
+                  </UButton>
+
+                  <UButton
+                    color="neutral"
+                    variant="ghost"
+                    size="sm"
+                    class="rounded-full text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-white dark:hover:bg-neutral-800"
+                    icon="tabler:refresh"
+                    @click="handleBatchReprocess"
+                  >
+                    <span class="hidden sm:inline">{{
+                      $t('dashboard.photos.selection.batchReprocess')
+                    }}</span>
+                  </UButton>
+
+                  <UButton
+                    color="neutral"
+                    variant="ghost"
+                    size="sm"
+                    class="rounded-full text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-white dark:hover:bg-neutral-800"
+                    icon="tabler:map-off"
+                    @click="handleBatchEraseLocation"
+                  >
+                    <span class="hidden sm:inline">{{
+                      $t('dashboard.photos.selection.batchEraseLocation')
+                    }}</span>
+                  </UButton>
+
+                  <UButton
+                    color="neutral"
+                    variant="ghost"
+                    size="sm"
+                    class="rounded-full text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-white dark:hover:bg-neutral-800"
+                    icon="tabler:download"
+                    @click="handleBatchDownload"
+                  >
+                    <span class="hidden sm:inline">{{
+                      $t('dashboard.photos.selection.batchDownload')
+                    }}</span>
+                  </UButton>
+
+                  <UButton
+                    color="error"
+                    variant="ghost"
+                    size="sm"
+                    class="rounded-full hover:bg-error-50 dark:hover:bg-error-500/20"
+                    icon="tabler:trash"
+                    @click="handleBatchDelete"
+                  >
+                    <span class="hidden sm:inline">{{
+                      $t('dashboard.photos.selection.batchDelete')
+                    }}</span>
+                  </UButton>
+                </div>
+              </div>
+            </transition>
           </div>
         </div>
 
-        <!-- 照片列表 -->
-        <div class="relative flex-1 min-h-0 flex flex-col">
-          <UTable
-            ref="table"
-            v-model:row-selection="rowSelection"
-            v-model:column-visibility="columnVisibility"
-            :column-pinning="{
-              right: ['actions'],
-            }"
-            :data="filteredData as Photo[]"
-            :columns="columns"
-            :loading="status === 'pending'"
-            sticky
-            class="h-full flex-1"
-            :ui="{
-              wrapper: 'relative scroll-smooth h-full overflow-auto',
-              base: 'min-w-full table-fixed',
-              divide:
-                'divide-y divide-neutral-200/80 dark:divide-neutral-800/80',
-              thead:
-                'bg-neutral-50/80 dark:bg-neutral-900/80 backdrop-blur-md sticky top-0 z-10 whitespace-nowrap',
-              tbody:
-                'divide-y divide-neutral-200/80 dark:divide-neutral-800/80 bg-white dark:bg-neutral-900',
-              tr: {
-                base: 'hover:bg-neutral-50/50 dark:hover:bg-neutral-800/50 transition-colors',
-                selected: 'bg-primary-50/50 dark:bg-primary-900/20',
-              },
-              th: {
-                base: 'text-left rtl:text-right ',
-                padding: 'px-4 py-3.5',
-                color: 'text-neutral-500 dark:text-neutral-400',
-                font: 'font-medium text-sm',
-              },
-              td: {
-                padding: 'px-4 py-3',
-                color: 'text-neutral-700 dark:text-neutral-300 text-sm',
-              },
-              separator: 'bg-neutral-200/80 dark:bg-neutral-800/80',
-            }"
-          >
-            <template #actions-cell="{ row }">
-              <div class="flex justify-end">
-                <UDropdownMenu
+        <UModal
+          v-model:open="isBatchOrganizeOpen"
+          :title="$t('dashboard.photos.batchOrganizer.title')"
+          :description="
+            $t('dashboard.photos.batchOrganizer.description', {
+              count: selectedRowsCount,
+            })
+          "
+          :ui="{ content: 'sm:max-w-2xl' }"
+        >
+          <template #body>
+            <div class="divide-y divide-neutral-200 dark:divide-neutral-800">
+              <section class="space-y-3 pb-5">
+                <div>
+                  <p
+                    class="text-sm font-medium text-neutral-900 dark:text-white"
+                  >
+                    {{ $t('dashboard.photos.batchOrganizer.visibility.label') }}
+                  </p>
+                  <p class="mt-1 text-xs text-neutral-500">
+                    {{
+                      $t(
+                        'dashboard.photos.batchOrganizer.visibility.description',
+                      )
+                    }}
+                  </p>
+                </div>
+                <UTabs
+                  v-model="batchOrganizeState.visibility"
+                  :items="[
+                    {
+                      label: $t('dashboard.photos.batchOrganizer.unchanged'),
+                      value: 'unchanged',
+                      icon: 'lucide:minus',
+                    },
+                    {
+                      label: $t(
+                        'dashboard.photos.batchOrganizer.visibility.public',
+                      ),
+                      value: 'yes',
+                      icon: 'lucide:eye',
+                    },
+                    {
+                      label: $t(
+                        'dashboard.photos.batchOrganizer.visibility.hidden',
+                      ),
+                      value: 'no',
+                      icon: 'lucide:eye-off',
+                    },
+                  ]"
                   size="sm"
-                  :content="{
-                    align: 'end',
-                  }"
-                  :items="getRowActions(row.original)"
+                />
+              </section>
+
+              <section class="space-y-3 py-5">
+                <div>
+                  <p
+                    class="text-sm font-medium text-neutral-900 dark:text-white"
+                  >
+                    {{ $t('dashboard.photos.batchOrganizer.featured.label') }}
+                  </p>
+                  <p class="mt-1 text-xs text-neutral-500">
+                    {{
+                      $t('dashboard.photos.batchOrganizer.featured.description')
+                    }}
+                  </p>
+                </div>
+                <UTabs
+                  v-model="batchOrganizeState.featured"
+                  :items="[
+                    {
+                      label: $t('dashboard.photos.batchOrganizer.unchanged'),
+                      value: 'unchanged',
+                      icon: 'lucide:minus',
+                    },
+                    {
+                      label: $t('dashboard.photos.batchOrganizer.featured.yes'),
+                      value: 'yes',
+                      icon: 'lucide:sparkles',
+                    },
+                    {
+                      label: $t('dashboard.photos.batchOrganizer.featured.no'),
+                      value: 'no',
+                      icon: 'lucide:sparkles',
+                    },
+                  ]"
+                  size="sm"
+                />
+              </section>
+
+              <section class="space-y-3 py-5">
+                <div>
+                  <p
+                    class="text-sm font-medium text-neutral-900 dark:text-white"
+                  >
+                    {{ $t('dashboard.photos.batchOrganizer.tags.label') }}
+                  </p>
+                  <p class="mt-1 text-xs text-neutral-500">
+                    {{ $t('dashboard.photos.batchOrganizer.tags.description') }}
+                  </p>
+                </div>
+                <USelectMenu
+                  v-model="batchOrganizeState.tagMode"
+                  :items="[
+                    {
+                      label: $t('dashboard.photos.batchOrganizer.unchanged'),
+                      value: 'unchanged',
+                    },
+                    {
+                      label: $t('dashboard.photos.batchOrganizer.tags.add'),
+                      value: 'add',
+                    },
+                    {
+                      label: $t('dashboard.photos.batchOrganizer.tags.remove'),
+                      value: 'remove',
+                    },
+                    {
+                      label: $t('dashboard.photos.batchOrganizer.tags.replace'),
+                      value: 'replace',
+                    },
+                  ]"
+                  value-key="value"
+                  :search-input="false"
+                  class="w-full"
+                />
+                <UInputTags
+                  v-if="batchOrganizeState.tagMode !== 'unchanged'"
+                  v-model="batchOrganizeState.tags"
+                  class="w-full"
+                  :placeholder="
+                    $t('dashboard.photos.batchOrganizer.tags.placeholder')
+                  "
+                />
+              </section>
+
+              <section class="grid gap-5 pt-5 sm:grid-cols-2">
+                <UFormField
+                  :label="$t('dashboard.photos.batchOrganizer.albums.add')"
+                  :description="
+                    $t('dashboard.photos.batchOrganizer.albums.addDescription')
+                  "
                 >
-                  <UButton
-                    variant="outline"
-                    color="neutral"
-                    size="sm"
-                    icon="tabler:dots-vertical"
+                  <USelectMenu
+                    v-model="batchOrganizeState.addToAlbumIds"
+                    :items="albumOptions"
+                    multiple
+                    value-key="value"
+                    class="w-full"
+                    :placeholder="
+                      $t('dashboard.photos.batchOrganizer.albums.placeholder')
+                    "
                   />
-                </UDropdownMenu>
-              </div>
-            </template>
-          </UTable>
+                </UFormField>
 
-          <!-- 悬浮版批量操作菜单 -->
-          <transition
-            enter-active-class="transition-all duration-300 ease-out"
-            enter-from-class="translate-y-8 opacity-0 scale-95"
-            enter-to-class="translate-y-0 opacity-100 scale-100"
-            leave-active-class="transition-all duration-200 ease-in"
-            leave-from-class="translate-y-0 opacity-100 scale-100"
-            leave-to-class="translate-y-8 opacity-0 scale-95"
-          >
-            <div
-              v-if="selectedRowsCount > 0"
-              class="fixed bottom-8 left-1/2 -translate-x-1/2 px-2 py-1.5 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-xl shadow-xl rounded-full border border-neutral-200/80 dark:border-neutral-800/80 z-60 flex items-center gap-3 sm:gap-6 shadow-black/5 dark:shadow-black/20"
-            >
-              <div
-                class="pl-4 pr-1 border-r border-neutral-200 dark:border-neutral-800 min-w-max"
+                <UFormField
+                  :label="$t('dashboard.photos.batchOrganizer.albums.remove')"
+                  :description="
+                    $t(
+                      'dashboard.photos.batchOrganizer.albums.removeDescription',
+                    )
+                  "
+                >
+                  <USelectMenu
+                    v-model="batchOrganizeState.removeFromAlbumIds"
+                    :items="albumOptions"
+                    multiple
+                    value-key="value"
+                    class="w-full"
+                    :placeholder="
+                      $t('dashboard.photos.batchOrganizer.albums.placeholder')
+                    "
+                  />
+                </UFormField>
+              </section>
+            </div>
+          </template>
+
+          <template #footer>
+            <div class="flex w-full items-center justify-between gap-3">
+              <UButton
+                color="neutral"
+                variant="ghost"
+                @click="resetBatchOrganizeState"
               >
-                <p
-                  class="text-sm font-medium tracking-wide text-neutral-700 dark:text-neutral-200"
-                >
-                  {{
-                    $t('dashboard.photos.selection.selected', {
-                      count: selectedRowsCount,
-                      total: totalRowsCount,
-                    })
-                  }}
-                </p>
-              </div>
-
-              <div class="flex items-center gap-1 sm:gap-1.5 pr-2">
+                {{ $t('dashboard.photos.batchOrganizer.reset') }}
+              </UButton>
+              <div class="flex items-center gap-2">
                 <UButton
                   color="neutral"
-                  variant="ghost"
-                  size="sm"
-                  class="rounded-full text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-white dark:hover:bg-neutral-800"
-                  icon="tabler:refresh"
-                  @click="handleBatchReprocess"
+                  variant="outline"
+                  @click="isBatchOrganizeOpen = false"
                 >
-                  <span class="hidden sm:inline">{{
-                    $t('dashboard.photos.selection.batchReprocess')
-                  }}</span>
+                  {{ $t('dashboard.photos.editModal.actions.cancel') }}
                 </UButton>
-
                 <UButton
-                  color="neutral"
-                  variant="ghost"
-                  size="sm"
-                  class="rounded-full text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-white dark:hover:bg-neutral-800"
-                  icon="tabler:map-off"
-                  @click="handleBatchEraseLocation"
+                  icon="lucide:check"
+                  :loading="isBatchOrganizeSaving"
+                  :disabled="!hasBatchOrganizeChanges || isBatchOrganizeSaving"
+                  @click="submitBatchOrganizer"
                 >
-                  <span class="hidden sm:inline">{{
-                    $t('dashboard.photos.selection.batchEraseLocation')
-                  }}</span>
-                </UButton>
-
-                <UButton
-                  color="neutral"
-                  variant="ghost"
-                  size="sm"
-                  class="rounded-full text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-white dark:hover:bg-neutral-800"
-                  icon="tabler:download"
-                  @click="handleBatchDownload"
-                >
-                  <span class="hidden sm:inline">{{
-                    $t('dashboard.photos.selection.batchDownload')
-                  }}</span>
-                </UButton>
-
-                <UButton
-                  color="error"
-                  variant="ghost"
-                  size="sm"
-                  class="rounded-full hover:bg-error-50 dark:hover:bg-error-500/20"
-                  icon="tabler:trash"
-                  @click="handleBatchDelete"
-                >
-                  <span class="hidden sm:inline">{{
-                    $t('dashboard.photos.selection.batchDelete')
-                  }}</span>
+                  {{ $t('dashboard.photos.batchOrganizer.apply') }}
                 </UButton>
               </div>
             </div>
-          </transition>
-        </div>
-      </div>
+          </template>
+        </UModal>
 
-      <USlideover
+        <USlideover
           v-model:open="isEditModalOpen"
           :title="$t('dashboard.photos.editModal.title')"
           :description="$t('dashboard.photos.editModal.description')"

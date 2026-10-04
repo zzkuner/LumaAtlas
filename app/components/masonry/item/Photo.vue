@@ -5,9 +5,14 @@ import { motion, useDomRef } from 'motion-v'
 interface Props {
   photo: Photo
   index: number
+  presentation?: 'masonry' | 'grid' | 'feed'
+  imageRatio?: 'natural' | 'square' | 'landscape'
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  presentation: 'masonry',
+  imageRatio: 'natural',
+})
 const emit = defineEmits<{
   'visibility-change': [
     { index: number; isVisible: boolean; date: string | Date },
@@ -41,7 +46,7 @@ const intersectionObserverRef = ref<IntersectionObserver | null>(null)
 
 const processingState = getProcessingState(props.photo.id)
 
-const aspectRatio = computed(() => {
+const naturalAspectRatio = computed(() => {
   // Priority 1: Use aspectRatio from photo data if available
   if (props.photo.aspectRatio) {
     return props.photo.aspectRatio
@@ -49,12 +54,20 @@ const aspectRatio = computed(() => {
 
   // Priority 2: Calculate from width and height if available
   if (props.photo.width && props.photo.height) {
-    return props.photo.height / props.photo.width
+    return props.photo.width / props.photo.height
   }
 
   // Fallback: Default aspect ratio
   return 1.2
 })
+
+const displayAspectRatio = computed(() => {
+  if (props.imageRatio === 'square') return 1
+  if (props.imageRatio === 'landscape') return 4 / 3
+  return naturalAspectRatio.value
+})
+
+const isFeed = computed(() => props.presentation === 'feed')
 
 // Show info overlay only when not playing video or video has finished
 const shouldShowInfoOverlay = computed(() => {
@@ -497,7 +510,7 @@ onUnmounted(() => {
       <!-- Container with fixed aspect ratio -->
       <div
         class="w-full relative"
-        :style="{ aspectRatio }"
+        :style="{ aspectRatio: displayAspectRatio }"
       >
         <ThumbImage
           :src="photo.thumbnailUrl || ''"
@@ -562,6 +575,7 @@ onUnmounted(() => {
 
       <!-- Photo info overlay (bottom) -->
       <motion.div
+        v-if="!isFeed"
         v-show="shouldShowInfoOverlay"
         class="absolute bottom-0 left-0 right-0 bg-linear-to-t from-black/60 to-transparent p-3"
         :initial="{ y: '100%', opacity: 0 }"
@@ -685,6 +699,50 @@ onUnmounted(() => {
           </div>
         </div>
       </motion.div>
+    </div>
+
+    <div
+      v-if="isFeed"
+      class="flex flex-col gap-2 border-b border-neutral-200 py-4 sm:flex-row sm:items-start sm:justify-between dark:border-neutral-800"
+    >
+      <div class="min-w-0">
+        <p
+          v-if="photo.title"
+          class="text-sm font-medium text-neutral-950 dark:text-white"
+        >
+          {{ photo.title }}
+        </p>
+        <p
+          v-if="photo.description"
+          class="mt-1 max-w-2xl text-sm leading-6 text-neutral-600 dark:text-neutral-400"
+        >
+          {{ photo.description }}
+        </p>
+        <div
+          v-if="photo.tags?.length"
+          class="mt-2 flex flex-wrap items-center gap-1.5"
+        >
+          <span
+            v-for="tag in photo.tags.slice(0, 5)"
+            :key="tag"
+            class="text-xs text-neutral-500 dark:text-neutral-500"
+          >
+            #{{ tag }}
+          </span>
+        </div>
+      </div>
+
+      <div
+        class="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-1 text-xs text-neutral-500 sm:max-w-72 sm:justify-end dark:text-neutral-500"
+      >
+        <span v-if="photo.dateTaken">
+          {{ $dayjs(photo.dateTaken).format('YYYY-MM-DD') }}
+        </span>
+        <span v-if="photo.city">{{ photo.city }}</span>
+        <span v-if="photo.exif?.Model">
+          {{ formatCameraInfo(photo.exif.Make, photo.exif.Model) }}
+        </span>
+      </div>
     </div>
   </div>
 </template>

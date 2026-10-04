@@ -11,7 +11,6 @@ useHead({
 })
 
 const dayjs = useDayjs()
-const config = useRuntimeConfig()
 const { photos } = usePhotos()
 
 const { data: dashboardStats, refresh: refreshStats } =
@@ -124,28 +123,48 @@ const yearOptions = computed(() => {
 
   return options
 })
-
-const onShareSite = () => {
-  const discussionParams = new URLSearchParams({
-    category: 'showcases',
-    title: `Show: ${config.public.app.title}`,
-    body: `## Description / Motto\n\n${config.public.app.slogan}\n\n## URL\n\n[${window.location.origin}](${window.location.origin})`,
-  })
-  window.open(
-    `https://github.com/HoshinoSuzumi/chronoframe/discussions/new?${discussionParams}`,
-    '_blank',
-  )
-}
 </script>
 
 <template>
   <UDashboardPanel>
     <template #header>
-      <UDashboardNavbar :title="$t('dashboard.overview.title')" />
+      <UDashboardNavbar :title="$t('dashboard.overview.title')">
+        <template #right>
+          <div class="flex items-center gap-2">
+            <UTooltip :text="$t('dashboard.photos.toolbar.refresh')">
+              <UButton
+                icon="lucide:refresh-cw"
+                color="neutral"
+                variant="ghost"
+                :loading="isLoading"
+                :aria-label="$t('dashboard.photos.toolbar.refresh')"
+                @click="refreshData"
+              />
+            </UTooltip>
+            <UTooltip :text="$t('ui.action.home.tooltip')">
+              <UButton
+                icon="lucide:external-link"
+                color="neutral"
+                variant="outline"
+                to="/"
+                :aria-label="$t('ui.action.home.tooltip')"
+              />
+            </UTooltip>
+            <UButton
+              icon="lucide:image-plus"
+              color="primary"
+              variant="solid"
+              to="/dashboard/photos"
+            >
+              <span class="hidden sm:inline">{{ $t('title.photos') }}</span>
+            </UButton>
+          </div>
+        </template>
+      </UDashboardNavbar>
     </template>
 
     <template #body>
-      <div class="flex flex-col gap-6">
+      <div class="mx-auto flex w-full max-w-[1600px] flex-col gap-6">
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <DashboardIndicator
             :title="$t('dashboard.overview.indicator.totalPhotos')"
@@ -164,7 +183,7 @@ const onShareSite = () => {
           <DashboardIndicator
             :title="$t('dashboard.overview.indicator.queueStatus.title')"
             icon="tabler:loader"
-            color="purple"
+            color="orange"
             :value="
               (dashboardStats?.workerPool?.activeWorkers || 0) > 0
                 ? $t('dashboard.overview.indicator.queueStatus.processing')
@@ -189,19 +208,12 @@ const onShareSite = () => {
             </h2>
           </template>
 
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
             <div>
               <p class="text-sm text-neutral-500 dark:text-neutral-400">
                 {{ $t('dashboard.overview.section.runtimeInfo.version') }}
               </p>
-              <NuxtLink
-                class="text-lg font-bold hover:text-primary"
-                target="_blank"
-                external
-                :to="`https://github.com/HoshinoSuzumi/chronoframe/releases/tag/v${$config.public.VERSION}`"
-              >
-                v{{ $config.public.VERSION }}
-              </NuxtLink>
+              <p class="text-lg font-bold">v{{ $config.public.VERSION }}</p>
             </div>
             <div>
               <p class="text-sm text-neutral-500 dark:text-neutral-400">
@@ -245,23 +257,6 @@ const onShareSite = () => {
             </ClientOnly>
           </p>
         </div> -->
-            <div>
-              <p class="text-sm text-neutral-500 dark:text-neutral-400">
-                Share Your Site
-              </p>
-              <p class="text-lg font-bold">
-                <UButton
-                  external
-                  variant="subtle"
-                  size="xs"
-                  color="info"
-                  trailing-icon="tabler:external-link"
-                  @click="onShareSite"
-                >
-                  分享你的站点
-                </UButton>
-              </p>
-            </div>
           </div>
         </UCard>
 

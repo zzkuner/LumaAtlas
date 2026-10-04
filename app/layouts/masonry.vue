@@ -7,8 +7,8 @@ const { photos } = usePhotos()
 </script>
 
 <template>
-  <div class="relative h-screen">
-    <div class="h-svh px-1">
+  <div class="relative min-h-screen bg-white dark:bg-neutral-950">
+    <div class="min-h-svh">
       <ClientOnly>
         <MasonryRoot
           :photos="photos"

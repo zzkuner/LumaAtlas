@@ -72,8 +72,12 @@ const getComponentProps = (): Record<string, any> => {
   switch (type) {
     case 'password':
     case 'url':
+      propsMap.type = type
+      break
     case 'number':
       propsMap.type = type
+      propsMap.min = props.field.ui.min
+      propsMap.max = props.field.ui.max
       break
     case 'select':
       propsMap.items = props.field.ui.options
@@ -107,7 +111,10 @@ const getComponentProps = (): Record<string, any> => {
 const componentProps = computed(() => getComponentProps())
 
 const handleChange = (value: any) => {
-  emit('update:modelValue', value)
+  emit(
+    'update:modelValue',
+    props.field.ui.type === 'number' && value !== '' ? Number(value) : value,
+  )
 }
 
 const labelKey = computed(() => {

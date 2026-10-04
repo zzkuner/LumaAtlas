@@ -1,4 +1,6 @@
-# ChronoFrame
+# LumaAtlas
+
+LumaAtlas is a self-hosted personal photo gallery focused on elegant presentation, map-based exploration, and practical library management. It is currently under active development and is based on the MIT-licensed [ChronoFrame](https://github.com/HoshinoSuzumi/chronoframe) project.
 
 <p align="center">
   <img src="https://socialify.git.ci/HoshinoSuzumi/chronoframe/image?custom_description=Self-hosted+personal+gallery+application.&description=1&font=KoHo&forks=0&issues=0&logo=https%3A%2F%2Fgithub.com%2FHoshinoSuzumi%2Fchronoframe%2Fraw%2Frefs%2Fheads%2Fmain%2Fpublic%2Ffavicon.svg&name=1&owner=1&pattern=Plus&pulls=0&stargazers=0&theme=Auto" alt="Chronoframe">

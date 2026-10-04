@@ -1,4 +1,4 @@
-import { asc, getTableColumns } from 'drizzle-orm'
+import { and, asc, eq, getTableColumns } from 'drizzle-orm'
 import z from 'zod'
 
 export default eventHandler(async (event) => {
@@ -13,6 +13,7 @@ export default eventHandler(async (event) => {
   )
 
   const db = useDB()
+  const session = await getUserSession(event)
 
   const album = db
     .select()
@@ -29,7 +30,6 @@ export default eventHandler(async (event) => {
 
   // 检查相册是否隐藏，如果隐藏则需要用户登录才能访问
   if (album.isHidden) {
-    const session = await getUserSession(event)
     if (!session.user) {
       throw createError({
         statusCode: 404,
@@ -39,7 +39,7 @@ export default eventHandler(async (event) => {
   }
 
   // 获取相册中的照片
-  const photos = await db
+  const photoQuery = db
     // all fields from tables.photos
     .select({
       ...getTableColumns(tables.photos),
@@ -49,9 +49,21 @@ export default eventHandler(async (event) => {
       tables.albumPhotos,
       eq(tables.photos.id, tables.albumPhotos.photoId),
     )
-    .where(eq(tables.albumPhotos.albumId, albumId))
-    .orderBy(asc(tables.albumPhotos.position))
-    .all()
+
+  const photos = session.user
+    ? photoQuery
+        .where(eq(tables.albumPhotos.albumId, albumId))
+        .orderBy(asc(tables.albumPhotos.position))
+        .all()
+    : photoQuery
+        .where(
+          and(
+            eq(tables.albumPhotos.albumId, albumId),
+            eq(tables.photos.isVisible, true),
+          ),
+        )
+        .orderBy(asc(tables.albumPhotos.position))
+        .all()
 
   // 验证相册数据完整性
   if (!photos || !Array.isArray(photos)) {

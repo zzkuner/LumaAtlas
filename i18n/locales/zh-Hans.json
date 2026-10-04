@@ -522,6 +522,8 @@
           "title": "照片标题",
           "tags": "关键词",
           "rating": "评分",
+          "isVisible": "公开状态",
+          "isFeatured": "首页精选",
           "isLivePhoto": "Live Photo",
           "location": "位置",
           "dateTaken": "拍摄日期",
@@ -537,7 +539,11 @@
           "noGps": "无 GPS 信息",
           "unknown": "未知",
           "staticPhoto": "一般照片",
-          "noReactions": "无表态"
+          "noReactions": "无表态",
+          "public": "公开",
+          "hidden": "隐藏",
+          "featured": "精选",
+          "notFeatured": "未精选"
         },
         "columnVisibility": {
           "button": "列设置",
@@ -557,7 +563,44 @@
         "batchReprocess": "重新处理",
         "batchEraseLocation": "抹除位置信息",
         "batchDownload": "批量下载",
-        "batchDelete": "批量删除"
+        "batchDelete": "批量删除",
+        "batchOrganize": "批量整理"
+      },
+      "batchOrganizer": {
+        "title": "整理所选照片",
+        "description": "将资料库设置应用到已选择的 {count} 张照片。",
+        "unchanged": "保持不变",
+        "visibility": {
+          "label": "公开状态",
+          "description": "隐藏照片不会出现在任何公开页面中。",
+          "public": "公开",
+          "hidden": "隐藏"
+        },
+        "featured": {
+          "label": "首页精选",
+          "description": "精选照片可以组成一个由你挑选的首页集合。",
+          "yes": "设为精选",
+          "no": "取消精选"
+        },
+        "tags": {
+          "label": "标签",
+          "description": "为所有已选照片添加、移除或替换资料库标签。",
+          "add": "添加标签",
+          "remove": "移除标签",
+          "replace": "替换标签",
+          "placeholder": "输入标签后按 Enter"
+        },
+        "albums": {
+          "add": "加入相册",
+          "addDescription": "保留现有归类，并加入所选相册。",
+          "remove": "移出相册",
+          "removeDescription": "仅从所选相册中移除。",
+          "placeholder": "选择相册"
+        },
+        "reset": "重置",
+        "apply": "应用更改",
+        "success": "已更新 {count} 张照片",
+        "failed": "所选照片更新失败"
       },
       "slideover": {
         "title": "上传照片",
@@ -950,6 +993,10 @@
         "description": "实例的标语",
         "help": "标语显示在首页的标题下方"
       },
+      "description": {
+        "label": "网站简介",
+        "description": "显示在首页并用于分享信息的详细介绍"
+      },
       "author": {
         "label": "所有者",
         "description": "实例的所有者名称"
@@ -967,6 +1014,74 @@
           "light": "浅色",
           "dark": "深色",
           "system": "系统"
+        },
+        "home": {
+          "style": {
+            "label": "首页风格",
+            "description": "选择相册上方网站介绍的呈现方式",
+            "minimal": "极简",
+            "editorial": "编辑式"
+          },
+          "layout": {
+            "label": "相册布局",
+            "description": "选择首页照片的排列方式",
+            "masonry": "瀑布流",
+            "grid": "规整网格",
+            "feed": "单列摄影流"
+          },
+          "source": {
+            "label": "首页照片范围",
+            "description": "展示全部公开照片，或仅展示标记为精选的照片",
+            "all": "全部公开照片",
+            "featured": "仅精选照片"
+          },
+          "imageRatio": {
+            "label": "图片比例",
+            "description": "保留照片原始比例，或使用统一裁切比例",
+            "natural": "原始比例",
+            "square": "正方形",
+            "landscape": "横向 4:3"
+          },
+          "contentWidth": {
+            "label": "内容宽度",
+            "description": "控制首页相册在宽屏上的最大宽度",
+            "contained": "收窄",
+            "wide": "宽幅",
+            "full": "全宽"
+          },
+          "density": {
+            "label": "相册密度",
+            "description": "调整图片目标宽度和页面整体节奏",
+            "compact": "紧凑",
+            "comfortable": "舒适",
+            "airy": "留白"
+          },
+          "galleryGap": {
+            "label": "图片间距",
+            "description": "首页相册中图片之间的距离",
+            "help": "可填写 4 到 24 像素"
+          },
+          "maxColumns": {
+            "label": "最大列数",
+            "description": "宽屏下相册最多显示的列数",
+            "help": "可填写 2 到 8 列"
+          },
+          "showSlogan": {
+            "label": "显示标语",
+            "description": "在相册上方显示网站标语"
+          },
+          "showStats": {
+            "label": "显示照片统计",
+            "description": "在相册上方显示照片数量和日期范围"
+          },
+          "showGlobeNav": {
+            "label": "显示地球仪入口",
+            "description": "在首页导航中显示地球仪页面"
+          },
+          "showAlbumsNav": {
+            "label": "显示相册入口",
+            "description": "在首页导航中显示相册页面"
+          }
         }
       },
       "upload": {
@@ -1247,9 +1362,9 @@
       "completeSetup": "完成设置"
     },
     "welcome": {
-      "title": "欢迎使用 ChronoFrame",
+      "title": "欢迎使用 LumaAtlas",
       "description": "跟随向导，在几分钟内设置好您的画廊。",
-      "intro": "ChronoFrame 是一款多功能个人画廊应用程序。在您开始上传照片之前，我们需要先配置一些内容：",
+      "intro": "LumaAtlas 是一款多功能个人画廊应用程序。在您开始上传照片之前，我们需要先配置一些内容：",
       "cards": {
         "admin": {
           "title": "管理员账户",
@@ -1268,7 +1383,7 @@
           "description": "位置可视化、照片拍摄地标记"
         }
       },
-      "privacyNotice": "ChronoFrame 不会收集您的任何数据。",
+      "privacyNotice": "LumaAtlas 不会收集您的任何数据。",
       "start": "开始吧"
     },
     "admin": {
@@ -1289,7 +1404,7 @@
     },
     "complete": {
       "title": "即将完成！",
-      "description": "您的 ChronoFrame 画廊已准备好使用。",
+      "description": "您的 LumaAtlas 画廊已准备好使用。",
       "body": "您已完成了所有基本配置。现在可以使用管理员账户登录并开始上传照片。",
       "goToDashboard": "前往仪表盘",
       "setupFailedTitle": "设置失败",

@@ -20,11 +20,11 @@ const currentPhoto = computed(() =>
 )
 
 defineOgImageComponent('Photo', {
-  headline: currentPhoto.value ? 'PHOTO' : 'ChronoFrame',
+  headline: currentPhoto.value ? 'PHOTO' : 'LumaAtlas',
   title: currentPhoto.value?.title || getSetting('app:title'),
   description: currentPhoto.value
     ? currentPhoto.value.description
-    : getSetting('app:title'),
+    : getSetting('app:description') || getSetting('app:slogan'),
   thumbnailJpegUrl:
     currentPhoto.value && currentPhoto.value.thumbnailKey
       ? `/thumb/${encodeURIComponent(currentPhoto.value.thumbnailUrl || '')}`

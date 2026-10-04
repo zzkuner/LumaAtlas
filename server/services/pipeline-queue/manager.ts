@@ -424,6 +424,16 @@ export class QueueManager {
             }
           }
 
+          const db = useDB()
+          const existingPhotoState = db
+            .select({
+              isVisible: tables.photos.isVisible,
+              isFeatured: tables.photos.isFeatured,
+            })
+            .from(tables.photos)
+            .where(eq(tables.photos.id, photoId))
+            .get()
+
           // 构建最终的 Photo 对象
           const result: Photo = {
             id: photoId,
@@ -431,6 +441,8 @@ export class QueueManager {
             description: photoInfo.description,
             dateTaken: photoInfo.dateTaken,
             tags: photoInfo.tags,
+            isVisible: existingPhotoState?.isVisible ?? true,
+            isFeatured: existingPhotoState?.isFeatured ?? false,
             width: metadata.width,
             height: metadata.height,
             aspectRatio: metadata.width / metadata.height,
@@ -469,7 +481,6 @@ export class QueueManager {
               null,
           }
 
-          const db = useDB()
           await db.insert(tables.photos).values(result).onConflictDoUpdate({
             target: tables.photos.id,
             set: result,

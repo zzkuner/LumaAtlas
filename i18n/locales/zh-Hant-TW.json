@@ -463,6 +463,8 @@
           "title": "照片標題",
           "tags": "關鍵字",
           "rating": "評分",
+          "isVisible": "公開狀態",
+          "isFeatured": "首頁",
           "isLivePhoto": "原況照片",
           "location": "位置",
           "dateTaken": "拍攝日期",
@@ -478,7 +480,11 @@
           "noGps": "沒有 GPS 資訊",
           "unknown": "未知",
           "staticPhoto": "靜態照片",
-          "noReactions": "無反應"
+          "noReactions": "無反應",
+          "public": "公開",
+          "hidden": "隱藏",
+          "featured": "精選",
+          "notFeatured": "非精選"
         },
         "columnVisibility": {
           "button": "列設定",
@@ -498,7 +504,44 @@
         "batchReprocess": "批量重新處理",
         "batchEraseLocation": "抹除位置資訊",
         "batchDownload": "批量下載",
-        "batchDelete": "批量刪除"
+        "batchDelete": "批量刪除",
+        "batchOrganize": "整理"
+      },
+      "batchOrganizer": {
+        "title": "整理已選照片",
+        "description": "將媒體庫設定套用至已選擇的 {count} 張照片。",
+        "unchanged": "不變更",
+        "visibility": {
+          "label": "公開狀態",
+          "description": "隱藏照片不會顯示在任何公開頁面。",
+          "public": "公開",
+          "hidden": "隱藏"
+        },
+        "featured": {
+          "label": "首頁精選",
+          "description": "可只使用精選照片組成首頁。",
+          "yes": "設為精選",
+          "no": "取消精選"
+        },
+        "tags": {
+          "label": "標籤",
+          "description": "為所有已選照片新增、移除或取代媒體庫標籤。",
+          "add": "新增標籤",
+          "remove": "移除標籤",
+          "replace": "取代標籤",
+          "placeholder": "輸入標籤後按 Enter"
+        },
+        "albums": {
+          "add": "加入相簿",
+          "addDescription": "保留目前的相簿歸屬並加入新相簿。",
+          "remove": "移出相簿",
+          "removeDescription": "只從選取的相簿中移除。",
+          "placeholder": "選擇相簿"
+        },
+        "reset": "重設",
+        "apply": "套用變更",
+        "success": "已更新 {count} 張照片",
+        "failed": "無法更新已選照片"
       },
       "slideover": {
         "title": "上傳照片",
@@ -881,6 +924,10 @@
         "description": "實例的標語",
         "help": "標語顯示在首頁的標題下方"
       },
+      "description": {
+        "label": "網站簡介",
+        "description": "顯示在首頁並用於分享資訊的詳細介紹"
+      },
       "author": {
         "label": "所有者",
         "description": "實例的所有者名稱"
@@ -898,6 +945,74 @@
           "light": "淺色",
           "dark": "深色",
           "system": "系統"
+        },
+        "home": {
+          "style": {
+            "label": "首頁風格",
+            "description": "選擇相簿上方網站介紹的呈現方式",
+            "minimal": "極簡",
+            "editorial": "編輯式"
+          },
+          "layout": {
+            "label": "相簿版面",
+            "description": "選擇首頁相片的排列方式",
+            "masonry": "瀑布流",
+            "grid": "整齊網格",
+            "feed": "單欄攝影流"
+          },
+          "source": {
+            "label": "首頁相片範圍",
+            "description": "顯示全部公開相片，或只顯示標記為精選的相片",
+            "all": "全部公開相片",
+            "featured": "僅精選相片"
+          },
+          "imageRatio": {
+            "label": "圖片比例",
+            "description": "保留相片原始比例，或使用統一裁切比例",
+            "natural": "原始比例",
+            "square": "正方形",
+            "landscape": "橫向 4:3"
+          },
+          "contentWidth": {
+            "label": "內容寬度",
+            "description": "控制首頁相簿在寬螢幕上的最大寬度",
+            "contained": "收窄",
+            "wide": "寬幅",
+            "full": "全寬"
+          },
+          "density": {
+            "label": "相簿密度",
+            "description": "調整圖片目標寬度與頁面整體節奏",
+            "compact": "緊湊",
+            "comfortable": "舒適",
+            "airy": "留白"
+          },
+          "galleryGap": {
+            "label": "圖片間距",
+            "description": "首頁相簿中圖片之間的距離",
+            "help": "可填寫 4 到 24 像素"
+          },
+          "maxColumns": {
+            "label": "最大欄數",
+            "description": "寬螢幕下相簿最多顯示的欄數",
+            "help": "可填寫 2 到 8 欄"
+          },
+          "showSlogan": {
+            "label": "顯示標語",
+            "description": "在相簿上方顯示網站標語"
+          },
+          "showStats": {
+            "label": "顯示照片統計",
+            "description": "在相簿上方顯示照片數量與日期範圍"
+          },
+          "showGlobeNav": {
+            "label": "顯示地球儀入口",
+            "description": "在首頁導覽中顯示地球儀頁面"
+          },
+          "showAlbumsNav": {
+            "label": "顯示相簿入口",
+            "description": "在首頁導覽中顯示相簿頁面"
+          }
         }
       },
       "upload": {
@@ -1178,9 +1293,9 @@
       "completeSetup": "完成設定"
     },
     "welcome": {
-      "title": "歡迎使用 ChronoFrame",
+      "title": "歡迎使用 LumaAtlas",
       "description": "跟著精靈，在幾分鐘內完成畫廊設定。",
-      "intro": "ChronoFrame 是多功能個人畫廊應用程式。開始上傳照片前，請先完成以下設定：",
+      "intro": "LumaAtlas 是多功能個人畫廊應用程式。開始上傳照片前，請先完成以下設定：",
       "cards": {
         "admin": {
           "title": "管理員帳號",
@@ -1199,7 +1314,7 @@
           "description": "位置可視化與拍攝地標記"
         }
       },
-      "privacyNotice": "ChronoFrame 不會收集你的任何資料。",
+      "privacyNotice": "LumaAtlas 不會收集你的任何資料。",
       "start": "開始吧"
     },
     "admin": {
@@ -1220,7 +1335,7 @@
     },
     "complete": {
       "title": "即將完成！",
-      "description": "你的 ChronoFrame 畫廊已可使用。",
+      "description": "你的 LumaAtlas 畫廊已可使用。",
       "body": "你已完成所有基本設定。現在可使用管理員帳號登入並開始上傳照片。",
       "goToDashboard": "前往儀表板",
       "setupFailedTitle": "設定失敗",

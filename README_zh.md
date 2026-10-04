@@ -1,4 +1,6 @@
-# ChronoFrame
+# LumaAtlas
+
+LumaAtlas 是一个正在开发中的自托管个人照片展示与管理工具，重点提供简洁的作品展示、地图探索和实用的照片管理能力。本项目基于采用 MIT 许可证的 [ChronoFrame](https://github.com/HoshinoSuzumi/chronoframe) 开发。
 
 <p align="center">
   <img src="https://socialify.git.ci/HoshinoSuzumi/chronoframe/image?custom_description=Self-hosted+personal+gallery+application.&description=1&font=KoHo&forks=0&issues=0&logo=https%3A%2F%2Fgithub.com%2FHoshinoSuzumi%2Fchronoframe%2Fraw%2Frefs%2Fheads%2Fmain%2Fpublic%2Ffavicon.svg&name=1&owner=1&pattern=Plus&pulls=0&stargazers=0&theme=Auto" alt="Chronoframe">

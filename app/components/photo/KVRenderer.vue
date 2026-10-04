@@ -22,7 +22,9 @@ defineProps<{
       v-if="section.items.some((item) => item?.value)"
       class="space-y-3"
     >
-      <h4 class="text-sm font-medium text-white uppercase tracking-wide">
+      <h4
+        class="text-xs font-semibold uppercase text-neutral-500 dark:text-neutral-400"
+      >
         {{ section.title }}
       </h4>
 
@@ -39,14 +41,16 @@ defineProps<{
           <Icon
             v-else-if="item!.icon"
             :name="item!.icon"
-            class="size-4 -mt-[1px] text-white/80 flex-shrink-0"
+            class="-mt-px size-4 flex-shrink-0 text-neutral-400 dark:text-neutral-500"
           />
           <div
             class="flex-1 min-w-0 flex gap-6 items-start justify-between font-medium"
           >
-            <div class="text-white/80 text-nowrap">{{ item!.label }}</div>
+            <div class="text-nowrap text-neutral-500 dark:text-neutral-400">
+              {{ item!.label }}
+            </div>
             <div
-              class="text-white text-wrap tracking-tight wrap-anywhere text-end whitespace-pre-line"
+              class="text-wrap wrap-anywhere text-end font-medium whitespace-pre-line text-neutral-900 dark:text-neutral-100"
             >
               {{ item!.value }}
             </div>

@@ -540,7 +540,7 @@ const swiperModules = [Navigation, Keyboard, Virtual]
 
 <template>
   <Teleport to="body">
-    <!-- 背景层 -->
+    <!-- Viewer backdrop -->
     <AnimatePresence>
       <motion.div
         v-if="isOpen"
@@ -548,27 +548,9 @@ const swiperModules = [Navigation, Keyboard, Virtual]
         :animate="{ opacity: 1 }"
         :exit="{ opacity: 0 }"
         :transition="{ duration: 0.3 }"
-        class="fixed inset-0 bg-white/50 dark:bg-black/50 backdrop-blur-2xl z-50"
+        class="fixed inset-0 z-50 bg-neutral-50 dark:bg-neutral-950"
         @click="emit('close')"
       />
-    </AnimatePresence>
-
-    <!-- 交叉溶解的 Thumbhash 背景 -->
-    <AnimatePresence mode="sync">
-      <motion.div
-        v-if="isOpen && currentPhoto?.thumbnailHash"
-        :key="currentPhoto.id"
-        :initial="{ opacity: 0 }"
-        :animate="{ opacity: 1 }"
-        :exit="{ opacity: 0 }"
-        :transition="{ duration: 0.3 }"
-        class="fixed inset-0 z-40"
-      >
-        <ThumbHash
-          :thumbhash="currentPhoto.thumbnailHash"
-          class="w-full h-full scale-110"
-        />
-      </motion.div>
     </AnimatePresence>
 
     <!-- 主内容区域 -->
@@ -580,7 +562,7 @@ const swiperModules = [Navigation, Keyboard, Virtual]
         :animate="{ opacity: 1 }"
         :exit="{ opacity: 0 }"
         :transition="{ duration: 0.3 }"
-        class="fixed inset-0 z-50 flex items-center justify-center"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-neutral-50 dark:bg-neutral-950"
         :style="{ touchAction: isMobile ? 'manipulation' : 'none' }"
         @click.self="emit('close')"
       >
@@ -589,7 +571,9 @@ const swiperModules = [Navigation, Keyboard, Virtual]
           :class="isMobile ? 'flex-col' : 'flex-row'"
         >
           <!-- 图片显示区域 -->
-          <div class="z-10 flex min-h-0 min-w-0 flex-1 flex-col">
+          <div
+            class="z-10 flex min-h-0 min-w-0 flex-1 flex-col bg-neutral-100 dark:bg-black"
+          >
             <div class="group relative flex min-h-0 min-w-0 flex-1">
               <!-- 顶部工具栏 -->
               <motion.div
@@ -602,8 +586,14 @@ const swiperModules = [Navigation, Keyboard, Virtual]
                   isMobile ? 'top-2 right-2 left-2' : 'top-4 right-4 left-4'
                 "
               >
-                <!-- 左侧工具按钮 -->
-                <div class="flex items-center gap-1">
+                <!-- 左侧状态 -->
+                <div class="flex items-center gap-2">
+                  <div
+                    class="pointer-events-none flex h-9 items-center border border-neutral-200 bg-white/90 px-3 text-xs font-medium text-neutral-600 shadow-sm backdrop-blur-md dark:border-white/15 dark:bg-black/70 dark:text-neutral-300"
+                  >
+                    {{ currentIndex + 1 }} / {{ photos.length }}
+                  </div>
+
                   <!-- LivePhoto 标志 -->
                   <PhotoLivePhotoIndicator
                     v-if="currentPhoto?.isLivePhoto"
@@ -618,7 +608,7 @@ const swiperModules = [Navigation, Keyboard, Virtual]
                   <!-- 静音图标 -->
                   <div
                     v-if="currentPhoto?.isLivePhoto"
-                    class="pointer-events-auto backdrop-blur-md bg-black/40 text-white rounded-full p-1 text-[13px] font-bold flex items-center gap-0.5 leading-0 select-none"
+                    class="pointer-events-auto flex size-9 items-center justify-center border border-white/15 bg-black/70 text-[13px] font-bold leading-0 text-white backdrop-blur-md select-none"
                     :class="isMobile ? 'cursor-default' : 'cursor-pointer'"
                     @click="isLivePhotoMuted = !isLivePhotoMuted"
                   >
@@ -634,32 +624,42 @@ const swiperModules = [Navigation, Keyboard, Virtual]
                 <!-- 右侧按钮组 -->
                 <div class="flex items-center gap-2">
                   <!-- 信息按钮 - 在移动设备上显示 -->
-                  <GlassButton
+                  <UTooltip
                     v-if="isMobile"
-                    icon="tabler:info-circle"
-                    :class="
-                      !showExifPanel
-                        ? ''
-                        : 'bg-black/20 hover:bg-black/30 text-white'
-                    "
-                    size="sm"
-                    rounded
-                    @click="showExifPanel = !showExifPanel"
-                  />
+                    :text="$t('exif.sections.basic')"
+                  >
+                    <UButton
+                      icon="lucide:info"
+                      color="neutral"
+                      :variant="showExifPanel ? 'solid' : 'outline'"
+                      size="sm"
+                      class="size-9 justify-center rounded-md bg-white/90 shadow-sm backdrop-blur-md dark:bg-black/70"
+                      :aria-label="$t('exif.sections.basic')"
+                      @click="showExifPanel = !showExifPanel"
+                    />
+                  </UTooltip>
 
                   <!-- 分享按钮 -->
-                  <GlassButton
-                    icon="tabler:share-3"
-                    size="sm"
-                    rounded
-                    @click="showShareModal = true"
-                  />
+                  <UTooltip :text="$t('ui.action.share.tooltip')">
+                    <UButton
+                      icon="lucide:share-2"
+                      color="neutral"
+                      variant="outline"
+                      size="sm"
+                      class="size-9 justify-center rounded-md bg-white/90 shadow-sm backdrop-blur-md dark:bg-black/70"
+                      :aria-label="$t('ui.action.share.tooltip')"
+                      @click="showShareModal = true"
+                    />
+                  </UTooltip>
 
                   <!-- 关闭按钮 -->
-                  <GlassButton
-                    icon="tabler:x"
+                  <UButton
+                    icon="lucide:x"
+                    color="neutral"
+                    variant="outline"
                     size="sm"
-                    rounded
+                    class="size-9 justify-center rounded-md bg-white/90 shadow-sm backdrop-blur-md dark:bg-black/70"
+                    aria-label="Close"
                     @click="emit('close')"
                   />
                 </div>
@@ -790,9 +790,10 @@ const swiperModules = [Navigation, Keyboard, Virtual]
                         :animate="{ opacity: 1, y: 0 }"
                         :exit="{ opacity: 0, y: 10 }"
                         :transition="{ duration: 0.2 }"
-                        class="absolute bottom-4 left-4 z-20 bg-black/40 backdrop-blur-3xl rounded-xl border border-white/10 px-4 py-2 shadow-2xl"
+                        class="absolute bottom-4 left-4 z-20 border border-neutral-200 bg-white/90 px-3 py-1.5 shadow-sm backdrop-blur-md dark:border-white/15 dark:bg-black/70"
                       >
-                        <span class="text-white font-medium"
+                        <span
+                          class="font-medium text-neutral-800 dark:text-white"
                           >{{ zoomLevel }}x</span
                         >
                       </motion.div>
@@ -806,7 +807,7 @@ const swiperModules = [Navigation, Keyboard, Virtual]
                         :animate="{ opacity: 0.6, scale: 1 }"
                         :exit="{ opacity: 0, scale: 0.95 }"
                         :transition="{ duration: 0.2 }"
-                        class="absolute bottom-6 left-1/2 z-20 -translate-x-1/2 bg-black/50 rounded-lg border border-white/10 px-2 py-1 shadow-2xl text-white text-xs font-bold"
+                        class="absolute bottom-6 left-1/2 z-20 -translate-x-1/2 border border-neutral-200 bg-white/90 px-2.5 py-1.5 text-xs font-medium text-neutral-600 shadow-sm backdrop-blur-md dark:border-white/15 dark:bg-black/70 dark:text-neutral-300"
                       >
                         <span v-if="currentPhoto?.isLivePhoto && isMobile">
                           {{ $t('viewer.hint.livePhoto.mobile') }}
@@ -882,13 +883,13 @@ const swiperModules = [Navigation, Keyboard, Virtual]
                             :while-tap="{ scale: 0.88 }"
                             :class="[
                               'pointer-events-auto flex items-center justify-center gap-2 cursor-pointer',
-                              'px-4 h-11 rounded-full',
-                              'backdrop-blur-xl border shadow-lg',
+                              'px-3 h-10 rounded-md',
+                              'backdrop-blur-md border shadow-sm',
                               'transition-all duration-200',
                               selectedReaction
-                                ? 'bg-blue-500/90 border-blue-400/50 text-white shadow-blue-500/30'
-                                : 'bg-white/90 dark:bg-neutral-800/90 border-neutral-200/50 dark:border-white/10 text-neutral-700 dark:text-white/80 shadow-black/10 dark:shadow-black/30',
-                              'hover:shadow-xl',
+                                ? 'bg-neutral-950 border-neutral-950 text-white dark:bg-white dark:border-white dark:text-neutral-950'
+                                : 'bg-white/90 dark:bg-black/70 border-neutral-200 dark:border-white/15 text-neutral-700 dark:text-white/80',
+                              'hover:bg-neutral-50 dark:hover:bg-neutral-900',
                             ]"
                             @pointerdown="handleReactionButtonPointerDown"
                             @click="toggleReactionPicker"
@@ -937,7 +938,7 @@ const swiperModules = [Navigation, Keyboard, Virtual]
                 <button
                   v-if="currentIndex > 0"
                   type="button"
-                  class="absolute top-1/2 left-4 z-20 flex size-8 -translate-y-1/2 items-center justify-center rounded-full text-white opacity-0 backdrop-blur-sm duration-200 group-hover:opacity-100 bg-black/30 hover:bg-black/40"
+                  class="absolute top-1/2 left-4 z-20 flex size-10 -translate-y-1/2 items-center justify-center rounded-full border border-neutral-200 bg-white/90 text-neutral-900 opacity-0 shadow-sm backdrop-blur-md duration-200 hover:bg-white group-hover:opacity-100 dark:border-white/15 dark:bg-black/70 dark:text-white dark:hover:bg-black"
                   @click="handlePrevious"
                 >
                   <Icon
@@ -949,7 +950,7 @@ const swiperModules = [Navigation, Keyboard, Virtual]
                 <button
                   v-if="currentIndex < photos.length - 1"
                   type="button"
-                  class="absolute top-1/2 right-4 z-20 flex size-8 -translate-y-1/2 items-center justify-center rounded-full text-white opacity-0 backdrop-blur-sm duration-200 group-hover:opacity-100 bg-black/30 hover:bg-black/40"
+                  class="absolute top-1/2 right-4 z-20 flex size-10 -translate-y-1/2 items-center justify-center rounded-full border border-neutral-200 bg-white/90 text-neutral-900 opacity-0 shadow-sm backdrop-blur-md duration-200 hover:bg-white group-hover:opacity-100 dark:border-white/15 dark:bg-black/70 dark:text-white dark:hover:bg-black"
                   @click="handleNext"
                 >
                   <Icon

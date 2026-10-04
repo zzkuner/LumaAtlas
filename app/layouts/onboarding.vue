@@ -9,7 +9,10 @@ const steps = computed(() => [
   { label: $t('onboarding.layout.steps.site'), route: 'onboarding-site' },
   { label: $t('onboarding.layout.steps.storage'), route: 'onboarding-storage' },
   { label: $t('onboarding.layout.steps.map'), route: 'onboarding-map' },
-  { label: $t('onboarding.layout.steps.complete'), route: 'onboarding-complete' },
+  {
+    label: $t('onboarding.layout.steps.complete'),
+    route: 'onboarding-complete',
+  },
 ])
 
 const currentStepIndex = computed(() => {
@@ -89,13 +92,13 @@ const currentStepIndex = computed(() => {
         <div class="flex items-center gap-3">
           <img
             src="/favicon-96x96.png"
-            alt="ChronoFrame Logo"
+            alt="LumaAtlas Logo"
             class="size-14 object-contain"
           />
           <span
             class="text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-linear-to-r from-white to-white/60"
           >
-            ChronoFrame
+            LumaAtlas
           </span>
         </div>
 
@@ -209,13 +212,18 @@ const currentStepIndex = computed(() => {
           <div class="flex items-center gap-3">
             <img
               src="/favicon-96x96.png"
-              alt="ChronoFrame Logo"
+              alt="LumaAtlas Logo"
               class="size-8 object-contain"
             />
-            <span class="font-bold">ChronoFrame</span>
+            <span class="font-bold">LumaAtlas</span>
           </div>
           <div class="text-sm text-neutral-400">
-            {{ $t('onboarding.layout.stepCounter', [currentStepIndex + 1, steps.length]) }}
+            {{
+              $t('onboarding.layout.stepCounter', [
+                currentStepIndex + 1,
+                steps.length,
+              ])
+            }}
           </div>
         </div>
 

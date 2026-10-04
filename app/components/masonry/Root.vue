@@ -16,15 +16,19 @@ const { filteredPhotos, hasActiveFilters } = usePhotoFilters()
 const { sortedPhotos } = usePhotoSort()
 
 const displayPhotos = computed(() => {
-  return hasActiveFilters.value ? filteredPhotos.value : sortedPhotos.value
+  const photos = hasActiveFilters.value
+    ? filteredPhotos.value
+    : sortedPhotos.value
+  const source = String(getSetting('app:appearance.home.source') || 'all')
+
+  return source === 'featured'
+    ? photos.filter((photo) => photo.isFeatured)
+    : photos
 })
 
 const { currentPhotoIndex, isViewerOpen } = storeToRefs(useViewerState())
 
 const FIRST_SCREEN_ITEMS_COUNT = 50
-const MASONRY_GAP = 4
-
-const masonryWrapper = ref<HTMLElement>()
 const hasAnimated = ref(false)
 const showFloatingActions = ref(false)
 const dateRange = ref<string>()
@@ -34,22 +38,52 @@ const isMobile = useMediaQuery('(max-width: 768px)')
 const { batchProcessLivePhotos } = useLivePhotoProcessor()
 
 const processedBatch = ref(new Set<string>())
-const headerRef = ref<HTMLElement>()
-const headerHeight = ref(0)
-const headerColumnWidth = ref(0)
-
+const galleryLayout = computed(() => {
+  const value = String(getSetting('app:appearance.home.layout') || 'masonry')
+  return ['masonry', 'grid', 'feed'].includes(value)
+    ? (value as 'masonry' | 'grid' | 'feed')
+    : 'masonry'
+})
+const imageRatio = computed(() => {
+  const value = String(
+    getSetting('app:appearance.home.imageRatio') || 'natural',
+  )
+  return ['natural', 'square', 'landscape'].includes(value)
+    ? (value as 'natural' | 'square' | 'landscape')
+    : 'natural'
+})
+const contentWidth = computed(() =>
+  String(getSetting('app:appearance.home.contentWidth') || 'wide'),
+)
+const galleryDensity = computed(() =>
+  String(getSetting('app:appearance.home.density') || 'comfortable'),
+)
+const masonryGap = computed(() => {
+  const value = Number(getSetting('app:appearance.home.galleryGap') ?? 12)
+  return Math.min(24, Math.max(4, Number.isFinite(value) ? value : 12))
+})
 const columnWidth = computed(() => {
   if (props.columns === 'auto') {
-    return isMobile.value ? 280 : 280
+    const widths = {
+      compact: isMobile.value ? 180 : 260,
+      comfortable: isMobile.value ? 220 : 320,
+      airy: isMobile.value ? 260 : 380,
+    }
+    return (
+      widths[galleryDensity.value as keyof typeof widths] ?? widths.comfortable
+    )
   }
-  return 280
+  return 320
 })
 
 const maxColumns = computed(() => {
   if (props.columns !== 'auto') {
     return props.columns
   }
-  return isMobile.value ? 2 : 8
+  if (isMobile.value) return 2
+
+  const value = Number(getSetting('app:appearance.home.maxColumns') ?? 6)
+  return Math.min(8, Math.max(2, Number.isFinite(value) ? value : 6))
 })
 
 const minColumns = computed(() => {
@@ -57,6 +91,40 @@ const minColumns = computed(() => {
     return props.columns
   }
   return 2
+})
+
+const galleryMaxWidth = computed(() => {
+  if (galleryLayout.value === 'feed') {
+    return (
+      {
+        contained: '880px',
+        wide: '1080px',
+        full: '1280px',
+      }[contentWidth.value] ?? '1080px'
+    )
+  }
+
+  return (
+    {
+      contained: '1280px',
+      wide: '1600px',
+      full: '1920px',
+    }[contentWidth.value] ?? '1600px'
+  )
+})
+
+const gridClass = computed(() => {
+  const classes: Record<number, string> = {
+    2: 'grid-cols-2',
+    3: 'grid-cols-2 sm:grid-cols-3',
+    4: 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4',
+    5: 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5',
+    6: 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6',
+    7: 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7',
+    8: 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-8',
+  }
+
+  return classes[maxColumns.value] ?? classes[6]
 })
 
 // Prepare items for masonry-wall
@@ -69,77 +137,13 @@ const masonryItems = computed(() => {
     })) ?? []
   )
 })
-useResizeObserver(headerRef, (entries) => {
-  const entry = entries[0]
-  if (entry) {
-    headerHeight.value = entry.contentRect.height
-  }
-})
 
-const updateHeaderWidth = () => {
-  if (isMobile.value) {
-    headerColumnWidth.value = 0
-    return
-  }
-
-  const columnElement = masonryWrapper.value?.querySelector<HTMLElement>(
-    '.masonry-wall .masonry-column',
-  )
-
-  if (columnElement) {
-    headerColumnWidth.value = columnElement.getBoundingClientRect().width
-    return
-  }
-
-  headerColumnWidth.value = columnWidth.value
-}
-
-useResizeObserver(masonryWrapper, () => {
-  updateHeaderWidth()
-})
-
-const headerOffset = computed(() => {
-  if (isMobile.value) {
-    return 0
-  }
-  return headerHeight.value + MASONRY_GAP
-})
-
-const headerStyle = computed(() => {
-  const styles: Record<string, string> = {}
-
-  if (isMobile.value) {
-    styles.width = '100%'
-    styles.marginBottom = `${MASONRY_GAP}px`
-    return styles
-  }
-
-  const width = headerColumnWidth.value || columnWidth.value
-  styles.width = `${width}px`
-
-  return styles
-})
-
-watch([columnWidth, maxColumns, minColumns], () => {
-  if (isMobile.value) {
-    return
-  }
-
-  nextTick(() => {
-    updateHeaderWidth()
-  })
-})
-
-watch(isMobile, (mobile) => {
-  if (mobile) {
-    headerColumnWidth.value = 0
-    return
-  }
-
-  nextTick(() => {
-    updateHeaderWidth()
-  })
-})
+const masonryKeyMapper = (
+  _item: unknown,
+  _column: number,
+  _row: number,
+  index: number,
+) => masonryItems.value[index]?.originalIndex ?? index
 
 const photoStats = computed(() => {
   const totalPhotos = displayPhotos.value?.length || 0
@@ -309,11 +313,8 @@ const scrollToTop = () => {
 
 onMounted(() => {
   window.addEventListener('scroll', handleScroll, { passive: true })
-  window.addEventListener('resize', updateHeaderWidth)
 
   nextTick(() => {
-    updateHeaderWidth()
-
     if (currentPhotoIndex.value) {
       scrollToPhoto(currentPhotoIndex.value)
     }
@@ -322,7 +323,6 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
-  window.removeEventListener('resize', updateHeaderWidth)
 })
 
 const handleOpenViewer = (index: number) => {
@@ -365,6 +365,12 @@ watch(currentPhotoIndex, (newIndex) => {
 
 <template>
   <div class="relative w-full">
+    <MasonryItemHeader
+      :stats="photoStats"
+      :date-range-text
+      :max-width="galleryMaxWidth"
+    />
+
     <DateRangeIndicator
       :date-range="dateRange"
       :locations="visibleCities"
@@ -395,40 +401,19 @@ watch(currentPhotoIndex, (newIndex) => {
     </motion.div>
 
     <div
-      class="lg:px-0 lg:pb-0"
-      :class="isMobile ? 'px-1 pb-1' : 'p-1'"
+      class="mx-auto px-3 pb-3 sm:px-5 sm:pb-5 lg:px-7 lg:pb-7"
+      :style="{ maxWidth: galleryMaxWidth }"
     >
-      <div
-        ref="masonryWrapper"
-        class="relative"
-        :class="{ 'pt-2': isMobile }"
-        :style="{ '--masonry-header-offset': `${headerOffset}px` }"
-      >
-        <div
-          ref="headerRef"
-          class="masonry-header-wrapper"
-          :class="{ 'masonry-header-desktop': !isMobile }"
-          :style="headerStyle"
-        >
-          <MasonryItemHeader
-            :stats="photoStats"
-            :date-range-text
-          />
-        </div>
-
-        <!-- Masonry Wall -->
+      <div class="relative">
         <MasonryWall
-          class="masonry-wall-with-header"
+          v-if="galleryLayout === 'masonry'"
           :items="masonryItems"
           :column-width="columnWidth"
-          :gap="MASONRY_GAP"
+          :gap="masonryGap"
           :min-columns="minColumns"
           :max-columns="maxColumns"
           :ssr-columns="2"
-          :key-mapper="
-            (_item, _column, _row, index) =>
-              masonryItems[index]?.originalIndex ?? index
-          "
+          :key-mapper="masonryKeyMapper"
         >
           <template #default="{ item }">
             <!-- Photo Items -->
@@ -439,33 +424,41 @@ watch(currentPhotoIndex, (newIndex) => {
               :index="item.originalIndex"
               :has-animated
               :first-screen-items="FIRST_SCREEN_ITEMS_COUNT"
+              presentation="masonry"
+              :image-ratio="imageRatio"
               @visibility-change="handleVisibilityChange"
               @open-viewer="handleOpenViewer($event)"
             />
           </template>
         </MasonryWall>
+
+        <div
+          v-else
+          :class="[
+            'grid',
+            galleryLayout === 'grid' ? gridClass : 'grid-cols-1',
+          ]"
+          :style="{
+            gap:
+              galleryLayout === 'feed'
+                ? `${Math.max(36, masonryGap * 3)}px`
+                : `${masonryGap}px`,
+          }"
+        >
+          <MasonryItem
+            v-for="item in masonryItems"
+            :key="item.photo.id"
+            :photo="item.photo"
+            :index="item.originalIndex"
+            :has-animated
+            :first-screen-items="FIRST_SCREEN_ITEMS_COUNT"
+            :presentation="galleryLayout"
+            :image-ratio="imageRatio"
+            @visibility-change="handleVisibilityChange"
+            @open-viewer="handleOpenViewer($event)"
+          />
+        </div>
       </div>
     </div>
   </div>
 </template>
-
-<style scoped>
-.masonry-header-wrapper {
-  z-index: 1;
-}
-
-.masonry-header-desktop {
-  left: 0;
-  position: absolute;
-  top: 0;
-}
-
-.masonry-wall-with-header :deep(.masonry-column:first-child) {
-  padding-top: var(--masonry-header-offset, 0px);
-}
-
-.masonry-wall-with-header
-  :deep(.masonry-column:first-child .masonry-item:first-child) {
-  margin-top: 0;
-}
-</style>

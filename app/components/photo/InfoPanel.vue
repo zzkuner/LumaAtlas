@@ -76,6 +76,35 @@ const formatExposureTime = (
   }
 }
 
+const captureSummary = computed(() =>
+  [
+    {
+      label: $t('exif.focal.length.equivalent'),
+      value: props.exifData?.FocalLengthIn35mmFormat
+        ? `${props.exifData.FocalLengthIn35mmFormat}mm`
+        : null,
+      icon: 'lucide:telescope',
+    },
+    {
+      label: $t('exif.aperture'),
+      value: props.exifData?.FNumber ? `f/${props.exifData.FNumber}` : null,
+      icon: 'lucide:aperture',
+    },
+    {
+      label: $t('exif.exposure.time'),
+      value: props.exifData?.ExposureTime
+        ? formatExposureTime(props.exifData.ExposureTime)
+        : null,
+      icon: 'lucide:timer',
+    },
+    {
+      label: 'ISO',
+      value: props.exifData?.ISO?.toString() || null,
+      icon: 'lucide:sun-medium',
+    },
+  ].filter((item) => item.value),
+)
+
 // 格式化GPS坐标为两行显示
 const formatGPSCoordinatesMultiLine = (
   latitude: number,
@@ -475,33 +504,39 @@ const onAlbumClick = (albumId: number) => {
       y: isMobile ? 20 : 0,
     }"
     :transition="{ type: 'spring', duration: 0.4, bounce: 0, delay: 0.1 }"
-    class="bg-black/20 dark:bg-black/30 backdrop-blur-xl border-white/10"
+    class="border-neutral-200 bg-white text-neutral-950 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-100"
     :class="{
-      'fixed inset-x-2 bottom-2 max-h-[70vh] border rounded-xl z-50 flex flex-col':
+      'fixed inset-x-2 bottom-2 z-50 flex max-h-[78vh] flex-col rounded-md border shadow-2xl':
         isMobile,
-      'w-80 border-l': !isMobile,
+      'w-[23rem] border-l': !isMobile,
     }"
   >
     <div
-      class="flex items-center justify-between px-4 py-3 border-b border-white/10 shrink-0"
+      class="flex shrink-0 items-center justify-between border-b border-neutral-200 px-5 py-4 dark:border-neutral-800"
     >
-      <h3 class="font-black text-white text-ellipsis line-clamp-1">
-        {{ currentPhoto.title }}
-      </h3>
+      <div class="min-w-0">
+        <p class="text-xs font-medium text-neutral-500 dark:text-neutral-400">
+          {{ currentPhoto.city || currentPhoto.country || $t('title.gallery') }}
+        </p>
+        <h3 class="mt-1 truncate text-base font-semibold">
+          {{ currentPhoto.title }}
+        </h3>
+      </div>
       <UButton
         v-if="isMobile && onClose"
-        icon="tabler:x"
+        icon="lucide:x"
         variant="ghost"
         color="neutral"
-        class="text-white"
+        class="rounded-md"
         size="sm"
+        aria-label="Close"
         @click="onClose"
       />
     </div>
 
     <!-- 内容区域 -->
     <div
-      class="p-4 space-y-4 flex-1 min-h-0"
+      class="min-h-0 flex-1 space-y-6 p-5"
       :class="{
         'overflow-y-auto': isMobile,
         'overflow-y-auto max-h-full pb-16': !isMobile,
@@ -510,9 +545,43 @@ const onAlbumClick = (albumId: number) => {
       <!-- 照片描述 -->
       <div
         v-if="currentPhoto.description"
-        class="text-sm text-white text-justify"
+        class="text-sm leading-6 text-neutral-600 dark:text-neutral-400"
       >
         {{ currentPhoto.description }}
+      </div>
+
+      <div
+        v-if="captureSummary.length"
+        class="grid grid-cols-2 border-y border-neutral-200 dark:border-neutral-800"
+      >
+        <div
+          v-for="(item, index) in captureSummary"
+          :key="item.label"
+          class="flex min-w-0 items-start justify-between gap-3 py-3"
+          :class="[
+            index % 2 === 0
+              ? 'border-r border-neutral-200 pr-3 dark:border-neutral-800'
+              : 'pl-3',
+            index > 1
+              ? 'border-t border-neutral-200 dark:border-neutral-800'
+              : '',
+          ]"
+        >
+          <div class="min-w-0">
+            <p
+              class="truncate text-[11px] text-neutral-500 dark:text-neutral-400"
+            >
+              {{ item.label }}
+            </p>
+            <p class="mt-1 truncate text-base font-semibold">
+              {{ item.value }}
+            </p>
+          </div>
+          <Icon
+            :name="item.icon"
+            class="mt-0.5 size-4 shrink-0 text-neutral-400 dark:text-neutral-500"
+          />
+        </div>
       </div>
 
       <PhotoMiniMap
@@ -531,9 +600,11 @@ const onAlbumClick = (albumId: number) => {
 
       <div
         v-if="currentPhoto.exif?.Rating"
-        class="flex items-center gap-2 justify-between"
+        class="flex items-center justify-between gap-2"
       >
-        <h4 class="text-sm font-medium text-white uppercase tracking-wide">
+        <h4
+          class="text-xs font-semibold uppercase text-neutral-500 dark:text-neutral-400"
+        >
           {{ $t('exif.sections.rating') }}
         </h4>
 
@@ -547,40 +618,41 @@ const onAlbumClick = (albumId: number) => {
       <!-- 相册 -->
       <div
         v-if="albums && albums.length > 0"
-        class="mt-4"
+        class="space-y-3"
       >
         <h4
-          class="text-sm font-medium text-white/90 uppercase tracking-wide mb-2"
+          class="text-xs font-semibold uppercase text-neutral-500 dark:text-neutral-400"
         >
           {{ $t('exif.sections.albums') }}
         </h4>
-        <div class="space-y-2">
-          <div
+        <div class="border-y border-neutral-200 dark:border-neutral-800">
+          <button
             v-for="album in albums"
             :key="album.id"
-            class="p-3 bg-white/5 border border-white/10 rounded-lg cursor-pointer hover:bg-white/10 transition-colors"
+            type="button"
+            class="block w-full border-b border-neutral-200 py-3 text-left transition-colors last:border-b-0 hover:bg-neutral-50 dark:border-neutral-800 dark:hover:bg-neutral-900"
             @click="onAlbumClick(album.id)"
           >
-            <p class="text-sm text-white font-medium line-clamp-1">
+            <p class="line-clamp-1 text-sm font-medium">
               {{ album.title }}
             </p>
             <p
               v-if="album.description"
-              class="text-xs text-white/60 line-clamp-1"
+              class="mt-1 line-clamp-1 text-xs text-neutral-500 dark:text-neutral-400"
             >
               {{ album.description }}
             </p>
-          </div>
+          </button>
         </div>
       </div>
 
       <!-- 标签 -->
       <div
         v-if="currentPhoto.tags && currentPhoto.tags.length > 0"
-        class="mt-4"
+        class="space-y-3"
       >
         <h4
-          class="text-sm font-medium text-white/90 uppercase tracking-wide mb-2"
+          class="text-xs font-semibold uppercase text-neutral-500 dark:text-neutral-400"
         >
           {{ $t('exif.sections.tags') }}
         </h4>
@@ -592,7 +664,7 @@ const onAlbumClick = (albumId: number) => {
             variant="soft"
             size="sm"
             color="neutral"
-            class="bg-white/10 text-white cursor-pointer select-none hover:bg-white/20 transition-colors"
+            class="cursor-pointer rounded-md bg-neutral-100 text-neutral-700 transition-colors select-none hover:bg-neutral-200 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800"
             @click="onTagClick(tag)"
           />
         </div>
@@ -603,7 +675,9 @@ const onAlbumClick = (albumId: number) => {
       />
 
       <div class="space-y-2">
-        <h4 class="text-sm font-medium text-white uppercase tracking-wide">
+        <h4
+          class="text-xs font-semibold uppercase text-neutral-500 dark:text-neutral-400"
+        >
           {{ $t('exif.sections.histogram') }}
         </h4>
 
@@ -638,16 +712,15 @@ const onAlbumClick = (albumId: number) => {
 }
 
 .overflow-y-auto::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0);
-  border-radius: 2px;
+  background: transparent;
 }
 
 .overflow-y-auto::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgb(163 163 163 / 0.55);
   border-radius: 2px;
 }
 
 .overflow-y-auto::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.5);
+  background: rgb(115 115 115 / 0.75);
 }
 </style>

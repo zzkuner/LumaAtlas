@@ -24,52 +24,25 @@ const emit = defineEmits<{
 
 const colorSchemes = {
   blue: {
-    background:
-      'bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/70 dark:to-cyan-950/70',
-    border: 'border-cyan-100 dark:border-cyan-900',
-    text: 'text-blue-400 dark:text-white',
+    icon: 'bg-sky-50 text-sky-700 dark:bg-sky-950 dark:text-sky-300',
   },
   green: {
-    background:
-      'bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/70 dark:to-emerald-950/70',
-    border: 'border-emerald-100 dark:border-emerald-900',
-    text: 'text-green-400 dark:text-white',
+    icon: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300',
   },
   purple: {
-    background:
-      'bg-gradient-to-r from-purple-50 to-violet-50 dark:from-purple-950/70 dark:to-violet-950/70',
-    border: 'border-violet-100 dark:border-violet-900',
-    text: 'text-purple-400 dark:text-white',
+    icon: 'bg-violet-50 text-violet-700 dark:bg-violet-950 dark:text-violet-300',
   },
   orange: {
-    background:
-      'bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950/70 dark:to-amber-950/70',
-    border: 'border-amber-100 dark:border-amber-900',
-    text: 'text-orange-400 dark:text-white',
+    icon: 'bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300',
   },
   red: {
-    background:
-      'bg-gradient-to-r from-red-50 to-rose-50 dark:from-red-950/70 dark:to-rose-950/70',
-    border: 'border-rose-100 dark:border-rose-900',
-    text: 'text-red-400 dark:text-white',
+    icon: 'bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300',
   },
   gray: {
-    background:
-      'bg-gradient-to-r from-gray-50 to-slate-50 dark:from-gray-950/70 dark:to-slate-950/70',
-    border: 'border-slate-100 dark:border-slate-900',
-    text: 'text-gray-400 dark:text-white',
-  },
-  pink: {
-    background:
-      'bg-gradient-to-r from-pink-50 to-rose-50 dark:from-pink-950/70 dark:to-rose-950/70',
-    border: 'border-rose-100 dark:border-rose-900',
-    text: 'text-pink-400 dark:text-white',
+    icon: 'bg-neutral-100 text-neutral-700 dark:bg-neutral-900 dark:text-neutral-300',
   },
   yellow: {
-    background:
-      'bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-950/70 dark:to-amber-950/70',
-    border: 'border-amber-100 dark:border-amber-900',
-    text: 'text-yellow-400 dark:text-white',
+    icon: 'bg-yellow-50 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-300',
   },
 }
 
@@ -77,40 +50,47 @@ const currentScheme = computed(() => colorSchemes[props.color])
 </script>
 
 <template>
-  <div
+  <component
+    :is="clickable ? 'button' : 'div'"
+    :type="clickable ? 'button' : undefined"
     :class="[
-      'flex justify-center border rounded-lg p-4',
-      currentScheme.background,
-      currentScheme.border,
-      currentScheme.text,
+      'flex min-h-28 w-full items-center gap-4 rounded-md border border-neutral-200 bg-white p-4 text-left dark:border-neutral-800 dark:bg-neutral-950',
       clickable
-        ? 'cursor-pointer hover:scale-[1.01] transition-transform duration-200'
+        ? 'cursor-pointer transition-colors hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 dark:hover:bg-neutral-900'
         : '',
     ]"
     @click="clickable ? emit('click') : undefined"
   >
-    <div class="flex-1 flex items-center justify-between gap-4 overflow-hidden">
-      <div class="flex-1 overflow-hidden">
-        <p
-          v-if="title"
-          class="text-lg opacity-90 font-medium max-w-48 truncate"
-        >
-          {{ title }}
-        </p>
-        <p
-          v-if="!isNil(value)"
-          class="text-2xl font-bold max-w-full sm:max-w-1/2 truncate"
-        >
-          {{ value }}
-        </p>
-      </div>
+    <div
+      v-if="icon"
+      class="flex size-10 shrink-0 items-center justify-center rounded-md"
+      :class="currentScheme.icon"
+    >
       <UIcon
-        v-if="icon"
         :name="icon"
-        class="size-8 opacity-80"
+        class="size-5"
       />
     </div>
-  </div>
+    <div class="min-w-0 flex-1">
+      <p
+        v-if="title"
+        class="truncate text-xs font-medium text-neutral-500 dark:text-neutral-400"
+      >
+        {{ title }}
+      </p>
+      <p
+        v-if="!isNil(value)"
+        class="mt-1 truncate text-2xl font-semibold text-neutral-950 dark:text-white"
+      >
+        {{ value }}
+      </p>
+    </div>
+    <UIcon
+      v-if="clickable"
+      name="lucide:chevron-right"
+      class="size-4 shrink-0 text-neutral-400"
+    />
+  </component>
 </template>
 
 <style scoped></style>

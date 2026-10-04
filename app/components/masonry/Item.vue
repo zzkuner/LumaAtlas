@@ -7,9 +7,13 @@ const props = withDefaults(
     index: number
     hasAnimated: boolean
     firstScreenItems?: number
+    presentation?: 'masonry' | 'grid' | 'feed'
+    imageRatio?: 'natural' | 'square' | 'landscape'
   }>(),
   {
     firstScreenItems: 30,
+    presentation: 'masonry',
+    imageRatio: 'natural',
   },
 )
 
@@ -72,6 +76,8 @@ const itemVariants = {
     <MasonryItemPhoto
       :photo="photo"
       :index="index"
+      :presentation="presentation"
+      :image-ratio="imageRatio"
       @visibility-change="emit('visibility-change', $event)"
       @open-viewer="emit('openViewer', $event)"
     />

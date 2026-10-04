@@ -3,7 +3,7 @@ import type { NavigationMenuItem } from '@nuxt/ui'
 
 const route = useRoute()
 const router = useRouter()
-const { loggedIn, user } = useUserSession()
+const { loggedIn, user, clear } = useUserSession()
 const settingsStore = useSettingsStore()
 
 const appTitle = computed(() => {
@@ -71,26 +71,6 @@ const navItems = computed<NavigationMenuItem[][]>(() => [
       ],
     },
   ],
-  [
-    {
-      label: 'GitHub',
-      icon: 'tabler:brand-github',
-      to: 'https://github.com/HoshinoSuzumi/chronoframe',
-      target: '_blank',
-    },
-    {
-      label: 'Documentation',
-      icon: 'tabler:book',
-      to: 'https://chronoframe.bh8.ga/',
-      target: '_blank',
-    },
-    {
-      label: 'Discord',
-      icon: 'tabler:brand-discord',
-      to: 'https://discord.gg/MM4ZK4Ed7s',
-      target: '_blank',
-    },
-  ],
 ])
 
 useHead({
@@ -104,6 +84,25 @@ const handleLogin = () => {
     query: { redirect: route.fullPath },
   })
 }
+
+const handleLogout = async () => {
+  await clear()
+  await router.push('/signin')
+}
+
+const userMenuItems = computed(() => [
+  {
+    label: $t('ui.action.home.tooltip'),
+    icon: 'lucide:external-link',
+    to: '/',
+  },
+  {
+    label: $t('ui.action.logout.tooltip'),
+    icon: 'lucide:log-out',
+    color: 'error' as const,
+    onSelect: handleLogout,
+  },
+])
 </script>
 
 <template>
@@ -135,9 +134,9 @@ const handleLogin = () => {
       :max-size="12"
       :ui="{ footer: 'border-t border-default' }"
       :toggle="{
-        color: 'primary',
-        variant: 'subtle',
-        class: 'rounded-full',
+        color: 'neutral',
+        variant: 'ghost',
+        class: 'rounded-md',
       }"
     >
       <template #toggle>
@@ -149,10 +148,14 @@ const handleLogin = () => {
           v-if="!collapsed"
           class="flex items-center gap-2"
         >
-          <img
-            src="/favicon.svg"
-            class="h-8 w-auto shrink-0"
-          />
+          <span
+            class="flex size-8 shrink-0 items-center justify-center border border-neutral-900 text-neutral-900 dark:border-white dark:text-white"
+          >
+            <Icon
+              name="lucide:aperture"
+              class="size-4"
+            />
+          </span>
           <div class="flex flex-col overflow-hidden">
             <NuxtLink
               to="/"
@@ -162,11 +165,15 @@ const handleLogin = () => {
             </NuxtLink>
           </div>
         </div>
-        <img
+        <span
           v-else
-          src="/favicon.svg"
-          class="size-8 mx-auto"
-        />
+          class="mx-auto flex size-8 items-center justify-center border border-neutral-900 text-neutral-900 dark:border-white dark:text-white"
+        >
+          <Icon
+            name="lucide:aperture"
+            class="size-4"
+          />
+        </span>
       </template>
 
       <template #default="{ collapsed }">
@@ -175,28 +182,28 @@ const handleLogin = () => {
           :items="navItems[0]"
           orientation="vertical"
         />
-        <UNavigationMenu
-          :collapsed="collapsed"
-          :items="navItems[1]"
-          orientation="vertical"
-          class="mt-auto"
-        />
       </template>
 
       <template #footer="{ collapsed }">
-        <UButton
-          :avatar="{
-            src: user?.avatar || '',
-            alt: user?.username || user?.email || 'User Avatar',
-            icon: 'tabler:user',
-          }"
-          :label="collapsed ? undefined : user?.username || 'User'"
-          size="lg"
-          color="neutral"
-          variant="ghost"
-          class="w-full"
-          :block="collapsed"
-        />
+        <UDropdownMenu
+          :items="userMenuItems"
+          :content="{ side: 'top', align: 'start' }"
+        >
+          <UButton
+            :avatar="{
+              src: user?.avatar || '',
+              alt: user?.username || user?.email || 'User Avatar',
+              icon: 'lucide:user-round',
+            }"
+            :label="collapsed ? undefined : user?.username || 'User'"
+            :trailing-icon="collapsed ? undefined : 'lucide:chevrons-up-down'"
+            size="lg"
+            color="neutral"
+            variant="ghost"
+            class="w-full rounded-md"
+            :block="collapsed"
+          />
+        </UDropdownMenu>
       </template>
     </UDashboardSidebar>
 

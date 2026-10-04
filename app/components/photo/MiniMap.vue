@@ -81,7 +81,7 @@ onUnmounted(() => {
 
 <template>
   <div
-    class="relative w-full h-44 overflow-hidden rounded-lg border border-white/10 dark:border-white/10"
+    class="relative h-44 w-full overflow-hidden rounded-md border border-neutral-200 dark:border-neutral-800"
   >
     <MapProvider
       class="w-full h-full relative overflow-hidden"
@@ -111,9 +111,9 @@ onUnmounted(() => {
       </AnimatePresence>
       <div
         v-if="!loaded"
-        class="absolute inset-0 bg-default/80 flex items-center justify-center backdrop-blur-sm"
+        class="absolute inset-0 flex items-center justify-center bg-white/85 backdrop-blur-sm dark:bg-neutral-950/85"
       >
-        <p class="text-xs font-medium text-white/60">
+        <p class="text-xs font-medium text-neutral-500 dark:text-neutral-400">
           {{ $t('minimap.loading') }}
         </p>
       </div>

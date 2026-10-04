@@ -1,4 +1,4 @@
-import { desc, notInArray } from 'drizzle-orm'
+import { and, desc, eq, notInArray } from 'drizzle-orm'
 
 export default eventHandler(async (_event) => {
   const db = useDB()
@@ -20,7 +20,12 @@ export default eventHandler(async (_event) => {
     return db
       .select()
       .from(tables.photos)
-      .where(notInArray(tables.photos.id, hiddenPhotoIds))
+      .where(
+        and(
+          eq(tables.photos.isVisible, true),
+          notInArray(tables.photos.id, hiddenPhotoIds),
+        ),
+      )
       .orderBy(desc(tables.photos.dateTaken))
       .all()
   }
@@ -29,6 +34,7 @@ export default eventHandler(async (_event) => {
   return db
     .select()
     .from(tables.photos)
+    .where(eq(tables.photos.isVisible, true))
     .orderBy(desc(tables.photos.dateTaken))
     .all()
 })

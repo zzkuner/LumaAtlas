@@ -144,7 +144,7 @@ watch(isMobile, scrollToActiveThumbnail)
     :animate="{ opacity: 1, y: 0 }"
     :exit="{ opacity: 0, y: 100 }"
     :transition="{ type: 'spring', duration: 0.4, bounce: 0, delay: 0.1 }"
-    class="gallery-thumbnail-container bg-black/20 dark:bg-black/30 backdrop-blur-xl border-t border-white/10 shrink-0 z-10"
+    class="gallery-thumbnail-container z-10 shrink-0 border-t border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950"
   >
     <div
       ref="galleryScrollContainer"
@@ -158,10 +158,11 @@ watch(isMobile, scrollToActiveThumbnail)
         v-for="photo in thumbnailList"
         :key="photo.id"
         type="button"
-        class="thumbnail-item relative flex-shrink-0 rounded-lg overflow-hidden border-2 transition-all duration-200 contain-intrinsic-size"
+        class="thumbnail-item relative flex-shrink-0 overflow-hidden rounded-md border transition-all duration-200 contain-intrinsic-size"
         :class="{
-          'thumbnail-active border-white shadow-lg scale-110': photo.isActive,
-          'thumbnail-inactive border-white/20 hover:border-white/40 grayscale-50 hover:grayscale-0':
+          'thumbnail-active border-neutral-950 opacity-100 ring-1 ring-neutral-950 dark:border-white dark:ring-white':
+            photo.isActive,
+          'thumbnail-inactive border-transparent opacity-55 hover:border-neutral-300 hover:opacity-100 dark:hover:border-neutral-700':
             !photo.isActive,
         }"
         :style="{

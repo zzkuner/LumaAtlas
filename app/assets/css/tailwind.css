@@ -51,6 +51,21 @@
   --leading-normal: normal;
 }
 
+html {
+  background: var(--ui-bg);
+}
+
+body {
+  min-width: 320px;
+  background: var(--ui-bg);
+  color: var(--ui-text);
+}
+
+::selection {
+  background: color-mix(in oklab, var(--color-amber-300) 55%, transparent);
+  color: var(--ui-text-highlighted);
+}
+
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
 }

@@ -11,6 +11,9 @@
       "dashboard": {
         "tooltip": "控制台"
       },
+      "rss": {
+        "tooltip": "RSS 訂閱"
+      },
       "filter": {
         "empty": {
           "cameras": "沒有相機資料",
@@ -361,6 +364,7 @@
     "albums": "相簿",
     "siteAdministration": "站點設置",
     "generalSettings": "基本設置",
+    "publishingSettings": "發佈設置",
     "appearanceSettings": "外觀設置",
     "privacySettings": "隱私設置",
     "mapAndLocation": "地圖和位置",
@@ -1117,6 +1121,51 @@
           "description": "Nominatim 反向地理編碼 API 嘅基礎 URL",
           "help": "留空則預設使用公開 Nominatim 服務"
         }
+      }
+    },
+    "publishing": {
+      "pageDescription": "管理訂閱輸出以及訪客可以使用嘅相片操作。",
+      "rss": {
+        "sectionTitle": "RSS 訂閱",
+        "sectionDescription": "向閱讀器同訂閱服務發佈最近嘅公開相片。",
+        "enabled": {
+          "label": "啟用 RSS 訂閱",
+          "description": "喺 /rss.xml 發佈可被自動發現嘅相片訂閱源"
+        },
+        "source": {
+          "label": "訂閱相片範圍",
+          "description": "發佈全部公開相片，或者只發佈人工挑選嘅精選相片",
+          "all": "全部公開相片",
+          "featured": "只限精選相片"
+        },
+        "limit": {
+          "label": "最大訂閱項目數",
+          "description": "限制訂閱源傳回嘅最近相片數量",
+          "help": "可設定 5 至 100 張相片"
+        },
+        "address": "訂閱地址",
+        "open": "開啟 RSS 訂閱"
+      },
+      "visitorActions": {
+        "sectionTitle": "訪客操作",
+        "sectionDescription": "控制公開相片檢視器中顯示嘅操作；已登入管理員仍然保留呢啲功能。"
+      },
+      "sharing": {
+        "enabled": {
+          "label": "允許分享相片",
+          "description": "向訪客顯示分享入口同社交平台分享工具"
+        }
+      },
+      "download": {
+        "originalEnabled": {
+          "label": "允許下載原圖",
+          "description": "向訪客顯示原始圖片下載操作",
+          "help": "呢個開關只控制介面入口，唔等同檔案層級存取保護"
+        }
+      },
+      "actions": {
+        "reset": "重設",
+        "save": "儲存設置"
       }
     },
     "privacy": {

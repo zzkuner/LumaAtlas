@@ -11,6 +11,9 @@
       "dashboard": {
         "tooltip": "控制台"
       },
+      "rss": {
+        "tooltip": "RSS 订阅"
+      },
       "filter": {
         "empty": {
           "cameras": "没有相机信息",
@@ -362,6 +365,7 @@
     "albums": "相簿",
     "siteAdministration": "站点设置",
     "generalSettings": "基本设置",
+    "publishingSettings": "发布设置",
     "appearanceSettings": "外观设置",
     "storageSettings": "存储设置",
     "privacySettings": "隐私设置",
@@ -1186,6 +1190,51 @@
           "description": "Nominatim 反向地理编码 API 的基础 URL",
           "help": "留空则默认使用公共 Nominatim 服务"
         }
+      }
+    },
+    "publishing": {
+      "pageDescription": "管理订阅输出以及访客可以使用的照片操作。",
+      "rss": {
+        "sectionTitle": "RSS 订阅",
+        "sectionDescription": "向阅读器和订阅服务发布最近的公开照片。",
+        "enabled": {
+          "label": "启用 RSS 订阅",
+          "description": "在 /rss.xml 发布可被自动发现的照片订阅源"
+        },
+        "source": {
+          "label": "订阅照片范围",
+          "description": "发布全部公开照片，或只发布人工挑选的精选照片",
+          "all": "全部公开照片",
+          "featured": "仅精选照片"
+        },
+        "limit": {
+          "label": "最大订阅条目数",
+          "description": "限制订阅源返回的最近照片数量",
+          "help": "可设置 5 到 100 张照片"
+        },
+        "address": "订阅地址",
+        "open": "打开 RSS 订阅"
+      },
+      "visitorActions": {
+        "sectionTitle": "访客操作",
+        "sectionDescription": "控制公开照片查看器中显示的操作；已登录管理员仍然保留这些能力。"
+      },
+      "sharing": {
+        "enabled": {
+          "label": "允许分享照片",
+          "description": "向访客显示分享入口和社交平台分享工具"
+        }
+      },
+      "download": {
+        "originalEnabled": {
+          "label": "允许下载原图",
+          "description": "向访客显示原始图片下载操作",
+          "help": "此开关只控制界面入口，不等同于文件级访问保护"
+        }
+      },
+      "actions": {
+        "reset": "重置",
+        "save": "保存设置"
       }
     },
     "privacy": {

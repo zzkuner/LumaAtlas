@@ -190,6 +190,40 @@ export const APP_SETTINGS_UI: Record<string, FieldUIConfig> = {
   },
 }
 
+export const PUBLISHING_SETTINGS_UI: Record<string, FieldUIConfig> = {
+  'rss.enabled': {
+    type: 'toggle',
+  },
+  'rss.source': {
+    type: 'tabs',
+    options: [
+      {
+        label: 'settings.publishing.rss.source.all',
+        value: 'all',
+        icon: 'lucide:images',
+      },
+      {
+        label: 'settings.publishing.rss.source.featured',
+        value: 'featured',
+        icon: 'lucide:sparkles',
+      },
+    ],
+  },
+  'rss.limit': {
+    type: 'number',
+    min: 5,
+    max: 100,
+    help: 'settings.publishing.rss.limit.help',
+  },
+  'sharing.enabled': {
+    type: 'toggle',
+  },
+  'download.originalEnabled': {
+    type: 'toggle',
+    help: 'settings.publishing.download.originalEnabled.help',
+  },
+}
+
 export const MAP_SETTINGS_UI: Record<string, FieldUIConfig> = {
   provider: {
     type: 'tabs',
@@ -476,6 +510,7 @@ export function getSettingUIConfig(
 ): FieldUIConfig | undefined {
   const uiConfigMap: Record<string, Record<string, FieldUIConfig>> = {
     app: APP_SETTINGS_UI,
+    publishing: PUBLISHING_SETTINGS_UI,
     system: SYSTEM_SETTINGS_UI,
     privacy: PRIVACY_SETTINGS_UI,
     map: MAP_SETTINGS_UI,

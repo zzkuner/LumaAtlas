@@ -49,6 +49,11 @@ const navItems = computed<NavigationMenuItem[][]>(() => [
           to: '/dashboard/settings/general',
         },
         {
+          label: $t('title.publishingSettings'),
+          icon: 'lucide:rss',
+          to: '/dashboard/settings/publishing',
+        },
+        {
           label: $t('title.storageSettings'),
           icon: 'tabler:database',
           to: '/dashboard/settings/storage',

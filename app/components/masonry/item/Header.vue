@@ -34,6 +34,9 @@ const showGlobeNav = computed(
 const showAlbumsNav = computed(
   () => getSetting('app:appearance.home.showAlbumsNav') !== false,
 )
+const rssEnabled = computed(
+  () => getSetting('publishing:rss.enabled') !== false,
+)
 
 const isDark = computed({
   get() {
@@ -196,6 +199,22 @@ const handleOpenLogin = () => {
                   </UCard>
                 </template>
               </UPopover>
+
+              <UTooltip
+                v-if="rssEnabled"
+                :text="$t('ui.action.rss.tooltip')"
+              >
+                <UButton
+                  variant="ghost"
+                  color="neutral"
+                  class="rounded-md"
+                  icon="lucide:rss"
+                  size="sm"
+                  to="/rss.xml"
+                  target="_blank"
+                  :aria-label="$t('ui.action.rss.tooltip')"
+                />
+              </UTooltip>
 
               <UTooltip :text="$t('ui.action.theme.tooltip')">
                 <UButton

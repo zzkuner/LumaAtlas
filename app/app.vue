@@ -25,6 +25,7 @@ const settingsStore = useSettingsStore()
 await settingsStore.initSettings()
 
 const appTitle = useSettingRef('app:title')
+const rssEnabled = useSettingRef('publishing:rss.enabled')
 
 colorMode.preference = useSettingRef('app:appearance.theme').value as string
 
@@ -32,6 +33,20 @@ useHead({
   titleTemplate: (title) =>
     `${title ? title + ' | ' : ''}${appTitle.value || 'LumaAtlas'}`,
 })
+
+useHead(() => ({
+  link:
+    rssEnabled.value === false
+      ? []
+      : [
+          {
+            rel: 'alternate',
+            type: 'application/rss+xml',
+            title: `${appTitle.value || 'LumaAtlas'} RSS`,
+            href: '/rss.xml',
+          },
+        ],
+}))
 
 // 根据用户登录状态和当前路由决定使用哪个 API
 // 登录用户或后台管理页面显示所有照片，未登录用户在前端页面只显示可见照片

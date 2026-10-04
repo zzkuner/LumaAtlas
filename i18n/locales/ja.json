@@ -45,6 +45,9 @@
       "dashboard": {
         "tooltip": "ダッシュボード"
       },
+      "rss": {
+        "tooltip": "RSS フィード"
+      },
       "logout": {
         "tooltip": "ログアウト"
       },
@@ -361,6 +364,7 @@
     "albums": "アルバム",
     "siteAdministration": "サイト設定",
     "generalSettings": "一般設定",
+    "publishingSettings": "公開設定",
     "appearanceSettings": "外観設定",
     "privacySettings": "プライバシー設定",
     "mapAndLocation": "地図と場所",
@@ -1117,6 +1121,51 @@
           "description": "Nominatim リバースジオコーディング API のベース URL",
           "help": "空のままにすると、デフォルトで公開 Nominatim サービスを使用します"
         }
+      }
+    },
+    "publishing": {
+      "pageDescription": "購読フィードと訪問者が利用できる写真操作を管理します。",
+      "rss": {
+        "sectionTitle": "RSS 購読",
+        "sectionDescription": "最近の公開写真をフィードリーダーや購読サービスに配信します。",
+        "enabled": {
+          "label": "RSS フィードを有効にする",
+          "description": "/rss.xml で自動検出可能な RSS フィードを公開します"
+        },
+        "source": {
+          "label": "フィードの写真範囲",
+          "description": "すべての公開写真、またはおすすめ写真のみを配信します",
+          "all": "すべての公開写真",
+          "featured": "おすすめ写真のみ"
+        },
+        "limit": {
+          "label": "フィードの最大件数",
+          "description": "フィードに含める最近の写真数を制限します",
+          "help": "5 枚から 100 枚まで設定できます"
+        },
+        "address": "フィード URL",
+        "open": "RSS フィードを開く"
+      },
+      "visitorActions": {
+        "sectionTitle": "訪問者の操作",
+        "sectionDescription": "公開写真ビューアーに表示する操作を管理します。ログイン中の管理者は引き続き利用できます。"
+      },
+      "sharing": {
+        "enabled": {
+          "label": "写真の共有を許可",
+          "description": "訪問者に共有ボタンとソーシャル共有ツールを表示します"
+        }
+      },
+      "download": {
+        "originalEnabled": {
+          "label": "オリジナル画像のダウンロードを許可",
+          "description": "訪問者にオリジナル画像のダウンロード操作を表示します",
+          "help": "この設定は画面上の操作のみを制御し、ファイル自体のアクセス保護ではありません"
+        }
+      },
+      "actions": {
+        "reset": "リセット",
+        "save": "設定を保存"
       }
     },
     "privacy": {

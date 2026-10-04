@@ -28,6 +28,7 @@ const emit = defineEmits<{
 }>()
 
 const toast = useToast()
+const { loggedIn } = useUserSession()
 
 const containerRef = ref<HTMLDivElement>()
 const swiperRef = ref<SwiperType>()
@@ -92,6 +93,9 @@ const { convertMovToMp4, getProcessingState } = useLivePhotoProcessor()
 // Computed
 const currentPhoto = computed(() => props.photos[props.currentIndex])
 const isMobile = useMediaQuery('(max-width: 768px)')
+const sharingEnabled = computed(
+  () => loggedIn.value || getSetting('publishing:sharing.enabled') !== false,
+)
 
 // LivePhoto processing state
 const livePhotoProcessingState = computed(() => {
@@ -640,7 +644,10 @@ const swiperModules = [Navigation, Keyboard, Virtual]
                   </UTooltip>
 
                   <!-- 分享按钮 -->
-                  <UTooltip :text="$t('ui.action.share.tooltip')">
+                  <UTooltip
+                    v-if="sharingEnabled"
+                    :text="$t('ui.action.share.tooltip')"
+                  >
                     <UButton
                       icon="lucide:share-2"
                       color="neutral"

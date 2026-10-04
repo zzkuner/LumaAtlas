@@ -45,6 +45,9 @@
       "dashboard": {
         "tooltip": "Dashboard"
       },
+      "rss": {
+        "tooltip": "RSS feed"
+      },
       "logout": {
         "tooltip": "Logout"
       },
@@ -363,6 +366,7 @@
     "siteAdministration": "Site settings",
     "location": "Location services",
     "generalSettings": "General Settings",
+    "publishingSettings": "Publishing",
     "appearanceSettings": "Appearance Settings",
     "privacySettings": "Privacy Settings",
     "mapAndLocation": "Map & Location"
@@ -1182,6 +1186,51 @@
           "description": "Base URL for Nominatim reverse geocoding API",
           "help": "Leave empty to use the public Nominatim service by default"
         }
+      }
+    },
+    "publishing": {
+      "pageDescription": "Manage subscriptions and the actions available to visitors.",
+      "rss": {
+        "sectionTitle": "RSS subscription",
+        "sectionDescription": "Publish recent public photos for feed readers and subscription services.",
+        "enabled": {
+          "label": "Enable RSS feed",
+          "description": "Publish a discoverable RSS feed at /rss.xml"
+        },
+        "source": {
+          "label": "Feed photo source",
+          "description": "Publish every public photo or only your curated featured photos",
+          "all": "All public photos",
+          "featured": "Featured photos only"
+        },
+        "limit": {
+          "label": "Maximum feed items",
+          "description": "Limit the number of recent photos returned by the feed",
+          "help": "Choose between 5 and 100 photos"
+        },
+        "address": "Feed address",
+        "open": "Open RSS feed"
+      },
+      "visitorActions": {
+        "sectionTitle": "Visitor actions",
+        "sectionDescription": "Control the actions shown in the public photo viewer. Signed-in administrators retain access."
+      },
+      "sharing": {
+        "enabled": {
+          "label": "Allow photo sharing",
+          "description": "Show the share entry and social sharing tools to visitors"
+        }
+      },
+      "download": {
+        "originalEnabled": {
+          "label": "Allow original downloads",
+          "description": "Show the original-image download action to visitors",
+          "help": "This controls the interface and is not file-level access protection"
+        }
+      },
+      "actions": {
+        "reset": "Reset",
+        "save": "Save settings"
       }
     },
     "privacy": {

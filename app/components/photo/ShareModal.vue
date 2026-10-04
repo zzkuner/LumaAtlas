@@ -13,6 +13,12 @@ const emit = defineEmits<{
 
 const toast = useToast()
 const { gtag } = useGtag()
+const { loggedIn } = useUserSession()
+const originalDownloadEnabled = computed(
+  () =>
+    loggedIn.value ||
+    getSetting('publishing:download.originalEnabled') !== false,
+)
 
 const shareUrl = computed(() => {
   if (typeof window !== 'undefined') {
@@ -416,10 +422,11 @@ defineShortcuts({
           >
             <!-- Native Share (Mobile) -->
             <div
-              v-if="canNativeShare"
+              v-if="canNativeShare || originalDownloadEnabled"
               class="mb-4 flex items-center gap-2"
             >
               <UButton
+                v-if="canNativeShare"
                 block
                 size="lg"
                 color="info"
@@ -430,6 +437,7 @@ defineShortcuts({
                 {{ $t('ui.action.share.actions.nativeShare') }}
               </UButton>
               <UButton
+                v-if="originalDownloadEnabled"
                 block
                 size="lg"
                 color="info"

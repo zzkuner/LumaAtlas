@@ -365,6 +365,7 @@
     "siteAdministration": "站點設置",
     "generalSettings": "基本設置",
     "publishingSettings": "發佈設置",
+    "storageImport": "儲存空間匯入",
     "appearanceSettings": "外觀設置",
     "privacySettings": "隱私設置",
     "mapAndLocation": "地圖和位置",
@@ -915,6 +916,54 @@
         "status": "按狀態篩選",
         "type": "按類型篩選"
       }
+    }
+  },
+  "storageImport": {
+    "heading": "從儲存空間增量匯入",
+    "description": "掃描目前的儲存方案並與相片庫比對，只將新增或已變更的檔案送入現有處理佇列。掃描不會刪除相片或修改儲存檔案。",
+    "unknown": "未知",
+    "force": {
+      "label": "重新處理未變更的相片",
+      "description": "用於重建縮圖和中繼資料。一般增量匯入時請保持關閉。"
+    },
+    "actions": {
+      "scan": "掃描儲存空間",
+      "enqueue": "開始匯入",
+      "openQueue": "查看佇列"
+    },
+    "empty": {
+      "title": "尚未掃描目前的儲存空間",
+      "description": "先執行掃描，確認即將匯入的相片。"
+    },
+    "summary": {
+      "total": "儲存相片",
+      "new": "新增",
+      "updated": "已更新",
+      "queued": "佇列中",
+      "unchanged": "未變更",
+      "missing": "儲存缺失"
+    },
+    "preview": {
+      "title": "掃描結果",
+      "description": "目前儲存：{provider}；本次可匯入 {count} 張。",
+      "noFiles": "找不到支援的相片檔案。",
+      "truncated": "此處僅顯示前 {count} 項，其餘項目仍可在後續批次處理。"
+    },
+    "status": {
+      "new": "新增",
+      "updated": "已更新",
+      "queued": "佇列中",
+      "unchanged": "未變更"
+    },
+    "missing": {
+      "title": "相片庫中的相片不在目前儲存空間",
+      "description": "這些記錄僅供核對，不會自動刪除。切換過儲存方案時也可能出現。"
+    },
+    "messages": {
+      "scanFailed": "掃描儲存空間失敗",
+      "enqueued": "匯入任務已加入佇列",
+      "enqueuedDescription": "已加入 {count} 個任務，剩餘 {remaining} 個等待下一批。",
+      "enqueueFailed": "加入匯入佇列失敗"
     }
   },
   "settings": {

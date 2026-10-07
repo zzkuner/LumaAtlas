@@ -367,6 +367,7 @@
     "location": "Location services",
     "generalSettings": "General Settings",
     "publishingSettings": "Publishing",
+    "storageImport": "Storage Import",
     "appearanceSettings": "Appearance Settings",
     "privacySettings": "Privacy Settings",
     "mapAndLocation": "Map & Location"
@@ -980,6 +981,54 @@
         "status": "Filter by Status",
         "type": "Filter by Type"
       }
+    }
+  },
+  "storageImport": {
+    "heading": "Incremental storage import",
+    "description": "Scan the active storage provider, compare it with the library, and send only new or changed files through the existing processing queue. Scanning never deletes photos or storage files.",
+    "unknown": "Unknown",
+    "force": {
+      "label": "Reprocess unchanged photos",
+      "description": "Use this to rebuild thumbnails and metadata. Keep it off for normal incremental imports."
+    },
+    "actions": {
+      "scan": "Scan storage",
+      "enqueue": "Start import",
+      "openQueue": "View queue"
+    },
+    "empty": {
+      "title": "The active storage has not been scanned",
+      "description": "Run a scan first to review the photos that will be imported."
+    },
+    "summary": {
+      "total": "Storage photos",
+      "new": "New",
+      "updated": "Updated",
+      "queued": "Queued",
+      "unchanged": "Unchanged",
+      "missing": "Missing"
+    },
+    "preview": {
+      "title": "Scan results",
+      "description": "Active storage: {provider}; {count} photos are ready to import.",
+      "noFiles": "No supported photo files were found.",
+      "truncated": "Only the first {count} items are shown. Remaining items can still be processed in later batches."
+    },
+    "status": {
+      "new": "New",
+      "updated": "Updated",
+      "queued": "Queued",
+      "unchanged": "Unchanged"
+    },
+    "missing": {
+      "title": "Library photos missing from active storage",
+      "description": "These records are shown for review and are never deleted automatically. They may also appear after switching storage providers."
+    },
+    "messages": {
+      "scanFailed": "Storage scan failed",
+      "enqueued": "Import tasks added to the queue",
+      "enqueuedDescription": "Queued {count} tasks; {remaining} remain for the next batch.",
+      "enqueueFailed": "Could not queue import tasks"
     }
   },
   "settings": {

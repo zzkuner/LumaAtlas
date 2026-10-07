@@ -24,6 +24,11 @@ const navItems = computed<NavigationMenuItem[][]>(() => [
       to: '/dashboard/photos',
     },
     {
+      label: $t('title.storageImport'),
+      icon: 'lucide:folder-sync',
+      to: '/dashboard/import',
+    },
+    {
       label: $t('title.albums'),
       icon: 'tabler:album',
       to: '/dashboard/albums',

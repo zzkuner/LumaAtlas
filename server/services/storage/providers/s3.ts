@@ -2,7 +2,7 @@ import type { _Object, S3ClientConfig } from '@aws-sdk/client-s3'
 import {
   DeleteObjectCommand,
   GetObjectCommand,
-  ListObjectsCommand,
+  ListObjectsV2Command,
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3'
@@ -12,6 +12,7 @@ import type {
   StorageProvider,
   UploadOptions,
 } from '../interfaces'
+import { isSupportedImageKey } from '../image-formats'
 
 const createClient = (config: S3StorageConfig): S3Client => {
   if (config.provider !== 's3') {
@@ -223,26 +224,31 @@ export class S3StorageProvider implements StorageProvider {
   }
 
   async listAll(): Promise<StorageObject[]> {
-    const cmd = new ListObjectsCommand({
-      Bucket: this.config.bucket,
-      Prefix: this.config.prefix,
-      MaxKeys: this.config.maxKeys,
-    })
+    const objects: StorageObject[] = []
+    let continuationToken: string | undefined
 
-    const resp = await this.client.send(cmd)
-    this.logger?.log(resp.Contents?.map(convertToStorageObject))
-    return resp.Contents?.map(convertToStorageObject) || []
+    do {
+      const response = await this.client.send(
+        new ListObjectsV2Command({
+          Bucket: this.config.bucket,
+          Prefix: this.config.prefix,
+          MaxKeys: Math.min(1000, Math.max(1, this.config.maxKeys || 1000)),
+          ContinuationToken: continuationToken,
+        }),
+      )
+
+      objects.push(...(response.Contents?.map(convertToStorageObject) || []))
+      continuationToken = response.IsTruncated
+        ? response.NextContinuationToken
+        : undefined
+    } while (continuationToken)
+
+    this.logger?.info(`Listed ${objects.length} objects from S3 storage`)
+    return objects
   }
 
   async listImages(): Promise<StorageObject[]> {
-    const cmd = new ListObjectsCommand({
-      Bucket: this.config.bucket,
-      Prefix: this.config.prefix,
-      MaxKeys: this.config.maxKeys,
-    })
-
-    const resp = await this.client.send(cmd)
-    // TODO: filter supported image format
-    return resp.Contents?.map(convertToStorageObject) || []
+    const all = await this.listAll()
+    return all.filter((object) => isSupportedImageKey(object.key))
   }
 }

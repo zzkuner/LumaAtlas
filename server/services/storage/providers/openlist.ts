@@ -1,5 +1,6 @@
 import type { Logger } from '../../../utils/logger'
 import type { StorageProvider, StorageObject } from '../interfaces'
+import { isSupportedImageKey } from '../image-formats'
 
 /**
  * OpenListStorageProvider implements StorageProvider for OpenList API.
@@ -263,8 +264,6 @@ export class OpenListStorageProvider implements StorageProvider {
 
   async listImages(): Promise<StorageObject[]> {
     const all = await this.listAll()
-    return all.filter((obj) =>
-      /\.(jpe?g|png|webp|gif|bmp|tiff?|heic|heif)$/i.test(obj.key),
-    )
+    return all.filter((object) => isSupportedImageKey(object.key))
   }
 }

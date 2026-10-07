@@ -427,6 +427,9 @@ export class QueueManager {
           const db = useDB()
           const existingPhotoState = db
             .select({
+              title: tables.photos.title,
+              description: tables.photos.description,
+              tags: tables.photos.tags,
               isVisible: tables.photos.isVisible,
               isFeatured: tables.photos.isFeatured,
             })
@@ -437,10 +440,11 @@ export class QueueManager {
           // 构建最终的 Photo 对象
           const result: Photo = {
             id: photoId,
-            title: photoInfo.title,
-            description: photoInfo.description,
+            title: existingPhotoState?.title ?? photoInfo.title,
+            description:
+              existingPhotoState?.description ?? photoInfo.description,
             dateTaken: photoInfo.dateTaken,
-            tags: photoInfo.tags,
+            tags: existingPhotoState?.tags ?? photoInfo.tags,
             isVisible: existingPhotoState?.isVisible ?? true,
             isFeatured: existingPhotoState?.isFeatured ?? false,
             width: metadata.width,

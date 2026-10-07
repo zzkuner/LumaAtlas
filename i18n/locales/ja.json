@@ -365,6 +365,7 @@
     "siteAdministration": "サイト設定",
     "generalSettings": "一般設定",
     "publishingSettings": "公開設定",
+    "storageImport": "ストレージ読み込み",
     "appearanceSettings": "外観設定",
     "privacySettings": "プライバシー設定",
     "mapAndLocation": "地図と場所",
@@ -915,6 +916,54 @@
         "status": "ステータスでフィルター",
         "type": "タイプでフィルター"
       }
+    }
+  },
+  "storageImport": {
+    "heading": "ストレージから差分読み込み",
+    "description": "現在のストレージをスキャンしてライブラリと比較し、新規または変更されたファイルだけを処理キューへ送ります。スキャンによる削除やファイル変更は行いません。",
+    "unknown": "不明",
+    "force": {
+      "label": "変更のない写真も再処理する",
+      "description": "サムネイルやメタデータを再生成する場合に使用します。通常の差分読み込みではオフにします。"
+    },
+    "actions": {
+      "scan": "ストレージをスキャン",
+      "enqueue": "読み込みを開始",
+      "openQueue": "キューを表示"
+    },
+    "empty": {
+      "title": "現在のストレージは未スキャンです",
+      "description": "まずスキャンし、読み込む写真を確認してください。"
+    },
+    "summary": {
+      "total": "ストレージ内",
+      "new": "新規",
+      "updated": "更新",
+      "queued": "キュー内",
+      "unchanged": "変更なし",
+      "missing": "見つからない"
+    },
+    "preview": {
+      "title": "スキャン結果",
+      "description": "現在のストレージ: {provider}。{count} 枚を読み込めます。",
+      "noFiles": "対応する写真ファイルが見つかりませんでした。",
+      "truncated": "先頭 {count} 件のみ表示しています。残りは次のバッチで処理できます。"
+    },
+    "status": {
+      "new": "新規",
+      "updated": "更新",
+      "queued": "キュー内",
+      "unchanged": "変更なし"
+    },
+    "missing": {
+      "title": "現在のストレージに存在しないライブラリ写真",
+      "description": "確認用の表示で、自動削除は行いません。ストレージを切り替えた場合にも表示されることがあります。"
+    },
+    "messages": {
+      "scanFailed": "ストレージのスキャンに失敗しました",
+      "enqueued": "読み込みタスクをキューに追加しました",
+      "enqueuedDescription": "{count} 件を追加し、次のバッチに {remaining} 件残っています。",
+      "enqueueFailed": "読み込みタスクを追加できませんでした"
     }
   },
   "settings": {

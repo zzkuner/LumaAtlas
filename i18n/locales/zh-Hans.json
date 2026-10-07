@@ -366,6 +366,7 @@
     "siteAdministration": "站点设置",
     "generalSettings": "基本设置",
     "publishingSettings": "发布设置",
+    "storageImport": "存储导入",
     "appearanceSettings": "外观设置",
     "storageSettings": "存储设置",
     "privacySettings": "隐私设置",
@@ -984,6 +985,54 @@
         "status": "按状态筛选",
         "type": "按类型筛选"
       }
+    }
+  },
+  "storageImport": {
+    "heading": "从存储增量导入",
+    "description": "扫描当前存储方案，对比照片库，只将新增或已变化的文件交给现有处理队列。扫描不会删除照片或修改存储文件。",
+    "unknown": "未知",
+    "force": {
+      "label": "重新处理未变化的照片",
+      "description": "用于重建缩略图和元数据。通常保持关闭，只导入新增和已更新文件。"
+    },
+    "actions": {
+      "scan": "扫描存储",
+      "enqueue": "开始导入",
+      "openQueue": "查看队列"
+    },
+    "empty": {
+      "title": "尚未扫描当前存储",
+      "description": "先扫描一次，确认将要导入的照片。"
+    },
+    "summary": {
+      "total": "存储照片",
+      "new": "新增",
+      "updated": "已更新",
+      "queued": "队列中",
+      "unchanged": "未变化",
+      "missing": "存储缺失"
+    },
+    "preview": {
+      "title": "扫描结果",
+      "description": "当前存储：{provider}；本次可导入 {count} 张。",
+      "noFiles": "没有找到可识别的照片文件。",
+      "truncated": "这里只显示前 {count} 项，导入操作仍会按批次处理其余项目。"
+    },
+    "status": {
+      "new": "新增",
+      "updated": "已更新",
+      "queued": "队列中",
+      "unchanged": "未变化"
+    },
+    "missing": {
+      "title": "数据库中的照片在当前存储中不存在",
+      "description": "这些记录仅供核对，不会自动删除。切换过存储方案时也可能出现此提示。"
+    },
+    "messages": {
+      "scanFailed": "扫描存储失败",
+      "enqueued": "导入任务已加入队列",
+      "enqueuedDescription": "已加入 {count} 个任务，剩余 {remaining} 个等待下一批。",
+      "enqueueFailed": "加入导入队列失败"
     }
   },
   "settings": {

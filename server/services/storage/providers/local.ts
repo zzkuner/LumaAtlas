@@ -5,6 +5,7 @@ import type {
   StorageObject,
   StorageProvider,
 } from '../interfaces'
+import { isSupportedImageKey } from '../image-formats'
 
 const ensureDir = async (dirPath: string) => {
   await fs.mkdir(dirPath, { recursive: true })
@@ -107,7 +108,7 @@ export class LocalStorageProvider implements StorageProvider {
 
   async listImages(): Promise<StorageObject[]> {
     const all = await this.listAll()
-    return all.filter((o) => /\.(png|jpe?g|webp|gif|bmp|tiff?)$/i.test(o.key))
+    return all.filter((object) => isSupportedImageKey(object.key))
   }
 
   async getFileMeta(key: string): Promise<StorageObject | null> {

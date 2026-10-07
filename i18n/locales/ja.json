@@ -50,6 +50,62 @@
       "noResults": "一致する写真はありません"
     }
   },
+  "backup": {
+    "title": "バックアップと復元",
+    "description": "写真メタデータ、アルバム、リアクション、機密情報を除く設定を保護します。元画像は現在のストレージで管理されます。",
+    "export": {
+      "title": "バックアップを作成",
+      "description": "サーバーにスナップショットを保存し、移行可能な JSON をダウンロードします。",
+      "action": "作成してダウンロード",
+      "includes": {
+        "photos": "写真メタデータ",
+        "albums": "アルバムと並び順",
+        "settings": "機密情報を除く設定",
+        "security": "パスワードとキーを除外"
+      }
+    },
+    "restore": {
+      "title": "ファイルから復元",
+      "description": "内容と競合を確認してからマージまたは置換します。復元前にスナップショットを作成します。",
+      "chooseFile": "LumaAtlas バックアップを選択",
+      "fileHint": "バージョン付き JSON バックアップに対応",
+      "action": "復元を開始",
+      "replaceConfirm": "置換モードで現在の写真メタデータ、アルバム、リアクションが削除されることを理解しました",
+      "modes": {
+        "merge": {
+          "label": "マージ",
+          "description": "現在のデータを保持し、同じ ID のレコードを更新します。"
+        },
+        "replace": {
+          "label": "置換",
+          "description": "現在の写真データを消去してからバックアップ全体を復元します。"
+        }
+      }
+    },
+    "preview": {
+      "photos": "写真",
+      "albums": "アルバム",
+      "settings": "設定",
+      "conflicts": "{count} 件を更新"
+    },
+    "history": {
+      "title": "サーバースナップショット",
+      "description": "手動および復元前のスナップショットは data/backups に保存されます。",
+      "empty": "スナップショットはまだありません",
+      "download": "バックアップをダウンロード",
+      "delete": "バックアップを削除",
+      "deleteConfirm": "このバックアップを削除しますか？",
+      "reasons": { "manual": "手動", "pre-restore": "復元前" }
+    },
+    "messages": {
+      "created": "バックアップを作成してダウンロードしました",
+      "createFailed": "バックアップの作成に失敗しました",
+      "invalid": "バックアップファイルが無効です",
+      "restored": "復元が完了しました",
+      "restoreFailed": "復元に失敗しました",
+      "snapshotCreated": "復元前のスナップショットを自動保存しました"
+    }
+  },
   "plural": {
     "photo": "写真がありません | 写真 {count} 枚"
   },
@@ -412,6 +468,7 @@
     "globe": "写真グローブ",
     "queue": "キュー管理",
     "logs": "システムログ",
+    "backup": "バックアップと復元",
     "albums": "アルバム",
     "siteAdministration": "サイト設定",
     "generalSettings": "一般設定",

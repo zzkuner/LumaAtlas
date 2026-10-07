@@ -395,6 +395,62 @@
       }
     }
   },
+  "backup": {
+    "title": "備份與還原",
+    "description": "保護照片中繼資料、相簿、表態與非敏感網站設定。原始圖片仍由目前的儲存服務管理。",
+    "export": {
+      "title": "建立備份",
+      "description": "在伺服器保留快照，同時下載可移轉的 JSON 檔案。",
+      "action": "建立並下載",
+      "includes": {
+        "photos": "照片中繼資料",
+        "albums": "相簿與排序",
+        "settings": "非敏感設定",
+        "security": "自動排除密碼與金鑰"
+      }
+    },
+    "restore": {
+      "title": "從檔案還原",
+      "description": "先預覽內容與衝突，再選擇合併或取代。還原前會自動建立快照。",
+      "chooseFile": "選擇 LumaAtlas 備份檔案",
+      "fileHint": "支援版本化 JSON 備份",
+      "action": "開始還原",
+      "replaceConfirm": "我了解取代模式會刪除目前的照片中繼資料、相簿與表態",
+      "modes": {
+        "merge": {
+          "label": "合併",
+          "description": "保留目前資料，並依識別碼更新相同記錄。"
+        },
+        "replace": {
+          "label": "取代",
+          "description": "清除目前照片資料後，完整寫入備份內容。"
+        }
+      }
+    },
+    "preview": {
+      "photos": "照片",
+      "albums": "相簿",
+      "settings": "設定",
+      "conflicts": "{count} 項將更新"
+    },
+    "history": {
+      "title": "伺服器快照",
+      "description": "手動與還原前快照會儲存在 data/backups。",
+      "empty": "尚無伺服器快照",
+      "download": "下載備份",
+      "delete": "刪除備份",
+      "deleteConfirm": "確定刪除這份伺服器備份嗎？",
+      "reasons": { "manual": "手動", "pre-restore": "還原前" }
+    },
+    "messages": {
+      "created": "備份已建立並下載",
+      "createFailed": "建立備份失敗",
+      "invalid": "備份檔案無效",
+      "restored": "還原完成",
+      "restoreFailed": "還原失敗",
+      "snapshotCreated": "還原前快照已自動儲存"
+    }
+  },
   "plural": {
     "photo": "沒有相片 | 一張相片 | {count} 張相片"
   },
@@ -409,6 +465,7 @@
     "globe": "照片地球儀",
     "queue": "佇列管理",
     "logs": "系統日誌",
+    "backup": "備份與還原",
     "albums": "相簿",
     "siteAdministration": "站點設置",
     "generalSettings": "基本設置",

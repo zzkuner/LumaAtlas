@@ -44,6 +44,11 @@ const navItems = computed<NavigationMenuItem[][]>(() => [
       to: '/dashboard/logs',
     },
     {
+      label: $t('title.backup'),
+      icon: 'lucide:archive-restore',
+      to: '/dashboard/backup',
+    },
+    {
       label: $t('title.siteAdministration'),
       icon: 'tabler:settings',
       defaultOpen: route.path.startsWith('/dashboard/settings'),

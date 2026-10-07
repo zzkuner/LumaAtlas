@@ -50,6 +50,62 @@
       "noResults": "No matching photos"
     }
   },
+  "backup": {
+    "title": "Backup & Restore",
+    "description": "Protect photo metadata, albums, reactions, and non-sensitive site settings. Original files remain in the active storage provider.",
+    "export": {
+      "title": "Create backup",
+      "description": "Keep a server snapshot and download a portable JSON copy.",
+      "action": "Create and download",
+      "includes": {
+        "photos": "Photo metadata",
+        "albums": "Albums and ordering",
+        "settings": "Non-sensitive settings",
+        "security": "Passwords and keys excluded"
+      }
+    },
+    "restore": {
+      "title": "Restore from file",
+      "description": "Preview contents and conflicts before merging or replacing. A snapshot is created first.",
+      "chooseFile": "Choose a LumaAtlas backup",
+      "fileHint": "Versioned JSON backups are supported",
+      "action": "Restore now",
+      "replaceConfirm": "I understand replace mode removes current photo metadata, albums, and reactions",
+      "modes": {
+        "merge": {
+          "label": "Merge",
+          "description": "Keep current data and update records with matching identifiers."
+        },
+        "replace": {
+          "label": "Replace",
+          "description": "Clear current photo data before restoring the complete backup."
+        }
+      }
+    },
+    "preview": {
+      "photos": "Photos",
+      "albums": "Albums",
+      "settings": "Settings",
+      "conflicts": "{count} will be updated"
+    },
+    "history": {
+      "title": "Server snapshots",
+      "description": "Manual and pre-restore snapshots are stored in data/backups.",
+      "empty": "No server snapshots yet",
+      "download": "Download backup",
+      "delete": "Delete backup",
+      "deleteConfirm": "Delete this server backup?",
+      "reasons": { "manual": "Manual", "pre-restore": "Pre-restore" }
+    },
+    "messages": {
+      "created": "Backup created and downloaded",
+      "createFailed": "Failed to create backup",
+      "invalid": "Invalid backup file",
+      "restored": "Restore complete",
+      "restoreFailed": "Restore failed",
+      "snapshotCreated": "A pre-restore snapshot was saved automatically"
+    }
+  },
   "plural": {
     "photo": "no photos | one photo | {count} photos"
   },
@@ -413,6 +469,7 @@
     "globe": "Photo Globe",
     "queue": "Queue Management",
     "logs": "System Logs",
+    "backup": "Backup & Restore",
     "albums": "Albums",
     "siteAdministration": "Site settings",
     "location": "Location services",

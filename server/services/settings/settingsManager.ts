@@ -39,6 +39,10 @@ export class SettingsManager {
     return this.isInitializing
   }
 
+  clearCache(): void {
+    this.settingsCache.clear()
+  }
+
   /**
    * Validate setting value against enum if defined
    * @param value Setting value

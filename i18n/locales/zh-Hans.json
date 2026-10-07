@@ -50,6 +50,62 @@
       "noResults": "没有匹配的照片"
     }
   },
+  "backup": {
+    "title": "备份与恢复",
+    "description": "保护照片元数据、相册、表态和非敏感站点设置。原始图片仍由当前存储服务管理。",
+    "export": {
+      "title": "创建备份",
+      "description": "在服务器保留快照，同时下载一份可迁移的 JSON 文件。",
+      "action": "创建并下载",
+      "includes": {
+        "photos": "照片元数据",
+        "albums": "相册与排序",
+        "settings": "非敏感设置",
+        "security": "自动排除密码和密钥"
+      }
+    },
+    "restore": {
+      "title": "从文件恢复",
+      "description": "先预检内容与冲突，再选择合并或替换。恢复前会自动创建快照。",
+      "chooseFile": "选择 LumaAtlas 备份文件",
+      "fileHint": "支持版本化 JSON 备份",
+      "action": "开始恢复",
+      "replaceConfirm": "我了解替换模式会删除当前照片元数据、相册和表态",
+      "modes": {
+        "merge": {
+          "label": "合并",
+          "description": "保留当前数据，并按主键更新备份中相同的记录。"
+        },
+        "replace": {
+          "label": "替换",
+          "description": "清空当前照片相关数据，再完整写入备份内容。"
+        }
+      }
+    },
+    "preview": {
+      "photos": "照片",
+      "albums": "相册",
+      "settings": "设置",
+      "conflicts": "{count} 项将更新"
+    },
+    "history": {
+      "title": "服务器快照",
+      "description": "手动备份和恢复前快照会保存在 data/backups。",
+      "empty": "还没有服务器快照",
+      "download": "下载备份",
+      "delete": "删除备份",
+      "deleteConfirm": "确定删除这份服务器备份吗？",
+      "reasons": { "manual": "手动", "pre-restore": "恢复前" }
+    },
+    "messages": {
+      "created": "备份已创建并下载",
+      "createFailed": "创建备份失败",
+      "invalid": "备份文件无效",
+      "restored": "恢复完成",
+      "restoreFailed": "恢复失败",
+      "snapshotCreated": "恢复前快照已自动保存"
+    }
+  },
   "map": {
     "cluster": {
       "details": "点击图片查看详情",
@@ -413,6 +469,7 @@
     "globe": "照片地球仪",
     "queue": "队列管理",
     "logs": "系统日志",
+    "backup": "备份与恢复",
     "albums": "相簿",
     "siteAdministration": "站点设置",
     "generalSettings": "基本设置",

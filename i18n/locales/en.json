@@ -1145,6 +1145,7 @@
       "sections": {
         "thirdPartyLogin": "Third-Party Login",
         "fileProcessing": "File Processing",
+        "responsiveImages": "Responsive Images",
         "debugSettings": "Debug Settings"
       },
       "upload": {
@@ -1163,6 +1164,32 @@
               "warn": "Warn and overwrite",
               "block": "Block upload"
             }
+          }
+        }
+      },
+      "image": {
+        "responsive": {
+          "enabled": {
+            "label": "Generate responsive thumbnails",
+            "description": "Create multiple widths for each photo so the browser can choose the best file for the screen and layout",
+            "help": "When disabled, only the medium thumbnail is generated. Existing photos receive variants after reprocessing."
+          },
+          "smallWidth": {
+            "label": "Small width",
+            "description": "Thumbnail width in pixels for map markers, lists, and smaller screens"
+          },
+          "mediumWidth": {
+            "label": "Medium width",
+            "description": "Thumbnail width in pixels for regular gallery grids and most devices"
+          },
+          "largeWidth": {
+            "label": "Large width",
+            "description": "Thumbnail width in pixels for wide screens, photo feeds, and detail placeholders"
+          },
+          "quality": {
+            "label": "WebP quality",
+            "description": "Balance responsive thumbnail quality against file size",
+            "help": "A value between 75 and 88 is recommended. Higher values use more storage and bandwidth."
           }
         }
       },

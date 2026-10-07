@@ -2,10 +2,12 @@
 import { WebGLImageViewer } from '@chronoframe/webgl-image'
 import type { LoadingIndicatorRef } from './LoadingIndicator.vue'
 import type { ImageLoaderManager } from '~/libs/image-loader-manager'
+import type { PhotoThumbnailVariant } from '~~/shared/types/photo'
 
 interface Props {
   src: string
   thumbnailSrc?: string
+  thumbnailSources?: PhotoThumbnailVariant[] | null
   thumbhash?: string | null
   alt?: string
   width?: number
@@ -30,6 +32,7 @@ const props = withDefaults(defineProps<Props>(), {
   enableZoom: true,
   isCurrentImage: true,
   thumbnailSrc: '',
+  thumbnailSources: null,
   thumbhash: null,
   alt: 'Image',
   width: undefined,
@@ -178,8 +181,11 @@ onUnmounted(() => {
     <ThumbImage
       v-if="showThumbnail"
       :src="thumbnailSrc"
+      :sources="thumbnailSources"
+      sizes="100vw"
       :thumbhash="thumbhash"
       :alt="alt"
+      :lazy="false"
       class="absolute inset-0 w-full h-full object-contain"
       thumbhash-class="opacity-50"
       image-contain

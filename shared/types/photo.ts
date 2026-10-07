@@ -101,3 +101,11 @@ export interface PhotoInfo {
   tags: string[]
   description: string
 }
+
+export interface PhotoThumbnailVariant {
+  width: number
+  height: number
+  key: string
+  url: string
+  bytes: number
+}

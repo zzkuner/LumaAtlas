@@ -2,37 +2,72 @@ import sharp from 'sharp'
 import { generateBlurHash } from './blurhash'
 import { withRetry, RetryPresets } from '../../utils/retry'
 
-export const generateThumbnailAndHash = async (
+export interface GeneratedThumbnailVariant {
+  width: number
+  height: number
+  bytes: number
+  buffer: Buffer
+}
+
+const normalizeWidths = (widths: number[]) =>
+  [...new Set(widths.map((width) => Math.round(width)))]
+    .filter((width) => width >= 160 && width <= 4096)
+    .sort((left, right) => left - right)
+
+export const generateThumbnailVariantsAndHash = async (
   buffer: Buffer,
+  widths: number[],
+  quality: number,
   logger?: Logger[keyof Logger],
 ) => {
   return await withRetry(
     async () => {
       const sharpInst = sharp(buffer).rotate()
+      const normalizedWidths = normalizeWidths(widths)
+      const outputQuality = Math.min(95, Math.max(40, Math.round(quality)))
+      const variants: GeneratedThumbnailVariant[] = []
+      const generatedWidths = new Set<number>()
 
-      // 根据文件大小调整缩略图质量
-      const fileSizeMB = buffer.length / (1024 * 1024)
-      const quality = fileSizeMB > 5 ? 85 : 100
+      for (const width of normalizedWidths.length > 0
+        ? normalizedWidths
+        : [600]) {
+        const { data, info } = await sharpInst
+          .clone()
+          .resize(width, null, {
+            withoutEnlargement: true,
+            fastShrinkOnLoad: false,
+          })
+          .webp({ quality: outputQuality, effort: 4 })
+          .toBuffer({ resolveWithObject: true })
 
-      const thumbnailBuffer = await sharpInst
-        .resize(600, null, {
-          withoutEnlargement: true,
-          fastShrinkOnLoad: false, // 提高质量
+        if (generatedWidths.has(info.width)) continue
+        generatedWidths.add(info.width)
+        variants.push({
+          width: info.width,
+          height: info.height,
+          bytes: info.size,
+          buffer: data,
         })
-        .webp({ quality })
-        .toBuffer()
+      }
 
-      logger?.info(`Successfully generated thumbnail (quality: ${quality})`)
+      if (variants.length === 0) {
+        throw new Error('No thumbnail variants were generated')
+      }
 
-      // 生成BlurHash
-      const thumbnailHash = await generateBlurHash(thumbnailBuffer, logger)
+      logger?.info(
+        `Generated ${variants.length} responsive thumbnails (${variants
+          .map((variant) => `${variant.width}w`)
+          .join(', ')}, quality: ${outputQuality})`,
+      )
 
-      return { thumbnailBuffer, thumbnailHash }
+      const thumbnailHash = await generateBlurHash(variants[0]!.buffer, logger)
+
+      return { variants, thumbnailHash }
     },
     {
       ...RetryPresets.standard,
-      timeout: 15000,
-      delayStrategy: 'linear', // 图像处理适合线性退避
+      timeout: 30000,
+      delayStrategy: 'linear',
     },
     logger,
   )

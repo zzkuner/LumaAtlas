@@ -1080,6 +1080,7 @@
       "sections": {
         "thirdPartyLogin": "第三方登入",
         "fileProcessing": "檔案處理",
+        "responsiveImages": "響應式圖片",
         "debugSettings": "除錯設定"
       },
       "upload": {
@@ -1098,6 +1099,32 @@
               "warn": "警告並覆蓋",
               "block": "阻止上傳"
             }
+          }
+        }
+      },
+      "image": {
+        "responsive": {
+          "enabled": {
+            "label": "產生響應式縮圖",
+            "description": "為每張相片產生多種寬度，等瀏覽器按螢幕同版面選擇最合適嘅檔案",
+            "help": "關閉後只會產生中尺寸縮圖；舊相片要重新處理先會取得新尺寸"
+          },
+          "smallWidth": {
+            "label": "小尺寸寬度",
+            "description": "用於地圖標記、列表同較小螢幕嘅縮圖寬度（像素）"
+          },
+          "mediumWidth": {
+            "label": "中尺寸寬度",
+            "description": "用於一般相簿網格同大部分裝置嘅縮圖寬度（像素）"
+          },
+          "largeWidth": {
+            "label": "大尺寸寬度",
+            "description": "用於寬螢幕、單欄相片流同詳細頁預覽嘅縮圖寬度（像素）"
+          },
+          "quality": {
+            "label": "WebP 品質",
+            "description": "控制響應式縮圖嘅畫質同檔案大小",
+            "help": "建議保持喺 75 到 88；較高數值會增加儲存同流量用量"
           }
         }
       },

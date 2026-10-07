@@ -9,12 +9,13 @@ import type {
   PipelineQueueItem,
   Photo,
 } from '~~/server/utils/db'
+import type { PhotoThumbnailVariant } from '~~/shared/types/photo'
 import { compressUint8Array } from '~~/shared/utils/u8array'
 import {
   preprocessImageWithJpegUpload,
   processImageMetadataAndSharp,
 } from '../image/processor'
-import { generateThumbnailAndHash } from '../image/thumbnail'
+import { generateThumbnailVariantsAndHash } from '../image/thumbnail'
 import { extractExifData, extractPhotoInfo } from '../image/exif'
 import {
   extractLocationFromGPS,
@@ -319,24 +320,60 @@ export class QueueManager {
           // STEP 3: 生成缩略图
           await this.updateTaskStage(taskId, 'thumbnail')
           this.logger.info(`[${taskId}:in-stage] thumbnail generation`)
-          const { thumbnailBuffer, thumbnailHash } =
-            await generateThumbnailAndHash(imageBuffer, this.logger)
+          const responsiveImagesEnabled =
+            (await settingsManager.get<boolean>(
+              'system',
+              'image.responsive.enabled',
+            )) ?? true
+          const smallWidth =
+            (await settingsManager.get<number>(
+              'system',
+              'image.responsive.smallWidth',
+            )) ?? 480
+          const mediumWidth =
+            (await settingsManager.get<number>(
+              'system',
+              'image.responsive.mediumWidth',
+            )) ?? 960
+          const largeWidth =
+            (await settingsManager.get<number>(
+              'system',
+              'image.responsive.largeWidth',
+            )) ?? 1600
+          const thumbnailQuality =
+            (await settingsManager.get<number>(
+              'system',
+              'image.responsive.quality',
+            )) ?? 82
 
-          // 上传缩略图到存储服务
-          const thumbnailObject = await new Promise<any>((resolve, reject) => {
-            setImmediate(async () => {
-              try {
-                const result = await storageProvider.create(
-                  `thumbnails/${photoId}.webp`,
-                  thumbnailBuffer,
-                  'image/webp',
-                )
-                resolve(result)
-              } catch (error) {
-                reject(error)
+          const { variants: generatedVariants, thumbnailHash } =
+            await generateThumbnailVariantsAndHash(
+              imageBuffer,
+              responsiveImagesEnabled
+                ? [smallWidth, mediumWidth, largeWidth]
+                : [mediumWidth],
+              thumbnailQuality,
+              this.logger,
+            )
+
+          const thumbnailVariants: PhotoThumbnailVariant[] = await Promise.all(
+            generatedVariants.map(async (variant) => {
+              const uploaded = await storageProvider.create(
+                `thumbnails/${photoId}-${variant.width}w.webp`,
+                variant.buffer,
+                'image/webp',
+              )
+
+              return {
+                width: variant.width,
+                height: variant.height,
+                bytes: variant.bytes,
+                key: uploaded.key,
+                url: storageProvider.getPublicUrl(uploaded.key),
               }
-            })
-          })
+            }),
+          )
+          const primaryThumbnail = thumbnailVariants[0]!
 
           // STEP 4: 提取 EXIF 数据
           await this.updateTaskStage(taskId, 'exif')
@@ -430,6 +467,8 @@ export class QueueManager {
               title: tables.photos.title,
               description: tables.photos.description,
               tags: tables.photos.tags,
+              thumbnailKey: tables.photos.thumbnailKey,
+              thumbnailVariants: tables.photos.thumbnailVariants,
               isVisible: tables.photos.isVisible,
               isFeatured: tables.photos.isFeatured,
             })
@@ -451,7 +490,7 @@ export class QueueManager {
             height: metadata.height,
             aspectRatio: metadata.width / metadata.height,
             storageKey: storageKey,
-            thumbnailKey: thumbnailObject.key,
+            thumbnailKey: primaryThumbnail.key,
             fileSize: storageObject.size || null,
             lastModified:
               storageObject.lastModified?.toISOString() ||
@@ -459,7 +498,8 @@ export class QueueManager {
             originalUrl: imageBuffers.jpegKey
               ? storageProvider.getPublicUrl(imageBuffers.jpegKey) // 使用 JPEG 版本作为 originalUrl
               : storageProvider.getPublicUrl(storageKey),
-            thumbnailUrl: storageProvider.getPublicUrl(thumbnailObject.key),
+            thumbnailUrl: primaryThumbnail.url,
+            thumbnailVariants,
             thumbnailHash: thumbnailHash
               ? compressUint8Array(thumbnailHash)
               : null,
@@ -489,6 +529,30 @@ export class QueueManager {
             target: tables.photos.id,
             set: result,
           })
+
+          const currentThumbnailKeys = new Set(
+            thumbnailVariants.map((variant) => variant.key),
+          )
+          const previousThumbnailKeys = new Set([
+            ...(existingPhotoState?.thumbnailVariants?.map(
+              (variant: PhotoThumbnailVariant) => variant.key,
+            ) ?? []),
+            ...(existingPhotoState?.thumbnailKey
+              ? [existingPhotoState.thumbnailKey]
+              : []),
+          ])
+
+          for (const previousKey of previousThumbnailKeys) {
+            if (currentThumbnailKeys.has(previousKey)) continue
+            try {
+              await storageProvider.delete(previousKey)
+            } catch (cleanupError) {
+              this.logger.warn(
+                `Failed to delete obsolete thumbnail ${previousKey}`,
+                cleanupError,
+              )
+            }
+          }
 
           if (shouldAutoEraseLocationOnUpload) {
             try {

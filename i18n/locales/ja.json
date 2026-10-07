@@ -1080,6 +1080,7 @@
       "sections": {
         "thirdPartyLogin": "外部ログイン",
         "fileProcessing": "ファイル処理",
+        "responsiveImages": "レスポンシブ画像",
         "debugSettings": "デバッグ設定"
       },
       "upload": {
@@ -1098,6 +1099,32 @@
               "warn": "警告して上書き",
               "block": "アップロードを拒否"
             }
+          }
+        }
+      },
+      "image": {
+        "responsive": {
+          "enabled": {
+            "label": "レスポンシブサムネイルを生成",
+            "description": "写真ごとに複数の幅を生成し、画面とレイアウトに適した画像をブラウザが選択します",
+            "help": "無効時は中サイズのみ生成します。既存写真は再処理後に新しいサイズが追加されます。"
+          },
+          "smallWidth": {
+            "label": "小サイズの幅",
+            "description": "地図マーカー、一覧、小さい画面向けのサムネイル幅（ピクセル）"
+          },
+          "mediumWidth": {
+            "label": "中サイズの幅",
+            "description": "通常のギャラリーと多くの端末向けのサムネイル幅（ピクセル）"
+          },
+          "largeWidth": {
+            "label": "大サイズの幅",
+            "description": "ワイド画面、写真フィード、詳細表示のプレースホルダー向けの幅（ピクセル）"
+          },
+          "quality": {
+            "label": "WebP 品質",
+            "description": "レスポンシブサムネイルの画質とファイルサイズを調整します",
+            "help": "75〜88 を推奨します。高い値ほどストレージと通信量が増えます。"
           }
         }
       },

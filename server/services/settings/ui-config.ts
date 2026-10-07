@@ -320,6 +320,31 @@ export const SYSTEM_SETTINGS_UI: Record<string, FieldUIConfig> = {
     ],
     help: 'settings.system.upload.duplicateCheck.mode.help',
   },
+  'image.responsive.enabled': {
+    type: 'toggle',
+    help: 'settings.system.image.responsive.enabled.help',
+  },
+  'image.responsive.smallWidth': {
+    type: 'number',
+    min: 240,
+    max: 1200,
+  },
+  'image.responsive.mediumWidth': {
+    type: 'number',
+    min: 480,
+    max: 2000,
+  },
+  'image.responsive.largeWidth': {
+    type: 'number',
+    min: 960,
+    max: 3200,
+  },
+  'image.responsive.quality': {
+    type: 'number',
+    min: 40,
+    max: 95,
+    help: 'settings.system.image.responsive.quality.help',
+  },
   webglImageViewerDebug: {
     type: 'toggle',
     help: 'settings.system.webglImageViewerDebug.help',

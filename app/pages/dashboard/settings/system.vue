@@ -50,6 +50,17 @@ const SYSTEM_SECTION_ORDER: SystemSection[] = [
     ],
   },
   {
+    id: 'responsiveImages',
+    titleKey: 'settings.system.sections.responsiveImages',
+    keys: [
+      'image.responsive.enabled',
+      'image.responsive.smallWidth',
+      'image.responsive.mediumWidth',
+      'image.responsive.largeWidth',
+      'image.responsive.quality',
+    ],
+  },
+  {
     id: 'debug',
     titleKey: 'settings.system.sections.debugSettings',
     keys: ['webglImageViewerDebug'],

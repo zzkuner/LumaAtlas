@@ -6,7 +6,7 @@ import {
   real,
   uniqueIndex,
 } from 'drizzle-orm/sqlite-core'
-import type { NeededExif } from '~~/shared/types/photo'
+import type { NeededExif, PhotoThumbnailVariant } from '~~/shared/types/photo'
 import type { StorageConfig } from '../services/storage'
 
 type PipelineQueuePayload =
@@ -54,6 +54,9 @@ export const photos = sqliteTable('photos', {
   lastModified: text('last_modified'),
   originalUrl: text('original_url'),
   thumbnailUrl: text('thumbnail_url'),
+  thumbnailVariants: text('thumbnail_variants', { mode: 'json' }).$type<
+    PhotoThumbnailVariant[]
+  >(),
   thumbnailHash: text('thumbnail_hash'),
   tags: text('tags', { mode: 'json' }).$type<string[]>(),
   exif: text('exif', { mode: 'json' }).$type<NeededExif>(),

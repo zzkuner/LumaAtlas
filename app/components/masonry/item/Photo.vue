@@ -68,6 +68,11 @@ const displayAspectRatio = computed(() => {
 })
 
 const isFeed = computed(() => props.presentation === 'feed')
+const thumbnailSizes = computed(() =>
+  isFeed.value
+    ? '(max-width: 1024px) 100vw, 960px'
+    : '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw',
+)
 
 // Show info overlay only when not playing video or video has finished
 const shouldShowInfoOverlay = computed(() => {
@@ -514,6 +519,8 @@ onUnmounted(() => {
       >
         <ThumbImage
           :src="photo.thumbnailUrl || ''"
+          :sources="photo.thumbnailVariants"
+          :sizes="thumbnailSizes"
           :alt="photo.title || 'Photo thumbnail'"
           :thumbhash="photo.thumbnailHash || ''"
           class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"

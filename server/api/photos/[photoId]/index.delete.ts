@@ -53,8 +53,12 @@ export default eventHandler(async (event) => {
           }
         }
       }
-      if (photo.thumbnailKey) {
-        await storageProvider.delete(photo.thumbnailKey)
+      const thumbnailKeys = new Set([
+        ...(photo.thumbnailKey ? [photo.thumbnailKey] : []),
+        ...(photo.thumbnailVariants?.map((variant) => variant.key) ?? []),
+      ])
+      for (const thumbnailKey of thumbnailKeys) {
+        await storageProvider.delete(thumbnailKey)
       }
       if (photo.livePhotoVideoKey) {
         await storageProvider.delete(photo.livePhotoVideoKey)

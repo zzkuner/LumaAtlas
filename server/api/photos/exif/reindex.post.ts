@@ -57,7 +57,6 @@ export default eventHandler(async (event) => {
           dateTaken: photoInfo.dateTaken,
           tags: photoInfo.tags,
           lastModified: new Date().toISOString(),
-          thumbnailKey: `${storageProvider.config?.prefix?.replace(/\/$/, '')}/thumbnails/${photoId}.webp`,
         })
         .where(eq(tables.photos.id, photoId))
 
@@ -155,7 +154,6 @@ export default eventHandler(async (event) => {
               dateTaken: photoInfo.dateTaken,
               tags: photoInfo.tags,
               lastModified: new Date().toISOString(),
-              thumbnailKey: `${storageProvider.config?.prefix?.replace(/\/$/, '')}/thumbnails/${photo.id}.webp`,
             })
             .where(eq(tables.photos.id, photo.id))
 

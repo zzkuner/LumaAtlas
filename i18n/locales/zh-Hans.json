@@ -1149,6 +1149,7 @@
       "sections": {
         "thirdPartyLogin": "第三方登录",
         "fileProcessing": "文件处理",
+        "responsiveImages": "响应式图片",
         "debugSettings": "调试设置"
       },
       "upload": {
@@ -1167,6 +1168,32 @@
               "warn": "警告并覆盖",
               "block": "阻止上传"
             }
+          }
+        }
+      },
+      "image": {
+        "responsive": {
+          "enabled": {
+            "label": "生成响应式缩略图",
+            "description": "为每张照片生成多种宽度，由浏览器按屏幕和布局选择最合适的文件",
+            "help": "关闭后只生成中等尺寸缩略图；旧照片需要重新处理后才会获得新尺寸"
+          },
+          "smallWidth": {
+            "label": "小尺寸宽度",
+            "description": "用于地图标记、列表和较小屏幕的缩略图宽度（像素）"
+          },
+          "mediumWidth": {
+            "label": "中尺寸宽度",
+            "description": "用于常规相册网格和大多数设备的缩略图宽度（像素）"
+          },
+          "largeWidth": {
+            "label": "大尺寸宽度",
+            "description": "用于宽屏、单列照片流和详情加载占位的缩略图宽度（像素）"
+          },
+          "quality": {
+            "label": "WebP 质量",
+            "description": "控制响应式缩略图的画质与文件大小",
+            "help": "建议保持在 75 到 88；更高的数值会增加存储和流量占用"
           }
         }
       },

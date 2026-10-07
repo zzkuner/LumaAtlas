@@ -1,10 +1,13 @@
 <script lang="ts" setup>
 import { twMerge } from 'tailwind-merge'
 import type { CSSProperties } from 'vue'
+import type { PhotoThumbnailVariant } from '~~/shared/types/photo'
 
 const props = withDefaults(
   defineProps<{
     src: string
+    sources?: PhotoThumbnailVariant[] | null
+    sizes?: string
     alt: string
     thumbhash?: string | null
     class?: string
@@ -17,6 +20,8 @@ const props = withDefaults(
   }>(),
   {
     thumbhash: null,
+    sources: null,
+    sizes: '100vw',
     class: '',
     thumbhashClass: '',
     style: undefined,
@@ -36,6 +41,27 @@ const elemRef = useTemplateRef('elemRef')
 const isElemVisible = ref(false)
 const isLoaded = ref(false)
 const isError = ref(false)
+
+const srcset = computed(() => {
+  const uniqueSources = new Map<number, PhotoThumbnailVariant>()
+  for (const source of props.sources || []) {
+    if (!source.url || source.width <= 0) continue
+    uniqueSources.set(source.width, source)
+  }
+
+  return [...uniqueSources.values()]
+    .sort((left, right) => left.width - right.width)
+    .map((source) => `${source.url} ${source.width}w`)
+    .join(', ')
+})
+
+watch(
+  () => [props.src, srcset.value],
+  () => {
+    isLoaded.value = false
+    isError.value = false
+  },
+)
 
 onMounted(() => {
   if (!props.lazy) {
@@ -83,8 +109,11 @@ const onError = () => {
 
     <img
       v-if="isElemVisible"
-      loading="lazy"
+      :loading="lazy ? 'lazy' : 'eager'"
+      decoding="async"
       :src="src"
+      :srcset="srcset || undefined"
+      :sizes="srcset ? sizes : undefined"
       :alt="alt"
       :class="
         twMerge(

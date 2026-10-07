@@ -34,6 +34,9 @@ const showGlobeNav = computed(
 const showAlbumsNav = computed(
   () => getSetting('app:appearance.home.showAlbumsNav') !== false,
 )
+const showExploreNav = computed(
+  () => getSetting('app:appearance.home.showExploreNav') !== false,
+)
 const rssEnabled = computed(
   () => getSetting('publishing:rss.enabled') !== false,
 )
@@ -66,6 +69,8 @@ const totalSelectedFilters = computed(() => {
 const handleOpenLogin = () => {
   router.push('/signin')
 }
+
+const { openCommandPalette } = useCommandPalette()
 </script>
 
 <template>
@@ -106,6 +111,13 @@ const handleOpenLogin = () => {
                 {{ $t('title.gallery') }}
               </NuxtLink>
               <NuxtLink
+                v-if="showExploreNav"
+                to="/explore"
+                class="transition-colors hover:text-neutral-950 dark:hover:text-white"
+              >
+                {{ $t('discovery.title') }}
+              </NuxtLink>
+              <NuxtLink
                 v-if="showGlobeNav"
                 to="/globe"
                 class="transition-colors hover:text-neutral-950 dark:hover:text-white"
@@ -122,6 +134,17 @@ const handleOpenLogin = () => {
             </nav>
 
             <div class="flex shrink-0 items-center gap-0.5">
+              <UTooltip :text="$t('discovery.command.title')">
+                <UButton
+                  variant="ghost"
+                  color="neutral"
+                  icon="lucide:search"
+                  size="sm"
+                  class="rounded-md"
+                  :aria-label="$t('discovery.command.title')"
+                  @click="openCommandPalette"
+                />
+              </UTooltip>
               <UPopover>
                 <UTooltip :text="$t('ui.action.filter.tooltip')">
                   <UChip
@@ -284,6 +307,13 @@ const handleOpenLogin = () => {
               class="text-neutral-950 dark:text-white"
             >
               {{ $t('title.gallery') }}
+            </NuxtLink>
+            <NuxtLink
+              v-if="showExploreNav"
+              to="/explore"
+              class="transition-colors"
+            >
+              {{ $t('discovery.title') }}
             </NuxtLink>
             <NuxtLink
               v-if="showGlobeNav"

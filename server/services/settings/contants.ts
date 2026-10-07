@@ -170,6 +170,15 @@ export const DEFAULT_SETTINGS = [
   },
   {
     namespace: 'app',
+    key: 'appearance.home.showExploreNav',
+    type: 'boolean',
+    defaultValue: true,
+    label: 'settings.app.appearance.home.showExploreNav.label',
+    description: 'settings.app.appearance.home.showExploreNav.description',
+    isPublic: true,
+  },
+  {
+    namespace: 'app',
     key: 'appearance.home.showGlobeNav',
     type: 'boolean',
     defaultValue: true,

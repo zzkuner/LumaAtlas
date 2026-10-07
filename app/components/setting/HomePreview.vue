@@ -43,6 +43,9 @@ const showGlobeNav = computed(
 const showAlbumsNav = computed(
   () => setting('appearance.home.showAlbumsNav', true) !== false,
 )
+const showExploreNav = computed(
+  () => setting('appearance.home.showExploreNav', true) !== false,
+)
 
 const previewGap = computed(() => {
   const value = Number(setting('appearance.home.galleryGap', 12))
@@ -133,6 +136,7 @@ const itemRatio = (naturalRatio: number) => {
           </div>
           <div class="flex items-center gap-2 text-[8px] text-neutral-500">
             <span>Gallery</span>
+            <span v-if="showExploreNav">Explore</span>
             <span v-if="showGlobeNav">Globe</span>
             <span v-if="showAlbumsNav">Albums</span>
           </div>

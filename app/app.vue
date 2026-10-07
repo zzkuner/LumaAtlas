@@ -138,6 +138,7 @@ provide(
           @close="handleClose"
           @index-change="handleIndexChange"
         />
+        <DiscoveryCommandPalette />
       </ClientOnly>
     </PhotosProvider>
   </UApp>

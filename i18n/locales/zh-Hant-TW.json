@@ -1,4 +1,52 @@
 {
+  "discovery": {
+    "title": "探索",
+    "eyebrow": "探索照片檔案",
+    "searchPlaceholder": "搜尋標題、標籤、地點、相機或鏡頭",
+    "quickFilters": "快速篩選",
+    "clearFilters": "清除篩選",
+    "resultCount": "{count} 張照片",
+    "radius": "範圍",
+    "reshuffle": "重新隨機",
+    "untitled": "未命名照片",
+    "modes": {
+      "featured": {
+        "label": "精選",
+        "description": "瀏覽站長挑選的代表作品。"
+      },
+      "recent": { "label": "最近", "description": "依拍攝時間瀏覽最新照片。" },
+      "random": {
+        "label": "隨機",
+        "description": "離開時間順序，重新遇見照片。"
+      },
+      "nearby": {
+        "label": "附近",
+        "description": "根據你的位置尋找附近拍攝的照片。"
+      },
+      "faraway": {
+        "label": "遠方",
+        "description": "從距離你最遠的拍攝地開始探索。"
+      }
+    },
+    "location": {
+      "title": "需要位置權限",
+      "description": "位置只會在目前裝置中用於計算照片距離，不會上傳至伺服器。",
+      "denied": "無法讀取目前位置，請檢查瀏覽器的位置權限後重試。",
+      "action": "使用我的位置"
+    },
+    "empty": {
+      "title": "找不到照片",
+      "description": "請嘗試其他探索方式或清除目前篩選。"
+    },
+    "command": {
+      "title": "快速搜尋",
+      "placeholder": "搜尋照片或前往頁面...",
+      "navigation": "導覽",
+      "photos": "照片",
+      "viewAll": "查看所有結果",
+      "noResults": "沒有符合的照片"
+    }
+  },
   "map": {
     "cluster": {
       "details": "點選圖片查看詳細資訊",
@@ -1057,6 +1105,10 @@
           "showStats": {
             "label": "顯示照片統計",
             "description": "在相簿上方顯示照片數量與日期範圍"
+          },
+          "showExploreNav": {
+            "label": "顯示探索入口",
+            "description": "在首頁導覽中顯示照片探索頁面"
           },
           "showGlobeNav": {
             "label": "顯示地球儀入口",

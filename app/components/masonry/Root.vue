@@ -3,10 +3,14 @@ import { motion } from 'motion-v'
 interface Props {
   photos: Photo[]
   columns?: number | 'auto'
+  mode?: 'home' | 'collection'
+  showHeader?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   columns: 'auto',
+  mode: 'home',
+  showHeader: true,
 })
 
 const dayjs = useDayjs()
@@ -16,6 +20,10 @@ const { filteredPhotos, hasActiveFilters } = usePhotoFilters()
 const { sortedPhotos } = usePhotoSort()
 
 const displayPhotos = computed(() => {
+  if (props.mode === 'collection') {
+    return props.photos
+  }
+
   const photos = hasActiveFilters.value
     ? filteredPhotos.value
     : sortedPhotos.value
@@ -366,6 +374,7 @@ watch(currentPhotoIndex, (newIndex) => {
 <template>
   <div class="relative w-full">
     <MasonryItemHeader
+      v-if="showHeader"
       :stats="photoStats"
       :date-range-text
       :max-width="galleryMaxWidth"

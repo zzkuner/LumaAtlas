@@ -1,4 +1,55 @@
 {
+  "discovery": {
+    "title": "发现",
+    "eyebrow": "探索照片档案",
+    "searchPlaceholder": "搜索标题、标签、地点、相机或镜头",
+    "quickFilters": "快速筛选",
+    "clearFilters": "清除筛选",
+    "resultCount": "{count} 张照片",
+    "radius": "范围",
+    "reshuffle": "重新随机",
+    "untitled": "未命名照片",
+    "modes": {
+      "featured": {
+        "label": "精选",
+        "description": "查看站长挑选的代表作品。"
+      },
+      "recent": {
+        "label": "最近",
+        "description": "按照拍摄时间浏览最新照片。"
+      },
+      "random": {
+        "label": "随机",
+        "description": "打乱时间顺序，重新遇见照片。"
+      },
+      "nearby": {
+        "label": "附近",
+        "description": "根据你的位置寻找附近拍摄的照片。"
+      },
+      "faraway": {
+        "label": "远方",
+        "description": "从与你距离最远的拍摄地开始探索。"
+      }
+    },
+    "location": {
+      "title": "需要位置权限",
+      "description": "位置只在当前设备中用于计算照片距离，不会上传到服务器。",
+      "denied": "无法读取当前位置，请检查浏览器的位置权限后重试。",
+      "action": "使用我的位置"
+    },
+    "empty": {
+      "title": "没有找到照片",
+      "description": "尝试更换发现方式或清除当前筛选。"
+    },
+    "command": {
+      "title": "快速搜索",
+      "placeholder": "搜索照片或跳转页面...",
+      "navigation": "导航",
+      "photos": "照片",
+      "viewAll": "查看全部结果",
+      "noResults": "没有匹配的照片"
+    }
+  },
   "map": {
     "cluster": {
       "details": "点击图片查看详情",
@@ -1126,6 +1177,10 @@
           "showStats": {
             "label": "显示照片统计",
             "description": "在相册上方显示照片数量和日期范围"
+          },
+          "showExploreNav": {
+            "label": "显示发现入口",
+            "description": "在首页导航中显示照片发现页面"
           },
           "showGlobeNav": {
             "label": "显示地球仪入口",

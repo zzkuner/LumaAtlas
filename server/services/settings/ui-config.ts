@@ -182,6 +182,9 @@ export const APP_SETTINGS_UI: Record<string, FieldUIConfig> = {
   'appearance.home.showStats': {
     type: 'toggle',
   },
+  'appearance.home.showExploreNav': {
+    type: 'toggle',
+  },
   'appearance.home.showGlobeNav': {
     type: 'toggle',
   },

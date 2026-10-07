@@ -1,4 +1,55 @@
 {
+  "discovery": {
+    "title": "見つける",
+    "eyebrow": "写真アーカイブを探索",
+    "searchPlaceholder": "タイトル、タグ、場所、カメラ、レンズを検索",
+    "quickFilters": "クイックフィルター",
+    "clearFilters": "フィルターを解除",
+    "resultCount": "{count} 枚の写真",
+    "radius": "範囲",
+    "reshuffle": "もう一度シャッフル",
+    "untitled": "無題の写真",
+    "modes": {
+      "featured": {
+        "label": "おすすめ",
+        "description": "選び抜かれた代表作品を表示します。"
+      },
+      "recent": {
+        "label": "最近",
+        "description": "撮影日時が新しい写真から表示します。"
+      },
+      "random": {
+        "label": "ランダム",
+        "description": "時間順を離れて写真と再会します。"
+      },
+      "nearby": {
+        "label": "近く",
+        "description": "現在地の近くで撮影された写真を探します。"
+      },
+      "faraway": {
+        "label": "遠く",
+        "description": "現在地から最も遠い撮影地から探索します。"
+      }
+    },
+    "location": {
+      "title": "位置情報の許可が必要です",
+      "description": "位置情報は端末内で距離計算にのみ使用され、サーバーには送信されません。",
+      "denied": "現在地を取得できません。ブラウザの位置情報権限を確認してください。",
+      "action": "現在地を使用"
+    },
+    "empty": {
+      "title": "写真が見つかりません",
+      "description": "表示方法を変更するか、フィルターを解除してください。"
+    },
+    "command": {
+      "title": "クイック検索",
+      "placeholder": "写真を検索、またはページへ移動...",
+      "navigation": "ナビゲーション",
+      "photos": "写真",
+      "viewAll": "すべての結果を表示",
+      "noResults": "一致する写真はありません"
+    }
+  },
   "plural": {
     "photo": "写真がありません | 写真 {count} 枚"
   },
@@ -1057,6 +1108,10 @@
           "showStats": {
             "label": "写真の概要を表示",
             "description": "ギャラリー上部に写真数と日付範囲を表示します"
+          },
+          "showExploreNav": {
+            "label": "見つけるナビを表示",
+            "description": "ホームページのナビゲーションに写真探索ページを表示します"
           },
           "showGlobeNav": {
             "label": "グローブナビを表示",

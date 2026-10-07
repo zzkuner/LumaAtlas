@@ -1,4 +1,55 @@
 {
+  "discovery": {
+    "title": "Explore",
+    "eyebrow": "Explore the photo archive",
+    "searchPlaceholder": "Search titles, tags, places, cameras, or lenses",
+    "quickFilters": "Quick filters",
+    "clearFilters": "Clear filters",
+    "resultCount": "{count} photos",
+    "radius": "Radius",
+    "reshuffle": "Shuffle again",
+    "untitled": "Untitled photo",
+    "modes": {
+      "featured": {
+        "label": "Featured",
+        "description": "Browse a curated selection of representative work."
+      },
+      "recent": {
+        "label": "Recent",
+        "description": "See the newest photographs by capture date."
+      },
+      "random": {
+        "label": "Random",
+        "description": "Leave the timeline behind and rediscover the archive."
+      },
+      "nearby": {
+        "label": "Nearby",
+        "description": "Find photographs captured near your current location."
+      },
+      "faraway": {
+        "label": "Far Away",
+        "description": "Start with the places farthest from where you are."
+      }
+    },
+    "location": {
+      "title": "Location permission needed",
+      "description": "Your location is used only on this device to calculate distance and is never uploaded.",
+      "denied": "Your location could not be read. Check the browser permission and try again.",
+      "action": "Use my location"
+    },
+    "empty": {
+      "title": "No photos found",
+      "description": "Try another view or clear the current filters."
+    },
+    "command": {
+      "title": "Quick search",
+      "placeholder": "Search photos or jump to a page...",
+      "navigation": "Navigation",
+      "photos": "Photos",
+      "viewAll": "View all results",
+      "noResults": "No matching photos"
+    }
+  },
   "plural": {
     "photo": "no photos | one photo | {count} photos"
   },
@@ -1122,6 +1173,10 @@
           "showStats": {
             "label": "Show Photo Summary",
             "description": "Display the photo count and date range above the gallery"
+          },
+          "showExploreNav": {
+            "label": "Show Explore Navigation",
+            "description": "Display the photo discovery page in the homepage navigation"
           },
           "showGlobeNav": {
             "label": "Show Globe Navigation",

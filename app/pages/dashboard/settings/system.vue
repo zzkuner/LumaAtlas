@@ -113,6 +113,32 @@ const handleSectionSettingsSubmit = async (
     /* empty */
   }
 }
+
+const maintenanceLoading = ref(false)
+const maintenanceResult = ref<{
+  expiredShares: number
+  oldQueueTasks: number
+  completedAt: string
+} | null>(null)
+const toast = useToast()
+
+const runMaintenance = async () => {
+  maintenanceLoading.value = true
+  try {
+    maintenanceResult.value = await $fetch('/api/system/maintenance/cleanup', {
+      method: 'POST',
+    })
+    toast.add({ title: '系统清理完成', color: 'success' })
+  } catch (error) {
+    toast.add({
+      title: '系统清理失败',
+      description: error instanceof Error ? error.message : String(error),
+      color: 'error',
+    })
+  } finally {
+    maintenanceLoading.value = false
+  }
+}
 </script>
 
 <template>
@@ -213,6 +239,56 @@ const handleSectionSettingsSubmit = async (
               </UButton>
             </div>
           </footer>
+        </section>
+
+        <section
+          class="rounded-md border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950"
+        >
+          <header
+            class="border-b border-neutral-200 px-5 py-4 dark:border-neutral-800"
+          >
+            <h3
+              class="text-base font-semibold text-neutral-900 dark:text-neutral-100"
+            >
+              数据维护
+            </h3>
+          </header>
+          <div
+            class="flex flex-col gap-4 px-5 py-5 sm:flex-row sm:items-center sm:justify-between"
+          >
+            <div>
+              <p
+                class="text-sm font-medium text-neutral-900 dark:text-neutral-100"
+              >
+                清理过期运行数据
+              </p>
+              <p
+                class="mt-1 max-w-2xl text-sm leading-6 text-neutral-500 dark:text-neutral-400"
+              >
+                删除已过期的分享记录、30 天前已完成的队列任务和 90
+                天前失败的队列任务，不会删除照片文件。
+              </p>
+              <p
+                v-if="maintenanceResult"
+                class="mt-2 text-xs text-neutral-500"
+              >
+                已清理 {{ maintenanceResult.expiredShares }} 个过期分享，{{
+                  maintenanceResult.oldQueueTasks
+                }}
+                条旧任务。
+              </p>
+            </div>
+            <UButton
+              class="shrink-0"
+              color="neutral"
+              variant="outline"
+              icon="lucide:eraser"
+              :loading="maintenanceLoading"
+              @click="runMaintenance"
+            >
+              立即清理
+            </UButton>
+          </div>
         </section>
       </div>
     </template>

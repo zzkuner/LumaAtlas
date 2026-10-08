@@ -17,6 +17,29 @@ useHead({
 })
 
 const toast = useToast()
+const checkingStorage = ref(false)
+const { data: storageHealth, refresh: refreshStorageHealth } = await useFetch<{
+  status: 'healthy' | 'degraded' | 'unavailable'
+  provider: string | null
+  latencyMs: number | null
+  checkedAt: string
+  message: string
+}>('/api/system/storage/health')
+
+const storageHealthColor = computed(() => {
+  if (storageHealth.value?.status === 'healthy') return 'success'
+  if (storageHealth.value?.status === 'degraded') return 'warning'
+  return 'error'
+})
+
+const checkStorageHealth = async () => {
+  checkingStorage.value = true
+  try {
+    await refreshStorageHealth()
+  } finally {
+    checkingStorage.value = false
+  }
+}
 
 const { data: currentStorageProvider, refresh: refreshCurrentStorageProvider } =
   await useFetch<{
@@ -29,10 +52,9 @@ const {
   data: availableStorage,
   refresh: refreshAvailableStorage,
   status: availableStorageStatus,
-} =
-  await useFetch<SettingStorageProvider[]>(
-    '/api/system/settings/storage-config',
-  )
+} = await useFetch<SettingStorageProvider[]>(
+  '/api/system/settings/storage-config',
+)
 
 const PROVIDER_ICON = {
   s3: 'tabler:brand-aws',
@@ -97,7 +119,9 @@ const storageSettingsState = reactive<{
 })
 
 const isStorageDefaultDirty = computed(() => {
-  return storageSettingsState.storageConfigId !== currentStorageProvider.value?.value
+  return (
+    storageSettingsState.storageConfigId !== currentStorageProvider.value?.value
+  )
 })
 
 const resetStorageDefault = () => {
@@ -362,8 +386,12 @@ const onStorageDelete = async (storageId: number) => {
 
     <template #body>
       <div class="mx-auto w-full max-w-5xl space-y-6">
-        <section class="space-y-2 border-b border-neutral-200 pb-4 dark:border-neutral-800">
-          <h2 class="text-xl font-semibold text-neutral-900 dark:text-neutral-100">
+        <section
+          class="space-y-2 border-b border-neutral-200 pb-4 dark:border-neutral-800"
+        >
+          <h2
+            class="text-xl font-semibold text-neutral-900 dark:text-neutral-100"
+          >
             {{ $t('title.storageSettings') }}
           </h2>
           <p class="text-sm text-neutral-600 dark:text-neutral-400">
@@ -371,9 +399,73 @@ const onStorageDelete = async (storageId: number) => {
           </p>
         </section>
 
-        <section class="rounded-md border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950">
-          <header class="border-b border-neutral-200 px-5 py-4 dark:border-neutral-800">
-            <h3 class="text-base font-semibold text-neutral-900 dark:text-neutral-100">
+        <section
+          class="rounded-md border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950"
+        >
+          <header
+            class="flex items-center justify-between gap-4 border-b border-neutral-200 px-5 py-4 dark:border-neutral-800"
+          >
+            <div>
+              <h3
+                class="text-base font-semibold text-neutral-900 dark:text-neutral-100"
+              >
+                存储健康状态
+              </h3>
+              <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+                只读探测当前提供者，并在有照片时检查最新对象是否可访问。
+              </p>
+            </div>
+            <UButton
+              icon="lucide:refresh-cw"
+              color="neutral"
+              variant="outline"
+              size="sm"
+              :loading="checkingStorage"
+              @click="checkStorageHealth"
+            >
+              重新检测
+            </UButton>
+          </header>
+          <div class="grid gap-4 px-5 py-5 sm:grid-cols-3">
+            <div>
+              <p class="text-xs text-neutral-500">状态</p>
+              <UBadge
+                class="mt-2"
+                :color="storageHealthColor"
+                variant="soft"
+              >
+                {{ storageHealth?.status || 'checking' }}
+              </UBadge>
+            </div>
+            <div>
+              <p class="text-xs text-neutral-500">当前提供者</p>
+              <p class="mt-2 text-sm font-medium">
+                {{ storageHealth?.provider || '--' }}
+              </p>
+            </div>
+            <div>
+              <p class="text-xs text-neutral-500">响应耗时</p>
+              <p class="mt-2 text-sm font-medium">
+                {{ storageHealth?.latencyMs ?? '--' }} ms
+              </p>
+            </div>
+            <p
+              class="text-sm leading-6 text-neutral-600 sm:col-span-3 dark:text-neutral-400"
+            >
+              {{ storageHealth?.message || '正在检测存储状态。' }}
+            </p>
+          </div>
+        </section>
+
+        <section
+          class="rounded-md border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950"
+        >
+          <header
+            class="border-b border-neutral-200 px-5 py-4 dark:border-neutral-800"
+          >
+            <h3
+              class="text-base font-semibold text-neutral-900 dark:text-neutral-100"
+            >
               当前默认存储
             </h3>
           </header>
@@ -422,7 +514,9 @@ const onStorageDelete = async (storageId: number) => {
             </UFormField>
           </div>
 
-          <footer class="border-t border-neutral-200 px-5 py-4 dark:border-neutral-800">
+          <footer
+            class="border-t border-neutral-200 px-5 py-4 dark:border-neutral-800"
+          >
             <div
               v-if="isStorageDefaultDirty"
               class="mb-3 rounded-md border border-warning-200 bg-warning-50 px-3 py-2 text-sm text-warning-800 dark:border-warning-900/60 dark:bg-warning-950/30 dark:text-warning-200"
@@ -481,9 +575,15 @@ const onStorageDelete = async (storageId: number) => {
           </footer>
         </section>
 
-        <section class="rounded-md border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950">
-          <header class="flex w-full items-center justify-between border-b border-neutral-200 px-5 py-4 dark:border-neutral-800">
-            <h3 class="text-base font-semibold text-neutral-900 dark:text-neutral-100">
+        <section
+          class="rounded-md border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950"
+        >
+          <header
+            class="flex w-full items-center justify-between border-b border-neutral-200 px-5 py-4 dark:border-neutral-800"
+          >
+            <h3
+              class="text-base font-semibold text-neutral-900 dark:text-neutral-100"
+            >
               存储方案管理
             </h3>
             <div>

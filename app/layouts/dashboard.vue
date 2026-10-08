@@ -74,6 +74,11 @@ const navItems = computed<NavigationMenuItem[][]>(() => [
           to: '/dashboard/settings/privacy',
         },
         {
+          label: '安全与登录',
+          icon: 'lucide:fingerprint',
+          to: '/dashboard/settings/security',
+        },
+        {
           label: $t('title.mapAndLocation'),
           icon: 'tabler:map-pin',
           to: '/dashboard/settings/map',
@@ -101,6 +106,7 @@ const handleLogin = () => {
 }
 
 const handleLogout = async () => {
+  await $fetch('/api/logout')
   await clear()
   await router.push('/signin')
 }

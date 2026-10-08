@@ -1,4 +1,6 @@
 import { settingsManager } from '~~/server/services/settings/settingsManager'
+import { establishUserSession } from '~~/server/services/auth/session'
+import { and, eq } from 'drizzle-orm'
 
 const _accessDeniedError = createError({
   statusCode: 403,
@@ -36,16 +38,25 @@ async function onGithubOAuthSuccess(event: any, { user }: { user: any }) {
   } else if (userFromEmail.isAdmin === 0) {
     throw _accessDeniedError
   } else {
-    await setUserSession(
-      event,
-      { user: userFromEmail },
-      {
-        cookie: {
-          // secure: !useRuntimeConfig().allowInsecureCookie,
-          secure: false,
-        },
-      },
-    )
+    const totpEnabled = db
+      .select({ id: tables.authFactors.id })
+      .from(tables.authFactors)
+      .where(
+        and(
+          eq(tables.authFactors.userId, userFromEmail.id),
+          eq(tables.authFactors.type, 'totp'),
+          eq(tables.authFactors.enabled, true),
+        ),
+      )
+      .get()
+    if (totpEnabled) {
+      throw createError({
+        statusCode: 403,
+        statusMessage:
+          'TOTP is enabled. Sign in with password or passkey to complete verification.',
+      })
+    }
+    await establishUserSession(event, userFromEmail)
   }
   return sendRedirect(event, '/')
 }

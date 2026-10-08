@@ -103,6 +103,11 @@ const handleOpenLogin = () => {
   router.push('/signin')
 }
 
+const handleLogout = async (clear: () => Promise<void>) => {
+  await $fetch('/api/logout')
+  await clear()
+}
+
 const { openCommandPalette } = useCommandPalette()
 </script>
 
@@ -300,7 +305,7 @@ const { openCommandPalette } = useCommandPalette()
                   class="rounded-md"
                   icon="lucide:log-out"
                   :aria-label="$t('ui.action.logout.tooltip')"
-                  @click="clear"
+                  @click="handleLogout(clear)"
                 />
               </UTooltip>
 

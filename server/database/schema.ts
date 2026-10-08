@@ -40,6 +40,98 @@ export const users = sqliteTable('users', {
   isAdmin: integer('is_admin').default(0).notNull(),
 })
 
+export const authFactors = sqliteTable(
+  'auth_factors',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    userId: integer('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    type: text('type', { enum: ['totp'] }).notNull(),
+    secret: text('secret').notNull(),
+    enabled: integer('enabled', { mode: 'boolean' }).default(false).notNull(),
+    createdAt: integer('created_at', { mode: 'timestamp' })
+      .notNull()
+      .default(sql`(unixepoch())`),
+    verifiedAt: integer('verified_at', { mode: 'timestamp' }),
+  },
+  (t) => [uniqueIndex('idx_auth_factors_user_type').on(t.userId, t.type)],
+)
+
+export const authRecoveryCodes = sqliteTable('auth_recovery_codes', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  userId: integer('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  codeHash: text('code_hash').notNull(),
+  usedAt: integer('used_at', { mode: 'timestamp' }),
+  createdAt: integer('created_at', { mode: 'timestamp' })
+    .notNull()
+    .default(sql`(unixepoch())`),
+})
+
+export const authSessions = sqliteTable(
+  'auth_sessions',
+  {
+    id: text('id').primaryKey(),
+    userId: integer('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    ipAddress: text('ip_address'),
+    userAgent: text('user_agent'),
+    createdAt: integer('created_at', { mode: 'timestamp' })
+      .notNull()
+      .default(sql`(unixepoch())`),
+    lastSeenAt: integer('last_seen_at', { mode: 'timestamp' })
+      .notNull()
+      .default(sql`(unixepoch())`),
+    expiresAt: integer('expires_at', { mode: 'timestamp' }).notNull(),
+    revokedAt: integer('revoked_at', { mode: 'timestamp' }),
+  },
+  (t) => [uniqueIndex('idx_auth_sessions_id').on(t.id)],
+)
+
+export const passkeys = sqliteTable(
+  'passkeys',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    userId: integer('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    credentialId: text('credential_id').notNull(),
+    publicKey: text('public_key').notNull(),
+    counter: integer('counter').default(0).notNull(),
+    transports: text('transports', { mode: 'json' }).$type<string[]>(),
+    deviceType: text('device_type'),
+    backedUp: integer('backed_up', { mode: 'boolean' })
+      .default(false)
+      .notNull(),
+    name: text('name').notNull().default('Passkey'),
+    createdAt: integer('created_at', { mode: 'timestamp' })
+      .notNull()
+      .default(sql`(unixepoch())`),
+    lastUsedAt: integer('last_used_at', { mode: 'timestamp' }),
+  },
+  (t) => [uniqueIndex('idx_passkeys_credential_id').on(t.credentialId)],
+)
+
+export const webauthnChallenges = sqliteTable(
+  'webauthn_challenges',
+  {
+    id: text('id').primaryKey(),
+    userId: integer('user_id').references(() => users.id, {
+      onDelete: 'cascade',
+    }),
+    type: text('type', { enum: ['registration', 'authentication'] }).notNull(),
+    challenge: text('challenge').notNull(),
+    expiresAt: integer('expires_at', { mode: 'timestamp' }).notNull(),
+    createdAt: integer('created_at', { mode: 'timestamp' })
+      .notNull()
+      .default(sql`(unixepoch())`),
+  },
+  (t) => [uniqueIndex('idx_webauthn_challenges_id').on(t.id)],
+)
+
 export const photos = sqliteTable('photos', {
   id: text('id').primaryKey().unique(),
   title: text('title'),

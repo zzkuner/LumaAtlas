@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { establishUserSession } from '~~/server/services/auth/session'
 import { settingsManager } from '~~/server/services/settings/settingsManager'
 import { storageConfigSchema } from '~~/shared/types/storage'
 import { useDB, tables, eq } from '~~/server/utils/db'
@@ -46,7 +47,11 @@ export default eventHandler(async (event) => {
         })
         .where(eq(tables.users.id, existingUser.id))
         .run()
-      adminUser = db.select().from(tables.users).where(eq(tables.users.id, existingUser.id)).get()
+      adminUser = db
+        .select()
+        .from(tables.users)
+        .where(eq(tables.users.id, existingUser.id))
+        .get()
     } else {
       throw createError({
         statusCode: 400,
@@ -64,7 +69,11 @@ export default eventHandler(async (event) => {
         createdAt: new Date(),
       })
       .run()
-    adminUser = db.select().from(tables.users).where(eq(tables.users.email, body.admin.email)).get()
+    adminUser = db
+      .select()
+      .from(tables.users)
+      .where(eq(tables.users.email, body.admin.email))
+      .get()
   }
 
   // 2. Handle Site Settings
@@ -103,15 +112,7 @@ export default eventHandler(async (event) => {
 
   // 6. Auto-login the admin user
   if (adminUser) {
-    await setUserSession(
-      event,
-      { user: adminUser },
-      {
-        cookie: {
-          secure: false,
-        },
-      },
-    )
+    await establishUserSession(event, adminUser)
   }
 
   return { success: true }

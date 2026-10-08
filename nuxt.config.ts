@@ -31,6 +31,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       VERSION: pkg.version,
+      siteUrl: '',
       mapbox: {
         accessToken: '',
       },

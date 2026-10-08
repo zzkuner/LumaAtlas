@@ -24,10 +24,6 @@ const themeFields = computed(() =>
   appearanceFields.value.filter((f) => f.key === 'appearance.theme'),
 )
 
-const homepageFields = computed(() =>
-  appearanceFields.value.filter((f) => f.key.startsWith('appearance.home.')),
-)
-
 const sameValue = (left: any, right: any) =>
   JSON.stringify(left ?? null) === JSON.stringify(right ?? null)
 
@@ -72,6 +68,10 @@ const restoreAppearanceDefaults = () => {
   appearanceFields.value.forEach((field) => {
     state[field.key] = field.defaultValue ?? null
   })
+}
+
+const updateAppearanceSetting = (key: string, value: unknown) => {
+  state[key] = value
 }
 
 const handleAppSettingsSubmit = async () => {
@@ -254,28 +254,16 @@ const handleAppearanceSettingsSubmit = async () => {
                 </p>
               </div>
 
-              <div
-                class="mt-5 grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_360px]"
-              >
-                <div class="space-y-5">
-                  <SettingField
-                    v-for="field in homepageFields"
-                    :key="field.key"
-                    :field="field"
-                    :model-value="state[field.key]"
-                    @update:model-value="(val) => (state[field.key] = val)"
-                  />
-                </div>
-
-                <SettingHomePreview
-                  :settings="state"
-                  :title="String(state.title || 'LumaAtlas')"
-                  :slogan="String(state.slogan || '')"
-                  :description="String(state.description || '')"
-                  :avatar-url="String(state.avatarUrl || '')"
-                  :photos="previewPhotos"
-                />
-              </div>
+              <SettingThemeEditor
+                class="mt-6"
+                :settings="state"
+                :title="String(state.title || 'LumaAtlas')"
+                :slogan="String(state.slogan || '')"
+                :description="String(state.description || '')"
+                :avatar-url="String(state.avatarUrl || '')"
+                :photos="previewPhotos"
+                @change="updateAppearanceSetting"
+              />
             </div>
           </UForm>
 

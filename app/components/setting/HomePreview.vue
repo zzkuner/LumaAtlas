@@ -6,6 +6,7 @@ interface Props {
   description?: string
   avatarUrl?: string
   photos?: Photo[]
+  viewport?: 'desktop' | 'mobile'
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -14,6 +15,7 @@ const props = withDefaults(defineProps<Props>(), {
   description: '',
   avatarUrl: '',
   photos: () => [],
+  viewport: 'desktop',
 })
 
 const setting = (key: string, fallback: unknown) =>
@@ -31,6 +33,24 @@ const contentWidth = computed(() =>
 const isEditorial = computed(
   () => String(setting('appearance.home.style', 'minimal')) === 'editorial',
 )
+const accentColor = computed(() => {
+  const value = String(setting('appearance.home.accentColor', '#171717'))
+  return /^#[0-9a-f]{6}$/i.test(value) ? value : '#171717'
+})
+const cornerRadius = computed(() =>
+  Math.max(
+    0,
+    Math.min(16, Number(setting('appearance.home.cornerRadius', 2)) || 0),
+  ),
+)
+const headingFont = computed(() =>
+  setting('appearance.home.headingFont', 'sans') === 'serif'
+    ? 'Georgia, Cambria, "Times New Roman", serif'
+    : 'ui-sans-serif, system-ui, sans-serif',
+)
+const surfaceStyle = computed(() =>
+  String(setting('appearance.home.surfaceStyle', 'clean')),
+)
 const showSlogan = computed(
   () => setting('appearance.home.showSlogan', true) !== false,
 )
@@ -45,6 +65,81 @@ const showAlbumsNav = computed(
 )
 const showExploreNav = computed(
   () => setting('appearance.home.showExploreNav', true) !== false,
+)
+
+const asRecord = (value: unknown): Record<string, unknown> =>
+  value && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {}
+
+const moduleSettings = computed(() => {
+  const value = asRecord(setting('appearance.home.modules', {}))
+  const allowed = ['header', 'gallery', 'footer']
+  const source = Array.isArray(value.order) ? value.order : []
+  const order = [...new Set([...source, ...allowed])].filter(
+    (item): item is string =>
+      typeof item === 'string' && allowed.includes(item),
+  )
+  const hidden = Array.isArray(value.hidden)
+    ? value.hidden.filter(
+        (item): item is string =>
+          typeof item === 'string' && allowed.includes(item),
+      )
+    : []
+  return { order, hidden }
+})
+
+const moduleOrder = (id: string) => {
+  const index = moduleSettings.value.order.indexOf(id)
+  return index < 0 ? 99 : index
+}
+
+const moduleVisible = (id: string) => !moduleSettings.value.hidden.includes(id)
+
+const navigationItems = computed(() => {
+  const value = asRecord(setting('appearance.home.navigation', {}))
+  const allowed = ['explore', 'globe', 'albums']
+  const source = Array.isArray(value.order) ? value.order : []
+  const order = [...new Set([...source, ...allowed])].filter(
+    (item): item is string =>
+      typeof item === 'string' && allowed.includes(item),
+  )
+  const labels: Record<string, string> = {
+    explore: 'Explore',
+    globe: 'Globe',
+    albums: 'Albums',
+  }
+  const visible: Record<string, boolean> = {
+    explore: showExploreNav.value,
+    globe: showGlobeNav.value,
+    albums: showAlbumsNav.value,
+  }
+  return order
+    .filter((id) => visible[id])
+    .map((id) => ({ id, label: labels[id] }))
+})
+
+const socialLinks = computed(() => {
+  const value = asRecord(setting('appearance.home.socialLinks', {}))
+  return Object.values(value).filter((link) => typeof link === 'string' && link)
+})
+
+const footerText = computed(() =>
+  String(setting('appearance.home.footerText', '')),
+)
+
+const frameClass = computed(() =>
+  props.viewport === 'mobile' ? 'mx-auto max-w-[238px]' : 'w-full',
+)
+
+const surfaceClass = computed(
+  () =>
+    ({
+      clean: 'bg-white dark:bg-neutral-950',
+      soft: 'bg-neutral-100 dark:bg-neutral-900',
+      contrast:
+        'bg-white ring-1 ring-inset ring-neutral-400 dark:bg-black dark:ring-neutral-600',
+    })[surfaceStyle.value] || 'bg-white dark:bg-neutral-950',
 )
 
 const previewGap = computed(() => {
@@ -98,7 +193,7 @@ const itemRatio = (naturalRatio: number) => {
 </script>
 
 <template>
-  <aside class="lg:sticky lg:top-6 lg:self-start">
+  <aside>
     <div class="mb-3 flex items-center justify-between">
       <div>
         <p class="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
@@ -112,20 +207,31 @@ const itemRatio = (naturalRatio: number) => {
         color="neutral"
         variant="outline"
         size="sm"
-        >Desktop</UBadge
       >
+        {{ viewport === 'mobile' ? 'Mobile' : 'Desktop' }}
+      </UBadge>
     </div>
 
     <div
-      class="overflow-hidden rounded-md border border-neutral-300 bg-white shadow-sm dark:border-neutral-700 dark:bg-neutral-950"
+      class="flex overflow-hidden rounded-md border border-neutral-300 shadow-sm transition-[max-width] dark:border-neutral-700"
+      :class="[frameClass, surfaceClass]"
+      :style="{
+        flexDirection: 'column',
+        '--preview-accent': accentColor,
+        '--preview-radius': `${cornerRadius}px`,
+        '--preview-heading-font': headingFont,
+      }"
     >
       <div
+        v-if="moduleVisible('header')"
         class="border-b border-neutral-200 px-3 py-2 dark:border-neutral-800"
+        :style="{ order: moduleOrder('header') }"
       >
         <div class="flex items-center justify-between gap-2">
           <div class="flex min-w-0 items-center gap-1.5">
             <span
-              class="flex size-4 shrink-0 items-center justify-center border border-neutral-900 dark:border-white"
+              class="flex size-4 shrink-0 items-center justify-center border"
+              :style="{ borderColor: accentColor }"
             >
               <Icon
                 name="lucide:aperture"
@@ -136,9 +242,11 @@ const itemRatio = (naturalRatio: number) => {
           </div>
           <div class="flex items-center gap-2 text-[8px] text-neutral-500">
             <span>Gallery</span>
-            <span v-if="showExploreNav">Explore</span>
-            <span v-if="showGlobeNav">Globe</span>
-            <span v-if="showAlbumsNav">Albums</span>
+            <span
+              v-for="item in navigationItems"
+              :key="item.id"
+              >{{ item.label }}</span
+            >
           </div>
         </div>
 
@@ -153,7 +261,10 @@ const itemRatio = (naturalRatio: number) => {
               class="size-7 shrink-0 rounded-full object-cover"
             />
             <div class="min-w-0">
-              <p class="truncate text-[10px] font-medium">
+              <p
+                class="truncate text-[10px] font-medium"
+                :style="{ fontFamily: headingFont }"
+              >
                 {{ isEditorial ? title : 'Gallery' }}
               </p>
               <p
@@ -179,7 +290,16 @@ const itemRatio = (naturalRatio: number) => {
         </div>
       </div>
 
-      <div class="bg-neutral-50 p-3 dark:bg-neutral-900/40">
+      <div
+        v-if="moduleVisible('gallery')"
+        class="p-3"
+        :class="
+          surfaceStyle === 'soft'
+            ? 'bg-white/55 dark:bg-black/20'
+            : 'bg-neutral-50 dark:bg-neutral-900/40'
+        "
+        :style="{ order: moduleOrder('gallery') }"
+      >
         <div
           class="mx-auto"
           :class="previewWidthClass"
@@ -206,6 +326,7 @@ const itemRatio = (naturalRatio: number) => {
               :style="{
                 aspectRatio: itemRatio(item.naturalRatio),
                 backgroundColor: item.color,
+                borderRadius: `${cornerRadius}px`,
               }"
             >
               <img
@@ -229,6 +350,20 @@ const itemRatio = (naturalRatio: number) => {
             </div>
           </div>
         </div>
+      </div>
+
+      <div
+        v-if="moduleVisible('footer') && (footerText || socialLinks.length)"
+        class="flex items-center justify-between gap-3 border-t border-neutral-200 px-3 py-2 text-[8px] text-neutral-500 dark:border-neutral-800"
+        :style="{ order: moduleOrder('footer') }"
+      >
+        <span class="truncate">{{ footerText }}</span>
+        <span
+          v-if="socialLinks.length"
+          class="shrink-0"
+        >
+          {{ socialLinks.length }} links
+        </span>
       </div>
     </div>
   </aside>

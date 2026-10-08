@@ -37,6 +37,39 @@ const showAlbumsNav = computed(
 const showExploreNav = computed(
   () => getSetting('app:appearance.home.showExploreNav') !== false,
 )
+const navigationItems = computed(() => {
+  const value = getSetting('app:appearance.home.navigation')
+  const config =
+    value && typeof value === 'object' && !Array.isArray(value)
+      ? (value as Record<string, unknown>)
+      : {}
+  const allowed = ['explore', 'globe', 'albums']
+  const requested = Array.isArray(config.order) ? config.order : []
+  const order = [...new Set([...requested, ...allowed])].filter(
+    (item): item is string =>
+      typeof item === 'string' && allowed.includes(item),
+  )
+  const items = {
+    explore: {
+      to: '/explore',
+      label: 'discovery.title',
+      visible: showExploreNav.value,
+    },
+    globe: {
+      to: '/globe',
+      label: 'title.globe',
+      visible: showGlobeNav.value,
+    },
+    albums: {
+      to: '/albums',
+      label: 'title.albums',
+      visible: showAlbumsNav.value,
+    },
+  }
+  return order
+    .map((id) => ({ id, ...items[id as keyof typeof items] }))
+    .filter((item) => item.visible)
+})
 const rssEnabled = computed(
   () => getSetting('publishing:rss.enabled') !== false,
 )
@@ -88,16 +121,19 @@ const { openCommandPalette } = useCommandPalette()
               aria-label="LumaAtlas home"
             >
               <span
-                class="flex size-7 shrink-0 items-center justify-center border border-neutral-900 dark:border-white"
+                class="flex size-7 shrink-0 items-center justify-center border"
+                :style="{ borderColor: 'var(--la-accent)' }"
               >
                 <Icon
                   name="lucide:aperture"
                   class="size-4"
                 />
               </span>
-              <span class="truncate text-lg font-semibold">{{
-                siteTitle
-              }}</span>
+              <span
+                class="truncate text-lg font-semibold"
+                :style="{ fontFamily: 'var(--la-heading-font)' }"
+                >{{ siteTitle }}</span
+              >
             </NuxtLink>
 
             <nav
@@ -111,25 +147,12 @@ const { openCommandPalette } = useCommandPalette()
                 {{ $t('title.gallery') }}
               </NuxtLink>
               <NuxtLink
-                v-if="showExploreNav"
-                to="/explore"
+                v-for="item in navigationItems"
+                :key="item.id"
+                :to="item.to"
                 class="transition-colors hover:text-neutral-950 dark:hover:text-white"
               >
-                {{ $t('discovery.title') }}
-              </NuxtLink>
-              <NuxtLink
-                v-if="showGlobeNav"
-                to="/globe"
-                class="transition-colors hover:text-neutral-950 dark:hover:text-white"
-              >
-                {{ $t('title.globe') }}
-              </NuxtLink>
-              <NuxtLink
-                v-if="showAlbumsNav"
-                to="/albums"
-                class="transition-colors hover:text-neutral-950 dark:hover:text-white"
-              >
-                {{ $t('title.albums') }}
+                {{ $t(item.label) }}
               </NuxtLink>
             </nav>
 
@@ -299,7 +322,7 @@ const { openCommandPalette } = useCommandPalette()
           </div>
 
           <nav
-            class="mt-5 flex items-center gap-6 border-t border-neutral-200 pt-4 text-sm font-medium text-neutral-500 sm:hidden dark:border-neutral-800 dark:text-neutral-400"
+            class="mt-5 flex items-center gap-6 overflow-x-auto border-t border-neutral-200 pt-4 text-sm font-medium text-neutral-500 sm:hidden dark:border-neutral-800 dark:text-neutral-400"
             :aria-label="$t('title.gallery')"
           >
             <NuxtLink
@@ -309,25 +332,12 @@ const { openCommandPalette } = useCommandPalette()
               {{ $t('title.gallery') }}
             </NuxtLink>
             <NuxtLink
-              v-if="showExploreNav"
-              to="/explore"
-              class="transition-colors"
+              v-for="item in navigationItems"
+              :key="item.id"
+              :to="item.to"
+              class="shrink-0 transition-colors"
             >
-              {{ $t('discovery.title') }}
-            </NuxtLink>
-            <NuxtLink
-              v-if="showGlobeNav"
-              to="/globe"
-              class="transition-colors"
-            >
-              {{ $t('title.globe') }}
-            </NuxtLink>
-            <NuxtLink
-              v-if="showAlbumsNav"
-              to="/albums"
-              class="transition-colors"
-            >
-              {{ $t('title.albums') }}
+              {{ $t(item.label) }}
             </NuxtLink>
           </nav>
 
@@ -348,6 +358,7 @@ const { openCommandPalette } = useCommandPalette()
                       ? 'text-xl font-semibold text-neutral-950 sm:text-2xl dark:text-white'
                       : 'text-sm font-medium text-neutral-950 dark:text-white'
                   "
+                  :style="{ fontFamily: 'var(--la-heading-font)' }"
                 >
                   {{ isEditorial ? siteTitle : $t('title.gallery') }}
                 </p>

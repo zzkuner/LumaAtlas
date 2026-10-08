@@ -46,6 +46,74 @@ const isMobile = useMediaQuery('(max-width: 768px)')
 const { batchProcessLivePhotos } = useLivePhotoProcessor()
 
 const processedBatch = ref(new Set<string>())
+const asRecord = (value: unknown): Record<string, unknown> =>
+  value && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {}
+
+const homeModules = computed(() => {
+  const config = asRecord(getSetting('app:appearance.home.modules'))
+  const allowed = ['header', 'gallery', 'footer']
+  const requested = Array.isArray(config.order) ? config.order : []
+  const order = [...new Set([...requested, ...allowed])].filter(
+    (item): item is string =>
+      typeof item === 'string' && allowed.includes(item),
+  )
+  const hidden = Array.isArray(config.hidden)
+    ? config.hidden.filter(
+        (item): item is string =>
+          typeof item === 'string' && allowed.includes(item),
+      )
+    : []
+  return { order, hidden }
+})
+
+const moduleVisible = (id: string) =>
+  props.mode !== 'home' || !homeModules.value.hidden.includes(id)
+
+const moduleOrder = (id: string) => {
+  if (props.mode !== 'home') return 0
+  const index = homeModules.value.order.indexOf(id)
+  return index < 0 ? 99 : index
+}
+
+const accentColor = computed(() => {
+  const value = String(
+    getSetting('app:appearance.home.accentColor') || '#171717',
+  )
+  return /^#[0-9a-f]{6}$/i.test(value) ? value : '#171717'
+})
+
+const cornerRadius = computed(() => {
+  const value = Number(getSetting('app:appearance.home.cornerRadius') ?? 2)
+  return Math.max(0, Math.min(16, Number.isFinite(value) ? value : 2))
+})
+
+const headingFont = computed(() =>
+  getSetting('app:appearance.home.headingFont') === 'serif'
+    ? 'Georgia, Cambria, "Times New Roman", serif'
+    : 'ui-sans-serif, system-ui, sans-serif',
+)
+
+const surfaceStyle = computed(() =>
+  String(getSetting('app:appearance.home.surfaceStyle') || 'clean'),
+)
+
+const surfaceClass = computed(
+  () =>
+    ({
+      clean: 'bg-white dark:bg-neutral-950',
+      soft: 'bg-neutral-50 dark:bg-neutral-950',
+      contrast: 'bg-white dark:bg-black',
+    })[surfaceStyle.value] || 'bg-white dark:bg-neutral-950',
+)
+
+const themeStyle = computed(() => ({
+  '--la-accent': accentColor.value,
+  '--la-radius': `${cornerRadius.value}px`,
+  '--la-heading-font': headingFont.value,
+}))
+
 const galleryLayout = computed(() => {
   const value = String(getSetting('app:appearance.home.layout') || 'masonry')
   return ['masonry', 'grid', 'feed'].includes(value)
@@ -372,12 +440,17 @@ watch(currentPhotoIndex, (newIndex) => {
 </script>
 
 <template>
-  <div class="relative w-full">
+  <div
+    class="relative flex min-h-svh w-full flex-col"
+    :class="surfaceClass"
+    :style="themeStyle"
+  >
     <MasonryItemHeader
-      v-if="showHeader"
+      v-if="showHeader && moduleVisible('header')"
       :stats="photoStats"
       :date-range-text
       :max-width="galleryMaxWidth"
+      :style="{ order: moduleOrder('header') }"
     />
 
     <DateRangeIndicator
@@ -410,8 +483,9 @@ watch(currentPhotoIndex, (newIndex) => {
     </motion.div>
 
     <div
+      v-if="moduleVisible('gallery')"
       class="mx-auto px-3 pb-3 sm:px-5 sm:pb-5 lg:px-7 lg:pb-7"
-      :style="{ maxWidth: galleryMaxWidth }"
+      :style="{ maxWidth: galleryMaxWidth, order: moduleOrder('gallery') }"
     >
       <div class="relative">
         <MasonryWall
@@ -469,5 +543,11 @@ watch(currentPhotoIndex, (newIndex) => {
         </div>
       </div>
     </div>
+
+    <MasonryItemFooter
+      v-if="mode === 'home' && moduleVisible('footer')"
+      :max-width="galleryMaxWidth"
+      :style="{ order: moduleOrder('footer') }"
+    />
   </div>
 </template>

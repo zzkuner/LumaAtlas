@@ -191,6 +191,33 @@ export const APP_SETTINGS_UI: Record<string, FieldUIConfig> = {
   'appearance.home.showAlbumsNav': {
     type: 'toggle',
   },
+  'appearance.home.preset': {
+    type: 'custom',
+  },
+  'appearance.home.modules': {
+    type: 'custom',
+  },
+  'appearance.home.navigation': {
+    type: 'custom',
+  },
+  'appearance.home.accentColor': {
+    type: 'custom',
+  },
+  'appearance.home.surfaceStyle': {
+    type: 'custom',
+  },
+  'appearance.home.cornerRadius': {
+    type: 'custom',
+  },
+  'appearance.home.headingFont': {
+    type: 'custom',
+  },
+  'appearance.home.socialLinks': {
+    type: 'custom',
+  },
+  'appearance.home.footerText': {
+    type: 'custom',
+  },
 }
 
 export const PUBLISHING_SETTINGS_UI: Record<string, FieldUIConfig> = {

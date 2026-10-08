@@ -49,8 +49,9 @@ export default defineEventHandler(async (event) => {
 
   // 填充实际的计数
   reactions.forEach((r) => {
-    if (r.photoId && r.reactionType) {
-      result[r.photoId][r.reactionType] = r.count
+    const photoReactions = r.photoId ? result[r.photoId] : undefined
+    if (photoReactions && r.reactionType) {
+      photoReactions[r.reactionType] = r.count
     }
   })
 

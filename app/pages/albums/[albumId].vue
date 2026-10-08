@@ -91,6 +91,13 @@ const minColumns = computed(() => (isMobile.value ? 2 : 2))
 
 const MASONRY_GAP = 4
 
+const masonryKeyMapper = (
+  _item: unknown,
+  _column: number,
+  _row: number,
+  index: number,
+) => masonryItems.value[index]?.originalIndex ?? index
+
 const handleOpenViewer = (index: number) => {
   const photos = albumData.value?.photos
   if (photos && photos[index]) {
@@ -304,10 +311,7 @@ onBeforeMount(() => {
             :min-columns="minColumns"
             :max-columns="maxColumns"
             :ssr-columns="2"
-            :key-mapper="
-              (_item, _column, _row, index) =>
-                masonryItems[index]?.originalIndex ?? index
-            "
+            :key-mapper="masonryKeyMapper"
           >
             <template #default="{ item }">
               <MasonryItem

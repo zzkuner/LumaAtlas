@@ -72,7 +72,7 @@ export interface NeededExif {
   WBShiftAB: Tags['WBShiftAB']
   WBShiftGM: Tags['WBShiftGM']
   WhiteBalanceBias: Tags['WhiteBalanceBias']
-  WhiteBalanceFineTune: Tags['WhiteBalanceFineTune']
+  WhiteBalanceFineTune?: string | number | number[]
   FlashMeteringMode: Tags['FlashMeteringMode']
   SensingMethod: Tags['SensingMethod']
   FocalPlaneXResolution: Tags['FocalPlaneXResolution']

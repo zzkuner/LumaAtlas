@@ -32,6 +32,10 @@ const isAlbumSlideoverOpen = ref(false)
 const isDeleteConfirmOpen = ref(false)
 const isPhotoSelectorOpen = ref(false)
 
+const closeDeleteConfirmation = () => {
+  isDeleteConfirmOpen.value = false
+}
+
 const currentAlbum = ref<AlbumItem | null>(null)
 
 const formData = reactive<AlbumFormState>({
@@ -1059,8 +1063,10 @@ const columns: any[] = [
                           <p class="truncate text-[9px] text-white/72">
                             {{
                               photo.city
-                                ? `${photo.city} · ${dayjs(photo.createdAt).format('MM-DD')}`
-                                : dayjs(photo.createdAt).format('YYYY-MM-DD')
+                                ? `${photo.city} · ${photo.dateTaken ? dayjs(photo.dateTaken).format('MM-DD') : '—'}`
+                                : photo.dateTaken
+                                  ? dayjs(photo.dateTaken).format('YYYY-MM-DD')
+                                  : '—'
                             }}
                           </p>
                         </div>
@@ -1193,7 +1199,7 @@ const columns: any[] = [
                 <UButton
                   variant="ghost"
                   color="neutral"
-                  @click="isDeleteConfirmOpen = false"
+                  @click="closeDeleteConfirmation"
                 >
                   {{ $t('dashboard.albums.delete.cancel') }}
                 </UButton>

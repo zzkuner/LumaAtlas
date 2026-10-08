@@ -1,10 +1,7 @@
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
-import type {
-  LocalStorageConfig,
-  StorageObject,
-  StorageProvider,
-} from '../interfaces'
+import type { StorageObject, StorageProvider } from '../interfaces'
+import type { LocalStorageConfig } from '~~/shared/types/storage'
 import { isSupportedImageKey } from '../image-formats'
 
 const ensureDir = async (dirPath: string) => {

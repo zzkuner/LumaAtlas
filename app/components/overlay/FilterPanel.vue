@@ -75,6 +75,10 @@ const handleToggleFilter = (type: string, value: string | number) => {
 const onShuffle = () => {
   shufflePhotos()
 }
+
+const startSearch = () => {
+  isSearchMode.value = true
+}
 </script>
 
 <template>
@@ -132,7 +136,7 @@ const onShuffle = () => {
           variant="ghost"
           color="neutral"
           icon="tabler:search"
-          @click="isSearchMode = true"
+          @click="startSearch"
         />
         <UTooltip text="打乱列表">
           <UButton

@@ -56,7 +56,9 @@ export default defineEventHandler(async (event) => {
       taskId,
       payload: {
         type: task.payload.type,
-        storageKey: task.payload.storageKey,
+        ...('storageKey' in task.payload
+          ? { storageKey: task.payload.storageKey }
+          : { photoId: task.payload.photoId }),
       },
     }
   } catch (error) {

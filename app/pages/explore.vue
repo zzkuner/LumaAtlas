@@ -172,6 +172,10 @@ const isDark = computed({
   },
 })
 
+const toggleColorMode = () => {
+  isDark.value = !isDark.value
+}
+
 onMounted(() => {
   const savedLocation = localStorage.getItem('lumaatlas:discovery-location')
   if (savedLocation) {
@@ -244,7 +248,7 @@ onMounted(() => {
             variant="ghost"
             :icon="isDark ? 'lucide:sun' : 'lucide:moon'"
             :aria-label="$t('ui.action.theme.tooltip')"
-            @click="isDark = !isDark"
+            @click="toggleColorMode"
           />
         </div>
       </div>

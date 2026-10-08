@@ -33,18 +33,18 @@ export const calculateHistogram = async (
 
     // 遍历像素数据计算直方图
     for (let i = 0; i < data.length; i += channels) {
-      const r = data[i]
-      const g = data[i + 1]
-      const b = data[i + 2]
+      const r = data[i] ?? 0
+      const g = data[i + 1] ?? 0
+      const b = data[i + 2] ?? 0
 
       // 累计 RGB 通道直方图
-      histogramR[r]++
-      histogramG[g]++
-      histogramB[b]++
+      histogramR[r] = (histogramR[r] ?? 0) + 1
+      histogramG[g] = (histogramG[g] ?? 0) + 1
+      histogramB[b] = (histogramB[b] ?? 0) + 1
 
       // 计算灰度值（使用 ITU-R BT.709 标准）
       const gray = Math.round(0.299 * r + 0.587 * g + 0.114 * b)
-      histogramGray[gray]++
+      histogramGray[gray] = (histogramGray[gray] ?? 0) + 1
     }
 
     // 归一化直方图（转换为百分比）

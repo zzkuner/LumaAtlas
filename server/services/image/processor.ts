@@ -29,12 +29,16 @@ const tryExtractJpegSize = (
       continue
     }
     const marker = buffer[offset + 1]
+    if (marker === undefined) break
     offset += 2
     // Skip padding FFs
     if (marker === 0xff) continue
     // Standalone markers without length
     if (marker === 0xd8 || marker === 0xd9) continue
-    const length = (buffer[offset] << 8) + buffer[offset + 1]
+    const lengthHigh = buffer[offset]
+    const lengthLow = buffer[offset + 1]
+    if (lengthHigh === undefined || lengthLow === undefined) break
+    const length = (lengthHigh << 8) + lengthLow
     if (length < 2) break
     // SOF0..SOF3 and SOF5..SOF7 indicate dimensions
     if (
@@ -42,8 +46,20 @@ const tryExtractJpegSize = (
       (marker >= 0xc5 && marker <= 0xc7)
     ) {
       if (offset + 7 >= buffer.length) break
-      const height = (buffer[offset + 3] << 8) + buffer[offset + 4]
-      const width = (buffer[offset + 5] << 8) + buffer[offset + 6]
+      const heightHigh = buffer[offset + 3]
+      const heightLow = buffer[offset + 4]
+      const widthHigh = buffer[offset + 5]
+      const widthLow = buffer[offset + 6]
+      if (
+        heightHigh === undefined ||
+        heightLow === undefined ||
+        widthHigh === undefined ||
+        widthLow === undefined
+      ) {
+        break
+      }
+      const height = (heightHigh << 8) + heightLow
+      const width = (widthHigh << 8) + widthLow
       if (width > 0 && height > 0) return { width, height }
       break
     }

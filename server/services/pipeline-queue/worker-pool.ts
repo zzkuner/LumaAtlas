@@ -243,7 +243,8 @@ export class WorkerPool {
       return {}
     }
 
-    return await this.workers[0].getQueueStats()
+    const worker = this.workers[0]
+    return worker ? await worker.getQueueStats() : {}
   }
 
   /**
@@ -304,7 +305,7 @@ export class WorkerPool {
    * 获取第一个工作器（用于添加任务）
    */
   getFirstWorker(): QueueManager | null {
-    return this.workers.length > 0 ? this.workers[0] : null
+    return this.workers[0] ?? null
   }
 
   /**

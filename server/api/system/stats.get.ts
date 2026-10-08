@@ -32,9 +32,9 @@ async function getDockerMemoryInfo(): Promise<{
 
     for (const line of lines) {
       if (line.startsWith('MemTotal:')) {
-        totalMem = parseInt(line.split(/\s+/)[1]) * 1024 // 转换为字节
+        totalMem = parseInt(line.split(/\s+/)[1] || '0') * 1024 // 转换为字节
       } else if (line.startsWith('MemAvailable:')) {
-        availableMem = parseInt(line.split(/\s+/)[1]) * 1024 // 转换为字节
+        availableMem = parseInt(line.split(/\s+/)[1] || '0') * 1024 // 转换为字节
       }
     }
 
@@ -195,7 +195,7 @@ export default eventHandler(async (event) => {
   for (let i = 0; i < 7; i++) {
     const date = new Date(sevenDaysAgo)
     date.setDate(sevenDaysAgo.getDate() + i)
-    const dateStr = date.toISOString().split('T')[0]
+    const dateStr = date.toISOString().slice(0, 10)
     const found = rawTrendData.find((row) => row.date === dateStr)
     trendData.push({
       date: dateStr,

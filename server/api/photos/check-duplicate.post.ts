@@ -41,7 +41,11 @@ export default defineEventHandler(async (event) => {
       for (const fileName of fileNames) {
         // 生成 photoId（与上传时的逻辑相同）
         const { storageProvider } = useStorageProvider(event)
-        const storageKey = `${(storageProvider.config?.prefix || '').replace(/\/+$/, '')}/${fileName}`
+        const prefix =
+          storageProvider.config && 'prefix' in storageProvider.config
+            ? storageProvider.config.prefix
+            : undefined
+        const storageKey = `${(prefix || '').replace(/\/+$/, '')}/${fileName}`
         const photoId = generateSafePhotoId(storageKey)
 
         // 查询数据库

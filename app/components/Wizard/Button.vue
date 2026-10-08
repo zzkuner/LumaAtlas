@@ -2,21 +2,26 @@
 defineOptions({
   inheritAttrs: false,
 })
+
+const attrs = useAttrs()
+const variantClass = computed(() => {
+  switch (attrs.variant) {
+    case 'outline':
+      return 'border border-white/10 bg-white/5 text-white hover:border-white/20 hover:bg-white/10'
+    case 'ghost':
+      return 'text-neutral-400 hover:bg-white/5 hover:text-white'
+    default:
+      return 'border border-white/10 bg-linear-to-r from-primary-600 to-primary-500 text-white shadow-lg shadow-primary-500/20 hover:from-primary-500 hover:to-primary-400 hover:shadow-primary-500/40'
+  }
+})
 </script>
 
 <template>
   <UButton
     v-bind="$attrs"
+    :class="variantClass"
     :ui="{
-      base: 'transition-all duration-300 font-medium',
-      rounded: 'rounded-xl',
-      variant: {
-        solid:
-          'bg-linear-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 text-white shadow-lg shadow-primary-500/20 hover:shadow-primary-500/40 border border-white/10',
-        outline:
-          'bg-white/5 hover:bg-white/10 text-white border border-white/10 hover:border-white/20',
-        ghost: 'text-neutral-400 hover:text-white hover:bg-white/5',
-      },
+      base: 'rounded-xl font-medium transition-all duration-300',
     }"
   >
     <template

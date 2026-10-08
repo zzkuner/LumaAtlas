@@ -17,6 +17,9 @@ interface LogEntry {
 
 const logs = ref<LogEntry[]>([])
 const searchQuery = ref('')
+const clearSearch = () => {
+  searchQuery.value = ''
+}
 const selectedLevels = ref<string[]>([])
 const selectedTags = ref<string[]>([])
 const autoScroll = ref(true)
@@ -532,7 +535,7 @@ onUnmounted(() => {
                   size="sm"
                   icon="tabler:x"
                   aria-label="Clear search input"
-                  @click="searchQuery = ''"
+                  @click="clearSearch"
                 />
               </template>
             </UInput>

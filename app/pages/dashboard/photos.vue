@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { FormSubmitEvent, TableColumn } from '@nuxt/ui'
+import type { DropdownMenuItem, FormSubmitEvent, TableColumn } from '@nuxt/ui'
 import type { Album, Photo, PipelineQueueItem } from '~~/server/utils/db'
 import { h, resolveComponent } from 'vue'
 import { Icon, UBadge } from '#components'
@@ -155,6 +155,9 @@ interface EditFormState {
 
 const editingPhoto = ref<Photo | null>(null)
 const isEditModalOpen = ref(false)
+const closeEditModal = () => {
+  isEditModalOpen.value = false
+}
 const isSavingMetadata = ref(false)
 
 const editFormState = reactive<EditFormState>({
@@ -592,6 +595,9 @@ type BatchToggle = 'unchanged' | 'yes' | 'no'
 type BatchTagMode = 'unchanged' | 'add' | 'remove' | 'replace'
 
 const isBatchOrganizeOpen = ref(false)
+const closeBatchOrganizer = () => {
+  isBatchOrganizeOpen.value = false
+}
 const isBatchOrganizeSaving = ref(false)
 const batchOrganizeState = reactive<{
   tagMode: BatchTagMode
@@ -1735,7 +1741,7 @@ const handleReprocessSingle = async (photo: Photo) => {
   }
 }
 
-const getRowActions = (photo: Photo) => {
+const getRowActions = (photo: Photo): DropdownMenuItem[][] => {
   const isReverseLoading = !!reverseGeocodeLoading.value[photo.id]
   const isEraseLocationLoading = !!eraseLocationLoading.value[photo.id]
 
@@ -1808,9 +1814,16 @@ const openInNewTab = (url: string) => {
 }
 
 const isDeleteConfirmOpen = ref(false)
+const closeDeleteConfirmation = () => {
+  isDeleteConfirmOpen.value = false
+}
 const deleteMode = ref<'single' | 'batch'>('single')
 const deleteTargetPhotos = ref<Photo[]>([])
 const isDeleting = ref(false)
+
+const openQueue = () => {
+  void navigateTo('/dashboard/queue')
+}
 
 const openDeleteConfirm = (mode: 'single' | 'batch', photos: Photo[]) => {
   deleteMode.value = mode
@@ -2015,7 +2028,7 @@ const handleBatchEraseLocation = async () => {
 
   const targetPhotoIds = selectedPhotos
     .map((photo: Photo) => photo.id)
-    .filter((id): id is string => !!id)
+    .filter((id: string): id is string => Boolean(id))
 
   if (targetPhotoIds.length === 0) {
     toast.add({
@@ -2034,7 +2047,7 @@ const handleBatchEraseLocation = async () => {
     const result = await $fetch('/api/queue/add-tasks', {
       method: 'POST',
       body: {
-        tasks: targetPhotoIds.map((photoId) => ({
+        tasks: targetPhotoIds.map((photoId: string) => ({
           payload: {
             type: 'photo-erase-location',
             photoId,
@@ -2225,7 +2238,7 @@ onUnmounted(() => {
               variant="soft"
               color="neutral"
               icon="tabler:list-check"
-              @click="$router.push('/dashboard/queue')"
+              @click="openQueue"
             >
               <span class="hidden sm:inline">{{
                 $t('dashboard.photos.buttons.queue')
@@ -2566,28 +2579,15 @@ onUnmounted(() => {
               sticky
               class="h-full flex-1"
               :ui="{
-                wrapper: 'relative scroll-smooth h-full overflow-auto',
+                root: 'relative h-full overflow-auto scroll-smooth',
                 base: 'min-w-full table-fixed',
-                divide:
-                  'divide-y divide-neutral-200/80 dark:divide-neutral-800/80',
                 thead:
                   'bg-neutral-50/80 dark:bg-neutral-900/80 backdrop-blur-md sticky top-0 z-10 whitespace-nowrap',
                 tbody:
                   'divide-y divide-neutral-200/80 dark:divide-neutral-800/80 bg-white dark:bg-neutral-900',
-                tr: {
-                  base: 'hover:bg-neutral-50/50 dark:hover:bg-neutral-800/50 transition-colors',
-                  selected: 'bg-primary-50/50 dark:bg-primary-900/20',
-                },
-                th: {
-                  base: 'text-left rtl:text-right ',
-                  padding: 'px-4 py-3.5',
-                  color: 'text-neutral-500 dark:text-neutral-400',
-                  font: 'font-medium text-sm',
-                },
-                td: {
-                  padding: 'px-4 py-3',
-                  color: 'text-neutral-700 dark:text-neutral-300 text-sm',
-                },
+                tr: 'transition-colors hover:bg-neutral-50/50 data-[selected=true]:bg-primary-50/50 dark:hover:bg-neutral-800/50 dark:data-[selected=true]:bg-primary-900/20',
+                th: 'px-4 py-3.5 text-left text-sm font-medium text-neutral-500 rtl:text-right dark:text-neutral-400',
+                td: 'px-4 py-3 text-sm text-neutral-700 dark:text-neutral-300',
                 separator: 'bg-neutral-200/80 dark:bg-neutral-800/80',
               }"
             >
@@ -2900,7 +2900,7 @@ onUnmounted(() => {
                 <UButton
                   color="neutral"
                   variant="outline"
-                  @click="isBatchOrganizeOpen = false"
+                  @click="closeBatchOrganizer"
                 >
                   {{ $t('dashboard.photos.editModal.actions.cancel') }}
                 </UButton>
@@ -3076,7 +3076,7 @@ onUnmounted(() => {
               <UButton
                 variant="ghost"
                 color="neutral"
-                @click.prevent="isEditModalOpen = false"
+                @click.prevent="closeEditModal"
               >
                 {{ $t('dashboard.photos.editModal.actions.cancel') }}
               </UButton>
@@ -3149,7 +3149,7 @@ onUnmounted(() => {
                 variant="ghost"
                 color="neutral"
                 :disabled="isDeleting"
-                @click="isDeleteConfirmOpen = false"
+                @click="closeDeleteConfirmation"
               >
                 {{ $t('dashboard.photos.delete.buttons.cancel') }}
               </UButton>

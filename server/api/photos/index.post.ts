@@ -58,14 +58,20 @@ export default eventHandler(async (event) => {
   }
 
   try {
-    const objectKey = `${(storageProvider.config?.prefix || '').replace(/\/+$/, '')}/${fileName}`
+    const prefix =
+      storageProvider.config && 'prefix' in storageProvider.config
+        ? storageProvider.config.prefix
+        : undefined
+    const objectKey = `${(prefix || '').replace(/\/+$/, '')}/${fileName}`
 
     // 重复文件检测
     const duplicateCheckEnabled =
       ((await settingsManager.get<boolean>(
         'system',
         'upload.duplicateCheck.enabled',
-      )) ?? true) && !skipDuplicateCheck
+      )) ??
+        true) &&
+      !skipDuplicateCheck
     let existingPhoto = null
 
     if (duplicateCheckEnabled) {

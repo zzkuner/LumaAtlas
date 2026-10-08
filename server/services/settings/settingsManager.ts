@@ -165,7 +165,7 @@ export class SettingsManager {
             isPublic: config.isPublic,
             isReadonly: config.isReadonly,
             isSecret: config.isSecret,
-            enum: config.enum ? config.enum : null,
+            enum: config.enum ? [...config.enum] : null,
           })
           .run()
       }

@@ -75,16 +75,23 @@ export default eventHandler(async (event) => {
           .where(eq(tables.photos.id, photoId))
           .limit(1)
 
-        if (photos.length === 0) {
+        const photo = photos[0]
+        if (!photo) {
           throw createError({
             statusCode: 404,
             statusMessage: 'Photo not found',
           })
         }
 
-        const photo = photos[0]
+        if (!photo.storageKey) {
+          throw createError({
+            statusCode: 422,
+            statusMessage: 'Photo has no storage key',
+          })
+        }
+
         const livePhotoVideo = await findLivePhotoVideoForImage(
-          photo.storageKey!,
+          photo.storageKey,
         )
 
         if (livePhotoVideo) {
@@ -124,6 +131,9 @@ export default eventHandler(async (event) => {
         })
     }
   } catch (error) {
+    if (error && typeof error === 'object' && 'statusCode' in error) {
+      throw error
+    }
     logger.chrono.error('LivePhoto management error:', error)
     throw createError({
       statusCode: 500,

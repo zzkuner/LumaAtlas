@@ -111,7 +111,7 @@ export const useLivePhotoProcessor = () => {
       const reader = response.body?.getReader()
       if (!reader) throw new Error('Failed to get response reader')
 
-      const chunks: Uint8Array[] = []
+      const chunks: ArrayBuffer[] = []
       const contentLength = parseInt(
         response.headers.get('content-length') || '0',
       )
@@ -121,7 +121,9 @@ export const useLivePhotoProcessor = () => {
         const { done, value } = await reader.read()
         if (done) break
 
-        chunks.push(value)
+        const chunk = new Uint8Array(value.byteLength)
+        chunk.set(value)
+        chunks.push(chunk.buffer)
         receivedLength += value.length
 
         // 更新下载进度
@@ -234,7 +236,11 @@ export const useLivePhotoProcessor = () => {
       prefetchDistance = 3,
     } = options
 
-    const livePhotos = photos.filter((photo) => photo.livePhotoVideoUrl)
+    const livePhotos = photos.filter(
+      (photo): photo is typeof photo & { livePhotoVideoUrl: string } =>
+        typeof photo.livePhotoVideoUrl === 'string' &&
+        photo.livePhotoVideoUrl.length > 0,
+    )
 
     if (prioritizeVisible) {
       // 优先处理可见的LivePhoto

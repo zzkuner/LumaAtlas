@@ -40,6 +40,9 @@ const toast = useToast()
 const { loggedIn } = useUserSession()
 const { refresh } = usePhotos()
 const editorOpen = ref(false)
+const openEditor = () => {
+  editorOpen.value = true
+}
 const downloadAllowed = computed(
   () =>
     props.allowDownload &&
@@ -741,7 +744,7 @@ const handlePhotoSaved = async () => {
             variant="ghost"
             size="sm"
             :aria-label="$t('photoDetail.actions.edit')"
-            @click="editorOpen = true"
+            @click="openEditor"
           />
         </UTooltip>
       </div>

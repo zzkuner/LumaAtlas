@@ -27,6 +27,7 @@
     "lint:fix": "oxlint --fix",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
+    "typecheck": "nuxt typecheck",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "test": "vitest run",
@@ -79,11 +80,11 @@
     "tippy.js": "^6.3.7",
     "unstorage": "^1.17.5",
     "vue": "^3.5.34",
-    "vue-router": "^4.6.4",
+    "vue-router": "^5.0.7",
     "wait-on": "^9.0.10",
     "zod": "^4.4.3"
   },
-  "packageManager": "pnpm@10.33.4",
+  "packageManager": "pnpm@11.25.0",
   "devDependencies": {
     "@iconify-json/carbon": "^1.2.21",
     "@iconify-json/fluent-emoji-flat": "^1.2.5",
@@ -112,26 +113,5 @@
     "vitepress": "2.0.0-alpha.17",
     "vitest": "^5.0.3",
     "vue-tsc": "^3.3.12"
-  },
-  "pnpm": {
-    "peerDependencyRules": {
-      "ignoreMissing": [
-        "@nuxt/kit"
-      ]
-    },
-    "overrides": {
-      "sharp": "0.34.5"
-    },
-    "ignoredBuiltDependencies": [
-      "@parcel/watcher",
-      "@tailwindcss/oxide",
-      "esbuild",
-      "unrs-resolver",
-      "vue-demi"
-    ],
-    "onlyBuiltDependencies": [
-      "better-sqlite3",
-      "sharp"
-    ]
   }
 }

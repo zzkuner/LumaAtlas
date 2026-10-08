@@ -27,9 +27,7 @@ export default eventHandler(async () => {
   const grouped: Record<string, Record<string, any>> = {}
 
   for (const setting of allSettings) {
-    if (!grouped[setting.namespace]) {
-      grouped[setting.namespace] = {}
-    }
+    const namespaceSettings = (grouped[setting.namespace] ??= {})
 
     // 解析值
     let value: any = setting.value
@@ -45,7 +43,7 @@ export default eventHandler(async () => {
       // 保持原始值
     }
 
-    grouped[setting.namespace][setting.key] = value
+    namespaceSettings[setting.key] = value
   }
 
   return {

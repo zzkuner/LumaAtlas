@@ -88,6 +88,26 @@ const isLivePhotoHovering = ref(false)
 const isLivePhotoPlaying = ref(false)
 const isLivePhotoTouching = ref(false)
 const isLivePhotoMuted = ref(true)
+
+const toggleLivePhotoMuted = () => {
+  isLivePhotoMuted.value = !isLivePhotoMuted.value
+}
+
+const toggleExifPanel = () => {
+  showExifPanel.value = !showExifPanel.value
+}
+
+const closeExifPanel = () => {
+  showExifPanel.value = false
+}
+
+const openShareModal = () => {
+  showShareModal.value = true
+}
+
+const closeShareModal = () => {
+  showShareModal.value = false
+}
 const touchCount = ref(0)
 const livePhotoVideoBlob = ref<Blob | null>(null)
 const livePhotoVideoBlobUrl = ref<string | null>(null)
@@ -625,7 +645,7 @@ const swiperModules = [Navigation, Keyboard, Virtual]
                     v-if="currentPhoto?.isLivePhoto"
                     class="pointer-events-auto flex size-9 items-center justify-center border border-white/15 bg-black/70 text-[13px] font-bold leading-0 text-white backdrop-blur-md select-none"
                     :class="isMobile ? 'cursor-default' : 'cursor-pointer'"
-                    @click="isLivePhotoMuted = !isLivePhotoMuted"
+                    @click="toggleLivePhotoMuted"
                   >
                     <Icon
                       :name="
@@ -650,7 +670,7 @@ const swiperModules = [Navigation, Keyboard, Virtual]
                       size="sm"
                       class="size-9 justify-center rounded-md bg-white/90 shadow-sm backdrop-blur-md dark:bg-black/70"
                       :aria-label="$t('exif.sections.basic')"
-                      @click="showExifPanel = !showExifPanel"
+                      @click="toggleExifPanel"
                     />
                   </UTooltip>
 
@@ -666,7 +686,7 @@ const swiperModules = [Navigation, Keyboard, Virtual]
                       size="sm"
                       class="size-9 justify-center rounded-md bg-white/90 shadow-sm backdrop-blur-md dark:bg-black/70"
                       :aria-label="$t('ui.action.share.tooltip')"
-                      @click="showShareModal = true"
+                      @click="openShareModal"
                     />
                   </UTooltip>
 
@@ -996,7 +1016,7 @@ const swiperModules = [Navigation, Keyboard, Virtual]
               :exif-data="currentPhoto?.exif"
               :allow-share="allowShare"
               :allow-download="allowDownload"
-              :on-close="() => (showExifPanel = false)"
+              :on-close="closeExifPanel"
             />
           </AnimatePresence>
           <InfoPanel
@@ -1015,7 +1035,7 @@ const swiperModules = [Navigation, Keyboard, Virtual]
       v-if="currentPhoto"
       :is-open="showShareModal"
       :photo="currentPhoto"
-      @close="showShareModal = false"
+      @close="closeShareModal"
     />
   </Teleport>
 </template>

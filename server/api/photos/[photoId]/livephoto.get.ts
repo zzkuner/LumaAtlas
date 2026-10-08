@@ -22,14 +22,13 @@ export default eventHandler(async (event) => {
       .where(eq(tables.photos.id, photoId))
       .limit(1)
 
-    if (photos.length === 0) {
+    const photo = photos[0]
+    if (!photo) {
       throw createError({
         statusCode: 404,
         statusMessage: 'Photo not found',
       })
     }
-
-    const photo = photos[0]
 
     return {
       id: photo.id,
@@ -40,6 +39,9 @@ export default eventHandler(async (event) => {
       thumbnailUrl: photo.thumbnailUrl,
     }
   } catch (error) {
+    if (error && typeof error === 'object' && 'statusCode' in error) {
+      throw error
+    }
     logger.chrono.error('Failed to get photo details:', error)
     throw createError({
       statusCode: 500,

@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import type { Album, Photo } from '~~/server/utils/db'
+import type { AlbumVisibility } from '~~/shared/types/album-share'
 import type { FormSubmitEvent, FormError } from '@nuxt/ui'
 
 definePageMeta({
@@ -19,7 +20,7 @@ interface AlbumItem extends Album {
 interface AlbumFormState {
   title: string
   description: string
-  isHidden: boolean
+  visibility: AlbumVisibility
 }
 
 const albums = ref<AlbumItem[]>([])
@@ -36,8 +37,23 @@ const currentAlbum = ref<AlbumItem | null>(null)
 const formData = reactive<AlbumFormState>({
   title: '',
   description: '',
-  isHidden: false,
+  visibility: 'public',
 })
+
+const visibilityOptions = computed(() => [
+  {
+    label: $t('dashboard.albums.visibility.public'),
+    value: 'public',
+  },
+  {
+    label: $t('dashboard.albums.visibility.unlisted'),
+    value: 'unlisted',
+  },
+  {
+    label: $t('dashboard.albums.visibility.private'),
+    value: 'private',
+  },
+])
 
 const formRef = ref()
 const isSubmittingForm = ref(false)
@@ -120,7 +136,7 @@ const openCreateSlideover = () => {
   currentAlbum.value = null
   formData.title = ''
   formData.description = ''
-  formData.isHidden = false
+  formData.visibility = 'public'
   selectedPhotoIds.value = []
   coverPhotoId.value = ''
   formRef.value?.clear()
@@ -133,7 +149,8 @@ const openEditSlideover = async (album: AlbumItem) => {
     const albumDetail = (await $fetch(`/api/albums/${album.id}`)) as any
     formData.title = album.title
     formData.description = album.description || ''
-    formData.isHidden = album.isHidden || false
+    formData.visibility =
+      album.visibility || (album.isHidden ? 'private' : 'public')
     selectedPhotoIds.value = (albumDetail.photos || []).map((p: Photo) => p.id)
     coverPhotoId.value = album.coverPhotoId || ''
     formRef.value?.clear()
@@ -163,7 +180,7 @@ const onFormSubmit = async (event: FormSubmitEvent<AlbumFormState>) => {
           description: event.data.description || undefined,
           coverPhotoId: coverPhotoId.value || undefined,
           photoIds: selectedPhotoIds.value,
-          isHidden: event.data.isHidden,
+          visibility: event.data.visibility,
         },
       })
 
@@ -181,7 +198,7 @@ const onFormSubmit = async (event: FormSubmitEvent<AlbumFormState>) => {
           description: event.data.description || undefined,
           coverPhotoId: coverPhotoId.value || undefined,
           photoIds: selectedPhotoIds.value,
-          isHidden: event.data.isHidden,
+          visibility: event.data.visibility,
         },
       })
 
@@ -513,6 +530,15 @@ const columns: any[] = [
 
             <template #actions-cell="{ row }">
               <div class="flex gap-1">
+                <UTooltip :text="$t('dashboard.albums.share.action')">
+                  <UButton
+                    :to="`/dashboard/albums/${(row.original as unknown as AlbumItem).id}/share`"
+                    variant="ghost"
+                    color="neutral"
+                    size="xs"
+                    icon="tabler:share-3"
+                  />
+                </UTooltip>
                 <UButton
                   variant="ghost"
                   color="primary"
@@ -647,13 +673,15 @@ const columns: any[] = [
                 </UFormField>
 
                 <UFormField
-                  :label="$t('dashboard.albums.form.isHidden')"
-                  name="isHidden"
-                  :hint="$t('dashboard.albums.form.isHiddenHint')"
+                  :label="$t('dashboard.albums.visibility.label')"
+                  name="visibility"
+                  :hint="$t('dashboard.albums.visibility.hint')"
                 >
-                  <UCheckbox
-                    v-model="formData.isHidden"
-                    :label="$t('dashboard.albums.form.isHidden')"
+                  <USelect
+                    v-model="formData.visibility"
+                    :items="visibilityOptions"
+                    value-key="value"
+                    class="w-full"
                   />
                 </UFormField>
               </UForm>

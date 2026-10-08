@@ -252,6 +252,22 @@
       "created": "Created"
     }
   },
+  "albumShare": {
+    "pageTitle": "Shared album",
+    "unavailable": "This link is unavailable",
+    "unavailableHint": "It may have expired, been paused, or been revoked by the owner.",
+    "passwordRequired": "Enter the password provided by the album owner to continue.",
+    "password": "Password",
+    "incorrectPassword": "The password is incorrect.",
+    "open": "Open album",
+    "sharedAlbum": "Shared album",
+    "photoCount": "{count} photos",
+    "expires": "Available until {date}",
+    "empty": "This album has no visible photos.",
+    "share": "Share album",
+    "download": "Download selected photo",
+    "copied": "Album link copied"
+  },
   "map": {
     "cluster": {
       "details": "Click to view details",
@@ -509,6 +525,9 @@
   },
   "common": {
     "unknown": "unknown",
+    "yes": "Yes",
+    "no": "No",
+    "save": "Save",
     "unsavedChanges": "There are unsaved changes.",
     "months": {
       "jan": "Jan",
@@ -915,6 +934,42 @@
         "editPhotos": "Edit photo selection",
         "selectedCount": "Selected {count} photos",
         "clearAll": "Clear all"
+      },
+      "visibility": {
+        "label": "Visibility",
+        "hint": "Public albums appear in the album library. Unlisted albums require a direct link. Private albums are visible only after sign-in.",
+        "public": "Public",
+        "unlisted": "Unlisted",
+        "private": "Private"
+      },
+      "share": {
+        "action": "Manage share link",
+        "title": "Album sharing",
+        "heading": "Share this album on your terms",
+        "description": "Create a separate link and control its password, expiration, downloads, EXIF details, and location display.",
+        "link": "Share link",
+        "views": "Views",
+        "password": "Password protection",
+        "lastViewed": "Last viewed",
+        "empty": "No share link has been created for this album.",
+        "create": "Create share link",
+        "rules": "Access rules",
+        "newPassword": "Set or replace password",
+        "passwordPlaceholder": "Leave blank to keep the current password",
+        "expiresAt": "Expires at",
+        "clearPassword": "Remove the current password",
+        "active": "Link is active",
+        "allowOriginal": "Allow original image downloads",
+        "showExif": "Show camera and EXIF details",
+        "showMap": "Show location and map data",
+        "regenerate": "Replace link",
+        "regenerateConfirm": "Replace this link? The old URL will immediately stop working.",
+        "revoke": "Revoke",
+        "revokeConfirm": "Revoke and delete this share link?",
+        "revoked": "Share link revoked",
+        "saved": "Share settings saved",
+        "saveFailed": "Could not save share settings",
+        "copied": "Share link copied"
       },
       "table": {
         "columns": {

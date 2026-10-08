@@ -11,6 +11,7 @@ export default eventHandler(async (event) => {
       coverPhotoId: z.string().optional(),
       photoIds: z.array(z.string()).optional(),
       isHidden: z.boolean().optional(),
+      visibility: z.enum(['public', 'unlisted', 'private']).optional(),
     }).parse,
   )
 
@@ -23,7 +24,11 @@ export default eventHandler(async (event) => {
         title: body.title,
         description: body.description || null,
         coverPhotoId: body.coverPhotoId || null,
-        isHidden: body.isHidden || false,
+        visibility: body.visibility || (body.isHidden ? 'private' : 'public'),
+        isHidden:
+          body.visibility !== undefined
+            ? body.visibility === 'private'
+            : body.isHidden || false,
       })
       .returning()
       .get()

@@ -21,6 +21,7 @@ export default eventHandler(async (event) => {
       coverPhotoId: z.string().optional(),
       photoIds: z.array(z.string()).optional(),
       isHidden: z.boolean().optional(),
+      visibility: z.enum(['public', 'unlisted', 'private']).optional(),
     }).parse,
   )
 
@@ -60,6 +61,13 @@ export default eventHandler(async (event) => {
     }
     if (body.isHidden !== undefined) {
       updateData.isHidden = body.isHidden
+      if (body.visibility === undefined) {
+        updateData.visibility = body.isHidden ? 'private' : 'public'
+      }
+    }
+    if (body.visibility !== undefined) {
+      updateData.visibility = body.visibility
+      updateData.isHidden = body.visibility === 'private'
     }
 
     tx.update(tables.albums)

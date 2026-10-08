@@ -147,6 +147,11 @@ export const albums = sqliteTable('albums', {
     onDelete: 'set null',
   }),
   isHidden: integer('is_hidden', { mode: 'boolean' }).default(false).notNull(),
+  visibility: text('visibility', {
+    enum: ['public', 'unlisted', 'private'],
+  })
+    .default('public')
+    .notNull(),
   createdAt: integer('created_at', { mode: 'timestamp' })
     .notNull()
     .default(sql`(unixepoch())`),
@@ -154,6 +159,41 @@ export const albums = sqliteTable('albums', {
     .notNull()
     .default(sql`(unixepoch())`),
 })
+
+// Share links are independent from album visibility so a link can be revoked
+// or tightened without changing how the album appears in the public library.
+export const albumShares = sqliteTable(
+  'album_shares',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    albumId: integer('album_id')
+      .notNull()
+      .references(() => albums.id, { onDelete: 'cascade' }),
+    token: text('token').notNull(),
+    passwordHash: text('password_hash'),
+    expiresAt: integer('expires_at', { mode: 'timestamp' }),
+    allowOriginalDownload: integer('allow_original_download', {
+      mode: 'boolean',
+    })
+      .default(false)
+      .notNull(),
+    showExif: integer('show_exif', { mode: 'boolean' }).default(true).notNull(),
+    showMap: integer('show_map', { mode: 'boolean' }).default(true).notNull(),
+    isActive: integer('is_active', { mode: 'boolean' }).default(true).notNull(),
+    viewCount: integer('view_count').default(0).notNull(),
+    lastViewedAt: integer('last_viewed_at', { mode: 'timestamp' }),
+    createdAt: integer('created_at', { mode: 'timestamp' })
+      .notNull()
+      .default(sql`(unixepoch())`),
+    updatedAt: integer('updated_at', { mode: 'timestamp' })
+      .notNull()
+      .default(sql`(unixepoch())`),
+  },
+  (t) => [
+    uniqueIndex('idx_album_shares_token').on(t.token),
+    uniqueIndex('idx_album_shares_album_id').on(t.albumId),
+  ],
+)
 
 // 相簿-照片 多对多关系表
 export const albumPhotos = sqliteTable('album_photos', {

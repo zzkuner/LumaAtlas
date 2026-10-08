@@ -28,8 +28,9 @@ export default eventHandler(async (event) => {
     })
   }
 
-  // 检查相册是否隐藏，如果隐藏则需要用户登录才能访问
-  if (album.isHidden) {
+  // Private albums require an authenticated owner. Unlisted albums remain
+  // reachable by their direct URL but never appear in the public album index.
+  if (album.isHidden || album.visibility === 'private') {
     if (!session.user) {
       throw createError({
         statusCode: 404,

@@ -8,7 +8,14 @@ export default eventHandler(async (event) => {
   const albumQuery = db.select().from(tables.albums)
   const albums = session.user
     ? albumQuery.all()
-    : albumQuery.where(eq(tables.albums.isHidden, false)).all()
+    : albumQuery
+        .where(
+          and(
+            eq(tables.albums.isHidden, false),
+            eq(tables.albums.visibility, 'public'),
+          ),
+        )
+        .all()
 
   // 为每个相册获取照片 ID 列表（避免循环引用）
   const albumsWithPhotoIds = await Promise.all(

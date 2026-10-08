@@ -19,9 +19,14 @@ interface Props {
   photos: Photo[]
   currentIndex: number
   isOpen: boolean
+  allowShare?: boolean
+  showInfo?: boolean
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  allowShare: true,
+  showInfo: true,
+})
 const emit = defineEmits<{
   close: []
   indexChange: [index: number]
@@ -94,7 +99,9 @@ const { convertMovToMp4, getProcessingState } = useLivePhotoProcessor()
 const currentPhoto = computed(() => props.photos[props.currentIndex])
 const isMobile = useMediaQuery('(max-width: 768px)')
 const sharingEnabled = computed(
-  () => loggedIn.value || getSetting('publishing:sharing.enabled') !== false,
+  () =>
+    props.allowShare &&
+    (loggedIn.value || getSetting('publishing:sharing.enabled') !== false),
 )
 
 // LivePhoto processing state
@@ -108,6 +115,8 @@ const livePhotoProcessingState = computed(() => {
 watch(
   () => props.isOpen,
   (isOpen) => {
+    if (!import.meta.client) return
+
     if (!isOpen) {
       isImageZoomed.value = false
       showExifPanel.value = false
@@ -629,7 +638,7 @@ const swiperModules = [Navigation, Keyboard, Virtual]
                 <div class="flex items-center gap-2">
                   <!-- 信息按钮 - 在移动设备上显示 -->
                   <UTooltip
-                    v-if="isMobile"
+                    v-if="isMobile && showInfo"
                     :text="$t('exif.sections.basic')"
                   >
                     <UButton
@@ -978,7 +987,7 @@ const swiperModules = [Navigation, Keyboard, Virtual]
           </div>
 
           <!-- EXIF 面板 - 在桌面端始终显示，在移动端根据状态显示 -->
-          <AnimatePresence v-if="isMobile">
+          <AnimatePresence v-if="isMobile && showInfo">
             <InfoPanel
               v-if="showExifPanel && currentPhoto"
               :current-photo="currentPhoto"
@@ -987,7 +996,7 @@ const swiperModules = [Navigation, Keyboard, Virtual]
             />
           </AnimatePresence>
           <InfoPanel
-            v-else-if="currentPhoto"
+            v-else-if="showInfo && currentPhoto"
             :current-photo="currentPhoto"
             :exif-data="currentPhoto?.exif"
           />

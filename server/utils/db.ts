@@ -51,6 +51,8 @@ export type PhotoReaction = typeof schema.photoReactions.$inferSelect
 
 export type Album = typeof schema.albums.$inferSelect
 export type NewAlbum = typeof schema.albums.$inferInsert
+export type AlbumShare = typeof schema.albumShares.$inferSelect
+export type NewAlbumShare = typeof schema.albumShares.$inferInsert
 export type AlbumPhoto = typeof schema.albumPhotos.$inferSelect
 export type NewAlbumPhoto = typeof schema.albumPhotos.$inferInsert
 export type AlbumWithPhotos = Album & {

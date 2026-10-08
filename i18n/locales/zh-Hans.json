@@ -255,6 +255,22 @@
       "created": "创建"
     }
   },
+  "albumShare": {
+    "pageTitle": "共享相簿",
+    "unavailable": "这个链接不可用",
+    "unavailableHint": "链接可能已过期、暂停，或被所有者撤销。",
+    "passwordRequired": "请输入相簿所有者提供的密码后继续。",
+    "password": "访问密码",
+    "incorrectPassword": "密码不正确。",
+    "open": "打开相簿",
+    "sharedAlbum": "共享相簿",
+    "photoCount": "{count} 张照片",
+    "expires": "有效期至 {date}",
+    "empty": "这个相簿中没有可见照片。",
+    "share": "分享相簿",
+    "download": "下载当前照片",
+    "copied": "相簿链接已复制"
+  },
   "minimap": {
     "loading": "加载小地图..."
   },
@@ -511,6 +527,9 @@
   },
   "common": {
     "unknown": "未知",
+    "yes": "是",
+    "no": "否",
+    "save": "保存",
     "unsavedChanges": "存在未保存的更改。",
     "months": {
       "jan": "一月",
@@ -919,6 +938,42 @@
         "clearAll": "全部清除",
         "isHidden": "隐藏相簿",
         "isHiddenHint": "隐藏的相簿中的照片不会在首页展示"
+      },
+      "visibility": {
+        "label": "可见范围",
+        "hint": "公开相簿会出现在相簿列表；链接可见不会出现在列表；私密相簿仅登录后可见。",
+        "public": "公开",
+        "unlisted": "链接可见",
+        "private": "私密"
+      },
+      "share": {
+        "action": "管理分享链接",
+        "title": "相簿分享",
+        "heading": "按你的规则分享相簿",
+        "description": "创建独立链接，并分别控制密码、有效期、原图下载、EXIF 信息和地图位置。",
+        "link": "分享链接",
+        "views": "访问次数",
+        "password": "密码保护",
+        "lastViewed": "最近访问",
+        "empty": "这个相簿还没有创建分享链接。",
+        "create": "创建分享链接",
+        "rules": "访问规则",
+        "newPassword": "设置或更换密码",
+        "passwordPlaceholder": "留空则保留当前密码",
+        "expiresAt": "失效时间",
+        "clearPassword": "移除当前密码",
+        "active": "链接有效",
+        "allowOriginal": "允许下载原图",
+        "showExif": "显示相机与 EXIF 信息",
+        "showMap": "显示位置与地图信息",
+        "regenerate": "更换链接",
+        "regenerateConfirm": "确定更换链接吗？旧地址会立即失效。",
+        "revoke": "撤销链接",
+        "revokeConfirm": "确定撤销并删除这个分享链接吗？",
+        "revoked": "分享链接已撤销",
+        "saved": "分享设置已保存",
+        "saveFailed": "保存分享设置失败",
+        "copied": "分享链接已复制"
       },
       "table": {
         "columns": {

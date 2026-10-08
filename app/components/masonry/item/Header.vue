@@ -103,6 +103,10 @@ const handleOpenLogin = () => {
   router.push('/signin')
 }
 
+const toggleColorMode = () => {
+  isDark.value = !isDark.value
+}
+
 const handleLogout = async (clear: () => Promise<void>) => {
   await $fetch('/api/logout')
   await clear()
@@ -275,7 +279,7 @@ const { openCommandPalette } = useCommandPalette()
                   :icon="isDark ? 'lucide:sun' : 'lucide:moon'"
                   size="sm"
                   :aria-label="$t('ui.action.theme.tooltip')"
-                  @click="isDark = !isDark"
+                  @click="toggleColorMode"
                 />
               </UTooltip>
 

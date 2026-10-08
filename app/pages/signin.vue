@@ -20,6 +20,11 @@ const twoFactorCode = ref('')
 const pendingCredentials = ref<{ email: string; password: string } | null>(null)
 const passkeySupported = ref(false)
 
+const returnToPassword = () => {
+  requiresTwoFactor.value = false
+  twoFactorCode.value = ''
+}
+
 onMounted(() => {
   passkeySupported.value = 'PublicKeyCredential' in window
 })
@@ -133,7 +138,7 @@ const signInWithPasskey = async () => {
         variant="link"
         color="neutral"
         size="xs"
-        @click="requiresTwoFactor = false"
+        @click="returnToPassword"
       >
         返回密码登录
       </UButton>

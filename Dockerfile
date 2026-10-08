@@ -20,6 +20,8 @@ RUN find ./.output -type f -name '*.map' -delete
 
 FROM node:22.22.3-alpine AS runtime_deps
 RUN apk add --no-cache ca-certificates perl exiftool \
+	&& addgroup -S -g 10001 lumaatlas \
+	&& adduser -S -D -H -u 10001 -G lumaatlas lumaatlas \
 	&& install -Dm755 "$(readlink -f /usr/bin/perl)" /opt/runtime-bin/perl \
 	&& install -Dm755 "$(readlink -f /usr/bin/env)" /opt/runtime-bin/env \
 	&& install -Dm755 "$(readlink -f /usr/bin/exiftool)" /opt/runtime-bin/exiftool
@@ -35,9 +37,11 @@ COPY --from=runtime_deps /usr/lib /usr/lib
 COPY --from=runtime_deps /usr/share /usr/share
 COPY --from=runtime_deps /lib /lib
 COPY --from=runtime_deps /etc/ssl /etc/ssl
+COPY --from=runtime_deps /etc/passwd /etc/passwd
+COPY --from=runtime_deps /etc/group /etc/group
 
-COPY --from=build /usr/src/app/.output ./.output
-COPY --from=build /usr/src/app/server/database/migrations ./server/database/migrations
+COPY --chown=10001:10001 --from=build /usr/src/app/.output ./.output
+COPY --chown=10001:10001 --from=build /usr/src/app/server/database/migrations ./server/database/migrations
 
 EXPOSE 3000
 VOLUME ["/app/data"]
@@ -49,5 +53,7 @@ ENV DATABASE_URL=./data/app.sqlite3
 ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
 ENV NODE_EXTRA_CA_CERTS=/etc/ssl/certs/ca-certificates.crt
 ENV EXIFTOOL_PATH=/usr/bin/exiftool
+
+USER 10001:10001
 
 CMD ["/usr/bin/node", ".output/server/index.mjs"]

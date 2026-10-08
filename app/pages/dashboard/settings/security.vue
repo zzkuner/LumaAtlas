@@ -75,6 +75,11 @@ const startTotpSetup = async () => {
   }
 }
 
+const cancelTotpSetup = () => {
+  totpSetup.value = null
+  setupCode.value = ''
+}
+
 const verifyTotpSetup = async () => {
   if (!setupCode.value.trim()) return
   totpLoading.value = true
@@ -331,7 +336,7 @@ const describeDevice = (userAgent: string | null) => {
                     <UButton
                       color="neutral"
                       variant="ghost"
-                      @click="totpSetup = null"
+                      @click="cancelTotpSetup"
                     >
                       取消
                     </UButton>

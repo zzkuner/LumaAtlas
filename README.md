@@ -58,98 +58,18 @@ A smooth photo display and management application, supporting multiple image for
 
 ## 🐳 Deployment
 
-We recommend deploying with the prebuilt Docker image. [View the image on ghcr](https://github.com/HoshinoSuzumi/chronoframe/pkgs/container/chronoframe)
-
-Create a `.env` file and configure environment variables.
-
-Below is a **minimal configuration** example. For complete configuration options, see [Configuration Guide](https://chronoframe.bh8.ga/guide/configuration.html):
+LumaAtlas builds its container image from this repository. Copy the example configuration, set a strong session secret and admin credentials, then start Docker Compose:
 
 ```bash
-# Admin email (required)
-CFRAME_ADMIN_EMAIL=
-# Admin username (optional, default Chronoframe)
-CFRAME_ADMIN_NAME=
-# Admin password (optional, default CF1234@!)
-CFRAME_ADMIN_PASSWORD=
-
-# Site metadata (all optional)
-NUXT_PUBLIC_APP_TITLE=
-NUXT_PUBLIC_APP_SLOGAN=
-NUXT_PUBLIC_APP_AUTHOR=
-NUXT_PUBLIC_APP_AVATAR_URL=
-
-# Map provider (maplibre/mapbox)
-NUXT_PUBLIC_MAP_PROVIDER=maplibre
-# MapTiler access token for MapLibre
-NUXT_PUBLIC_MAP_MAPLIBRE_TOKEN=
-# Mapbox access token for Mapbox
-NUXT_PUBLIC_MAPBOX_ACCESS_TOKEN=
-
-# Mapbox unrestricted token (optional, reverse geocoding)
-NUXT_MAPBOX_ACCESS_TOKEN=
-
-# Storage provider (local, s3 or openlist)
-NUXT_STORAGE_PROVIDER=local
-NUXT_PROVIDER_LOCAL_PATH=/app/data/storage
-
-# Session password (32‑char random string, required)
-NUXT_SESSION_PASSWORD=
+cp .env.example .env
+docker compose up -d --build
 ```
 
-### Pull Image
-
-Use the published image on GitHub Container Registry and Docker Hub. Choose the source that works best for your network:
-
-#### [GitHub Container Registry (GHCR)](https://github.com/HoshinoSuzumi/chronoframe/pkgs/container/chronoframe)
-
-```bash
-docker pull ghcr.io/hoshinosuzumi/chronoframe:latest
-```
-
-#### [Docker Hub](https://hub.docker.com/r/hoshinosuzumi/chronoframe)
-
-```bash
-docker pull hoshinosuzumi/chronoframe:latest
-```
-
-### Docker
-
-Run with customized environment variables:
-
-```bash
-docker run -d --name chronoframe -p 3000:3000 -v $(pwd)/data:/app/data --env-file .env ghcr.io/hoshinosuzumi/chronoframe:latest
-```
-
-### Docker Compose
-
-Create docker-compose.yml:
-
-```yaml
-services:
-  chronoframe:
-    image: ghcr.io/hoshinosuzumi/chronoframe:latest
-    container_name: chronoframe
-    restart: unless-stopped
-    ports:
-      - '3000:3000'
-    volumes:
-      - ./data:/app/data
-    env_file:
-      - .env
-```
-
-Start:
-
-```bash
-docker compose up -d
-```
+The service listens on `127.0.0.1:3000` by default. See the [deployment and operations guide](DEPLOYMENT.zh-CN.md) for the complete environment reference, HTTPS proxying, backups, upgrades, and rollback.
 
 ## 📖 User Guide
 
-> If `CFRAME_ADMIN_EMAIL` and `CFRAME_ADMIN_PASSWORD` are not set, the default admin account is:
->
-> - Email: `admin@chronoframe.com`
-> - Password: `CF1234@!`
+On first launch, follow the onboarding wizard to create the administrator account, configure storage, and choose a map provider.
 
 ### Logging into the Dashboard
 

@@ -102,6 +102,9 @@ export const verifyTotp = (secret: string, input: string, now = Date.now()) => {
   })
 }
 
+export const generateTotpCode = (secret: string, now = Date.now()) =>
+  generateTotpAtCounter(secret, Math.floor(now / 30_000))
+
 export const createTotpSetup = async (
   secret: string,
   email: string,

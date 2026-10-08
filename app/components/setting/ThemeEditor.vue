@@ -24,6 +24,9 @@ type ModuleId = 'header' | 'gallery' | 'footer'
 type NavigationId = 'explore' | 'globe' | 'albums'
 
 const viewport = ref<'desktop' | 'mobile'>('desktop')
+const setViewport = (value: 'desktop' | 'mobile') => {
+  viewport.value = value
+}
 
 const setting = (key: string, fallback: unknown) =>
   props.settings[key] ?? fallback
@@ -231,13 +234,6 @@ const navigationLabels: Record<NavigationId, { label: string; icon: string }> =
     globe: { label: '地球', icon: 'lucide:globe-2' },
     albums: { label: '相册', icon: 'lucide:folder-heart' },
   }
-
-const socialFields = [
-  { key: 'website', label: '个人网站', icon: 'lucide:link' },
-  { key: 'instagram', label: 'Instagram', icon: 'simple-icons:instagram' },
-  { key: 'x', label: 'X', icon: 'simple-icons:x' },
-  { key: 'github', label: 'GitHub', icon: 'simple-icons:github' },
-] as const
 
 const updateSocial = (key: string, value: string) => {
   update('appearance.home.socialLinks', {
@@ -715,17 +711,40 @@ const updateSocial = (key: string, value: string) => {
           </p>
         </div>
         <div class="grid gap-4 sm:grid-cols-2">
-          <UFormField
-            v-for="field in socialFields"
-            :key="field.key"
-            :label="field.label"
-          >
+          <UFormField label="个人网站">
             <UInput
               type="url"
               placeholder="https://"
-              :icon="field.icon"
-              :model-value="String(socialLinks[field.key] || '')"
-              @update:model-value="updateSocial(field.key, String($event))"
+              icon="lucide:link"
+              :model-value="String(socialLinks.website || '')"
+              @update:model-value="updateSocial('website', String($event))"
+            />
+          </UFormField>
+          <UFormField label="Instagram">
+            <UInput
+              type="url"
+              placeholder="https://"
+              icon="simple-icons:instagram"
+              :model-value="String(socialLinks.instagram || '')"
+              @update:model-value="updateSocial('instagram', String($event))"
+            />
+          </UFormField>
+          <UFormField label="X">
+            <UInput
+              type="url"
+              placeholder="https://"
+              icon="simple-icons:x"
+              :model-value="String(socialLinks.x || '')"
+              @update:model-value="updateSocial('x', String($event))"
+            />
+          </UFormField>
+          <UFormField label="GitHub">
+            <UInput
+              type="url"
+              placeholder="https://"
+              icon="simple-icons:github"
+              :model-value="String(socialLinks.github || '')"
+              @update:model-value="updateSocial('github', String($event))"
             />
           </UFormField>
         </div>
@@ -753,7 +772,7 @@ const updateSocial = (key: string, value: string) => {
           size="xs"
           color="neutral"
           :variant="viewport === 'desktop' ? 'solid' : 'ghost'"
-          @click="viewport = 'desktop'"
+          @click="setViewport('desktop')"
         />
         <UButton
           icon="lucide:smartphone"
@@ -761,7 +780,7 @@ const updateSocial = (key: string, value: string) => {
           size="xs"
           color="neutral"
           :variant="viewport === 'mobile' ? 'solid' : 'ghost'"
-          @click="viewport = 'mobile'"
+          @click="setViewport('mobile')"
         />
       </div>
       <SettingHomePreview

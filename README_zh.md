@@ -58,98 +58,18 @@ LumaAtlas 是一个正在开发中的自托管个人照片展示与管理工具�
 
 ## 🐳 部署
 
-推荐使用预构建的 docker 镜像部署，[在 ghcr 上查看镜像](https://github.com/HoshinoSuzumi/chronoframe/pkgs/container/chronoframe)
-
-创建 `.env` 文件并配置。
-
-下面是**最小化配置**示例，完整的配置项参考 [配置指南](https://chronoframe.bh8.ga/zh/guide/configuration.html)：
+LumaAtlas 默认从当前仓库源码构建镜像。复制示例配置，填写管理员信息和强随机会话密钥，然后启动 Docker Compose：
 
 ```bash
-# 管理员邮箱（必须）
-CFRAME_ADMIN_EMAIL=
-# 管理员用户名（可选，默认 ChronoFrame）
-CFRAME_ADMIN_NAME=
-# 管理员密码（可选，默认 CF1234@!）
-CFRAME_ADMIN_PASSWORD=
-
-# 站点信息（均可选）
-NUXT_PUBLIC_APP_TITLE=
-NUXT_PUBLIC_APP_SLOGAN=
-NUXT_PUBLIC_APP_AUTHOR=
-NUXT_PUBLIC_APP_AVATAR_URL=
-
-# 地图提供器 (maplibre/mapbox)
-NUXT_PUBLIC_MAP_PROVIDER=maplibre
-# 使用 MapLibre 需要 MapTiler 访问令牌
-NUXT_PUBLIC_MAP_MAPLIBRE_TOKEN=
-# 使用 Mapbox 需要 Mapbox 访问令牌
-NUXT_PUBLIC_MAPBOX_ACCESS_TOKEN=
-
-# Mapbox 无域名限制令牌（反向地理编码，可选）
-NUXT_MAPBOX_ACCESS_TOKEN=
-
-# 存储提供者（local、s3 或 openlist）
-NUXT_STORAGE_PROVIDER=local
-NUXT_PROVIDER_LOCAL_PATH=/app/data/storage
-
-# 会话密码（必须，32 位随机字符串）
-NUXT_SESSION_PASSWORD=
+cp .env.example .env
+docker compose up -d --build
 ```
 
-### 拉取镜像
-
-我们推荐使用预构建的 Docker 镜像进行部署，镜像托管在 GHCR 和 Docker Hub，您可以根据网络情况选择合适的源。
-
-#### [GitHub Container Registry (GHCR)](https://github.com/HoshinoSuzumi/chronoframe/pkgs/container/chronoframe)
-
-```bash
-docker pull ghcr.io/hoshinosuzumi/chronoframe:latest
-```
-
-#### [Docker Hub](https://hub.docker.com/r/hoshinosuzumi/chronoframe)
-
-```bash
-docker pull hoshinosuzumi/chronoframe:latest
-```
-
-### Docker
-
-一行命令启动：
-
-```bash
-docker run -d --name chronoframe -p 3000:3000 -v $(pwd)/data:/app/data --env-file .env ghcr.io/hoshinosuzumi/chronoframe:latest
-```
-
-### Docker Compose
-
-创建 `docker-compose.yml`：
-
-```yaml
-services:
-  chronoframe:
-    image: ghcr.io/hoshinosuzumi/chronoframe:latest
-    container_name: chronoframe
-    restart: unless-stopped
-    ports:
-      - '3000:3000'
-    volumes:
-      - ./data:/app/data
-    env_file:
-      - .env
-```
-
-启动：
-
-```bash
-docker compose up -d
-```
+服务默认只监听 `127.0.0.1:3000`。完整环境变量、HTTPS、备份、升级与回滚方法见 [部署与运维指南](DEPLOYMENT.zh-CN.md)。
 
 ## 📖 使用指南
 
-> 如未配置 `CFRAME_ADMIN_EMAIL` 和 `CFRAME_ADMIN_PASSWORD`，默认账号如下：
->
-> - 邮箱: `admin@chronoframe.com`
-> - 密码: `CF1234@!`
+首次启动后，根据引导创建管理员账号、配置存储并选择地图服务。
 
 ### 登录到控制台
 

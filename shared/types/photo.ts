@@ -1,6 +1,10 @@
 import type { Tags } from 'exiftool-vendored'
 
 export interface NeededExif {
+  RawExif?: Record<
+    string,
+    string | number | boolean | string[] | number[] | null
+  >
   Title?: string
   XPTitle?: string
   Subject?: string[]

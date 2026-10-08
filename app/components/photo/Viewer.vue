@@ -20,11 +20,13 @@ interface Props {
   currentIndex: number
   isOpen: boolean
   allowShare?: boolean
+  allowDownload?: boolean
   showInfo?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   allowShare: true,
+  allowDownload: true,
   showInfo: true,
 })
 const emit = defineEmits<{
@@ -992,6 +994,8 @@ const swiperModules = [Navigation, Keyboard, Virtual]
               v-if="showExifPanel && currentPhoto"
               :current-photo="currentPhoto"
               :exif-data="currentPhoto?.exif"
+              :allow-share="allowShare"
+              :allow-download="allowDownload"
               :on-close="() => (showExifPanel = false)"
             />
           </AnimatePresence>
@@ -999,6 +1003,8 @@ const swiperModules = [Navigation, Keyboard, Virtual]
             v-else-if="showInfo && currentPhoto"
             :current-photo="currentPhoto"
             :exif-data="currentPhoto?.exif"
+            :allow-share="allowShare"
+            :allow-download="allowDownload"
           />
         </div>
       </motion.div>

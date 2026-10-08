@@ -9,6 +9,8 @@ interface Props {
   currentPhoto: Photo
   exifData?: NeededExif | null
   onClose?: () => void
+  allowShare?: boolean
+  allowDownload?: boolean
 }
 
 interface Album {
@@ -20,11 +22,30 @@ interface Album {
   updatedAt: Date
 }
 
+interface RelatedPhoto {
+  photo: Photo
+  score: number
+  reasons: Array<'place' | 'date' | 'camera' | 'lens' | 'tag'>
+}
+
 const dayjs = useDayjs()
 const router = useRouter()
 const { localizeExif } = useExifLocalization()
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  allowShare: true,
+  allowDownload: true,
+})
+const toast = useToast()
+const { loggedIn } = useUserSession()
+const { refresh } = usePhotos()
+const editorOpen = ref(false)
+const downloadAllowed = computed(
+  () =>
+    props.allowDownload &&
+    (loggedIn.value ||
+      getSetting('publishing:download.originalEnabled') !== false),
+)
 
 // 获取照片所属的相册
 const { data: _albums } = useFetch<Album[]>(
@@ -35,6 +56,71 @@ const { data: _albums } = useFetch<Album[]>(
 )
 
 const albums = computed(() => _albums.value || [])
+
+const { data: relatedPhotos, refresh: refreshRelated } = useFetch<
+  RelatedPhoto[]
+>(() => `/api/photos/${props.currentPhoto.id}/related`, {
+  query: { limit: 8 },
+  watch: [() => props.currentPhoto.id],
+  default: () => [],
+})
+
+const fileExtension = computed(
+  () => props.currentPhoto.storageKey?.split('.').pop()?.toLowerCase() || '',
+)
+const mediaBadges = computed(() => {
+  const badges: Array<{ label: string; icon: string }> = []
+  const rawFormats = new Set([
+    '3fr',
+    'arw',
+    'cr2',
+    'cr3',
+    'dng',
+    'erf',
+    'fff',
+    'iiq',
+    'kdc',
+    'mef',
+    'mos',
+    'mrw',
+    'nef',
+    'nrw',
+    'orf',
+    'pef',
+    'raf',
+    'raw',
+    'rw2',
+    'sr2',
+    'srf',
+    'x3f',
+  ])
+  const mpType = String(props.exifData?.MPImageType || '').toLowerCase()
+  const sceneType = String(props.exifData?.SceneCaptureType || '').toLowerCase()
+
+  if (props.currentPhoto.isLivePhoto) {
+    badges.push({ label: 'Live Photo', icon: 'lucide:circle-play' })
+  }
+  if (rawFormats.has(fileExtension.value)) {
+    badges.push({ label: 'RAW', icon: 'lucide:file-image' })
+  }
+  if (mpType.includes('hdr') || sceneType.includes('hdr')) {
+    badges.push({ label: 'HDR', icon: 'lucide:sun-dim' })
+  }
+  if (
+    (props.currentPhoto.aspectRatio || 0) >= 2.2 ||
+    sceneType.includes('panorama')
+  ) {
+    badges.push({ label: 'Panorama', icon: 'lucide:scan-line' })
+  }
+
+  return badges
+})
+
+const rawExifEntries = computed(() =>
+  Object.entries(props.exifData?.RawExif || {}).sort(([left], [right]) =>
+    left.localeCompare(right),
+  ),
+)
 
 // 格式化曝光时间
 const formatExposureTime = (
@@ -484,6 +570,44 @@ const onTagClick = (tag: string) => {
 const onAlbumClick = (albumId: number) => {
   window.open(`/albums/${albumId}`)
 }
+
+const sharePhoto = async () => {
+  const url = `${window.location.origin}/${props.currentPhoto.id}`
+  if (navigator.share) {
+    await navigator.share({ title: props.currentPhoto.title || 'Photo', url })
+  } else {
+    await navigator.clipboard.writeText(url)
+    toast.add({ title: $t('photoDetail.actions.linkCopied'), color: 'success' })
+  }
+}
+
+const downloadPhoto = () => {
+  if (!props.currentPhoto.originalUrl) return
+  const anchor = document.createElement('a')
+  anchor.href = props.currentPhoto.originalUrl
+  anchor.download =
+    props.currentPhoto.storageKey?.split('/').pop() ||
+    props.currentPhoto.title ||
+    props.currentPhoto.id
+  anchor.target = '_blank'
+  anchor.click()
+}
+
+const copyExif = async () => {
+  await navigator.clipboard.writeText(
+    JSON.stringify(props.exifData?.RawExif || props.exifData || {}, null, 2),
+  )
+  toast.add({ title: $t('photoDetail.rawExif.copied'), color: 'success' })
+}
+
+const openRelatedPhoto = (photoId: string) => {
+  router.push(`/${photoId}`)
+}
+
+const handlePhotoSaved = async () => {
+  await refresh()
+  await refreshRelated()
+}
 </script>
 
 <template>
@@ -519,8 +643,22 @@ const onAlbumClick = (albumId: number) => {
           {{ currentPhoto.city || currentPhoto.country || $t('title.gallery') }}
         </p>
         <h3 class="mt-1 truncate text-base font-semibold">
-          {{ currentPhoto.title }}
+          {{ currentPhoto.title || currentPhoto.storageKey || currentPhoto.id }}
         </h3>
+        <div
+          v-if="mediaBadges.length"
+          class="mt-2 flex flex-wrap gap-1"
+        >
+          <UBadge
+            v-for="badge in mediaBadges"
+            :key="badge.label"
+            :label="badge.label"
+            :icon="badge.icon"
+            color="neutral"
+            variant="outline"
+            size="sm"
+          />
+        </div>
       </div>
       <UButton
         v-if="isMobile && onClose"
@@ -548,6 +686,64 @@ const onAlbumClick = (albumId: number) => {
         class="text-sm leading-6 text-neutral-600 dark:text-neutral-400"
       >
         {{ currentPhoto.description }}
+      </div>
+
+      <div
+        class="flex items-center gap-1 border-y border-neutral-200 py-2 dark:border-neutral-800"
+      >
+        <UTooltip
+          v-if="allowShare"
+          :text="$t('photoDetail.actions.share')"
+        >
+          <UButton
+            icon="lucide:share-2"
+            color="neutral"
+            variant="ghost"
+            size="sm"
+            :aria-label="$t('photoDetail.actions.share')"
+            @click="sharePhoto"
+          />
+        </UTooltip>
+        <UTooltip
+          v-if="downloadAllowed"
+          :text="$t('photoDetail.actions.download')"
+        >
+          <UButton
+            icon="lucide:download"
+            color="neutral"
+            variant="ghost"
+            size="sm"
+            :disabled="!currentPhoto.originalUrl"
+            :aria-label="$t('photoDetail.actions.download')"
+            @click="downloadPhoto"
+          />
+        </UTooltip>
+        <UTooltip
+          v-if="gpsCoordinates"
+          :text="$t('photoDetail.actions.map')"
+        >
+          <UButton
+            icon="lucide:map-pin"
+            color="neutral"
+            variant="ghost"
+            size="sm"
+            :aria-label="$t('photoDetail.actions.map')"
+            @click="onMinimapClick(currentPhoto.id)"
+          />
+        </UTooltip>
+        <UTooltip
+          v-if="loggedIn"
+          :text="$t('photoDetail.actions.edit')"
+        >
+          <UButton
+            icon="lucide:pencil"
+            color="neutral"
+            variant="ghost"
+            size="sm"
+            :aria-label="$t('photoDetail.actions.edit')"
+            @click="editorOpen = true"
+          />
+        </UTooltip>
       </div>
 
       <div
@@ -674,6 +870,18 @@ const onAlbumClick = (albumId: number) => {
         :data="formatedExifData.captureParams"
       />
 
+      <div
+        v-if="currentPhoto.thumbnailUrl"
+        class="space-y-3"
+      >
+        <h4
+          class="text-xs font-semibold uppercase text-neutral-500 dark:text-neutral-400"
+        >
+          {{ $t('photoDetail.analysis.title') }}
+        </h4>
+        <PhotoVisualAnalysis :thumbnail-url="currentPhoto.thumbnailUrl" />
+      </div>
+
       <div class="space-y-2">
         <h4
           class="text-xs font-semibold uppercase text-neutral-500 dark:text-neutral-400"
@@ -701,7 +909,98 @@ const onAlbumClick = (albumId: number) => {
         v-if="formatedExifData.technicalParams"
         :data="formatedExifData.technicalParams"
       />
+
+      <div
+        v-if="relatedPhotos.length"
+        class="space-y-3"
+      >
+        <h4
+          class="text-xs font-semibold uppercase text-neutral-500 dark:text-neutral-400"
+        >
+          {{ $t('photoDetail.related.title') }}
+        </h4>
+        <div class="grid grid-cols-2 gap-2">
+          <button
+            v-for="item in relatedPhotos"
+            :key="item.photo.id"
+            type="button"
+            class="group min-w-0 text-left"
+            @click="openRelatedPhoto(item.photo.id)"
+          >
+            <div
+              class="aspect-square overflow-hidden bg-neutral-100 dark:bg-neutral-900"
+            >
+              <ThumbImage
+                :src="item.photo.thumbnailUrl || ''"
+                :thumbhash="item.photo.thumbnailHash"
+                :alt="item.photo.title || ''"
+                class="size-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+              />
+            </div>
+            <p class="mt-1.5 truncate text-xs font-medium">
+              {{ item.photo.title || item.photo.storageKey }}
+            </p>
+            <p class="mt-0.5 truncate text-[10px] text-neutral-500">
+              {{
+                item.reasons
+                  .map((reason) => $t(`photoDetail.related.${reason}`))
+                  .join(' · ')
+              }}
+            </p>
+          </button>
+        </div>
+      </div>
+
+      <details
+        v-if="rawExifEntries.length"
+        class="group border-y border-neutral-200 py-3 dark:border-neutral-800"
+      >
+        <summary
+          class="flex cursor-pointer list-none items-center justify-between gap-3 text-xs font-semibold uppercase text-neutral-500 dark:text-neutral-400"
+        >
+          <span
+            >{{ $t('photoDetail.rawExif.title') }} ·
+            {{ rawExifEntries.length }}</span
+          >
+          <Icon
+            name="lucide:chevron-down"
+            class="size-4 transition-transform group-open:rotate-180"
+          />
+        </summary>
+        <div class="mt-3 flex justify-end">
+          <UButton
+            icon="lucide:copy"
+            color="neutral"
+            variant="ghost"
+            size="xs"
+            @click="copyExif"
+          >
+            {{ $t('photoDetail.rawExif.copy') }}
+          </UButton>
+        </div>
+        <dl
+          class="mt-2 divide-y divide-neutral-100 font-mono text-[11px] dark:divide-neutral-900"
+        >
+          <div
+            v-for="[key, value] in rawExifEntries"
+            :key="key"
+            class="grid grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] gap-3 py-2"
+          >
+            <dt class="break-all text-neutral-500">{{ key }}</dt>
+            <dd class="break-all text-neutral-900 dark:text-neutral-200">
+              {{ Array.isArray(value) ? value.join(', ') : value }}
+            </dd>
+          </div>
+        </dl>
+      </details>
     </div>
+
+    <PhotoInlineEditor
+      v-if="loggedIn"
+      v-model:open="editorOpen"
+      :photo="currentPhoto"
+      @saved="handlePhotoSaved"
+    />
   </motion.div>
 </template>
 

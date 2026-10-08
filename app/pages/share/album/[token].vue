@@ -287,6 +287,7 @@ const downloadCurrent = async () => {
           :current-index="selectedIndex"
           :is-open="viewerOpen"
           :allow-share="false"
+          :allow-download="payload.share.allowOriginalDownload"
           :show-info="payload.share.showExif"
           @close="viewerOpen = false"
           @index-change="selectedIndex = $event"

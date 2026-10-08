@@ -280,10 +280,49 @@ const processExifData = (exifData: Tags, metadata: Metadata): NeededExif => {
     // ignore
   }
 
+  const excludedRawKeys = new Set([
+    'SourceFile',
+    'Directory',
+    'FileName',
+    'ThumbnailImage',
+    'PreviewImage',
+    'OtherImage',
+    'JpgFromRaw',
+  ])
+  const rawExif: NonNullable<NeededExif['RawExif']> = {}
+
+  for (const [key, value] of Object.entries(exifData)) {
+    if (excludedRawKeys.has(key) || value === undefined) continue
+
+    if (
+      value === null ||
+      typeof value === 'string' ||
+      typeof value === 'number' ||
+      typeof value === 'boolean'
+    ) {
+      rawExif[key] = value
+      continue
+    }
+
+    if (
+      Array.isArray(value) &&
+      value.every((item) => ['string', 'number'].includes(typeof item))
+    ) {
+      rawExif[key] = value as string[] | number[]
+      continue
+    }
+
+    if (typeof value === 'object') {
+      const text = String(value)
+      if (text && text !== '[object Object]') rawExif[key] = text.slice(0, 2000)
+    }
+  }
+
   return {
     ...date,
     ...size,
     ...result,
+    RawExif: rawExif,
   }
 }
 

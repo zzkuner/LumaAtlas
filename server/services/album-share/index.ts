@@ -57,6 +57,15 @@ function sanitizePhoto(photo: Photo, share: AlbumShare): Photo {
     delete exif.GPSLongitudeRef
     delete exif.GPSAltitude
     delete exif.GPSAltitudeRef
+    if (exif.RawExif) {
+      exif.RawExif = Object.fromEntries(
+        Object.entries(exif.RawExif).filter(
+          ([key]) =>
+            !key.toLocaleLowerCase().startsWith('gps') &&
+            !key.toLocaleLowerCase().includes('location'),
+        ),
+      )
+    }
     result.exif = exif
   }
 

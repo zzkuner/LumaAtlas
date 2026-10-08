@@ -271,6 +271,49 @@
     "download": "下载当前照片",
     "copied": "相簿链接已复制"
   },
+  "photoDetail": {
+    "actions": {
+      "share": "分享照片",
+      "download": "下载原图",
+      "map": "在地图中打开",
+      "edit": "编辑元数据",
+      "linkCopied": "照片链接已复制"
+    },
+    "analysis": {
+      "title": "画面分析",
+      "brightness": "亮度",
+      "contrast": "对比度",
+      "tone": "影调",
+      "temperature": "色温",
+      "dark": "暗调",
+      "balanced": "均衡",
+      "bright": "明亮",
+      "cool": "冷色",
+      "neutral": "中性",
+      "warm": "暖色"
+    },
+    "related": {
+      "title": "关联照片",
+      "place": "同一地点",
+      "date": "相近日期",
+      "camera": "同一相机",
+      "lens": "同一镜头",
+      "tag": "相同标签"
+    },
+    "rawExif": {
+      "title": "完整 EXIF",
+      "copy": "复制 JSON",
+      "copied": "EXIF 已复制"
+    },
+    "editor": {
+      "title": "编辑照片",
+      "description": "修改会同时写入图片元数据和图库。",
+      "tags": "标签",
+      "tagsHint": "多个标签请用逗号分隔",
+      "saved": "照片已更新",
+      "failed": "更新照片失败"
+    }
+  },
   "minimap": {
     "loading": "加载小地图..."
   },
@@ -530,6 +573,7 @@
     "yes": "是",
     "no": "否",
     "save": "保存",
+    "close": "关闭",
     "unsavedChanges": "存在未保存的更改。",
     "months": {
       "jan": "一月",

@@ -268,6 +268,49 @@
     "download": "Download selected photo",
     "copied": "Album link copied"
   },
+  "photoDetail": {
+    "actions": {
+      "share": "Share photo",
+      "download": "Download original",
+      "map": "Open on map",
+      "edit": "Edit metadata",
+      "linkCopied": "Photo link copied"
+    },
+    "analysis": {
+      "title": "Visual analysis",
+      "brightness": "Brightness",
+      "contrast": "Contrast",
+      "tone": "Tone",
+      "temperature": "Temperature",
+      "dark": "Dark",
+      "balanced": "Balanced",
+      "bright": "Bright",
+      "cool": "Cool",
+      "neutral": "Neutral",
+      "warm": "Warm"
+    },
+    "related": {
+      "title": "Related photos",
+      "place": "Same place",
+      "date": "Nearby date",
+      "camera": "Same camera",
+      "lens": "Same lens",
+      "tag": "Shared tag"
+    },
+    "rawExif": {
+      "title": "Full EXIF",
+      "copy": "Copy JSON",
+      "copied": "EXIF copied"
+    },
+    "editor": {
+      "title": "Edit photo",
+      "description": "Changes are written to the image metadata and library.",
+      "tags": "Tags",
+      "tagsHint": "Separate tags with commas",
+      "saved": "Photo updated",
+      "failed": "Could not update photo"
+    }
+  },
   "map": {
     "cluster": {
       "details": "Click to view details",
@@ -528,6 +571,7 @@
     "yes": "Yes",
     "no": "No",
     "save": "Save",
+    "close": "Close",
     "unsavedChanges": "There are unsaved changes.",
     "months": {
       "jan": "Jan",

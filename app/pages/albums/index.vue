@@ -7,6 +7,14 @@ interface AlbumWithPhotos extends Album {
 const config = useRuntimeConfig()
 const { photos } = usePhotos()
 const { loggedIn } = useUserSession()
+const colorMode = useColorMode()
+const siteTitle = computed(() => String(getSetting('app:title') || 'LumaAtlas'))
+const siteSlogan = computed(() =>
+  String(getSetting('app:slogan') || config.public.app.slogan || ''),
+)
+const toggleColorMode = () => {
+  colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark'
+}
 const { data: albums } = useAsyncData<AlbumWithPhotos[]>(
   'albums',
   () => $fetch('/api/albums'),
@@ -123,17 +131,19 @@ const hoveredAlbum = ref<number | null>(null)
 </script>
 
 <template>
-  <div class="relative">
+  <div
+    class="relative min-h-screen overflow-hidden bg-white dark:bg-neutral-950"
+  >
     <!-- Animated waterfall area -->
     <div
-      class="absolute inset-x-0 top-0 h-[30vh] sm:h-[50vh] overflow-hidden -z-10"
+      class="pointer-events-none absolute inset-x-0 top-0 -z-0 h-[24vh] overflow-hidden opacity-35 sm:h-[32vh]"
     >
-      <div class="absolute inset-0 flex h-full gap-0">
+      <div class="absolute inset-0 flex h-full gap-px">
         <!-- Per column -->
         <div
           v-for="(column, colIndex) in columns"
           :key="colIndex"
-          class="flex-1 relative overflow-hidden select-none"
+          class="relative flex-1 select-none overflow-hidden"
         >
           <div
             class="flex flex-col"
@@ -153,11 +163,11 @@ const hoveredAlbum = ref<number | null>(null)
               <div
                 v-for="(photo, photoIndex) in column"
                 :key="`${photo.id}-${groupIndex}-${photoIndex}`"
-                class="w-full overflow-hidden"
+                class="w-full overflow-hidden border-b border-white/20"
               >
                 <ClientOnly>
                   <ThumbImage
-                    class="w-full h-auto object-cover saturate-50"
+                    class="h-auto w-full object-cover saturate-50"
                     :lazy="false"
                     :src="photo.thumbnailUrl!"
                     :thumbhash="photo.thumbnailHash"
@@ -174,156 +184,222 @@ const hoveredAlbum = ref<number | null>(null)
       </div>
       <!-- Overlay -->
       <div
-        class="absolute -inset-1 bg-linear-to-b from-neutral-100/80 to-white dark:from-neutral-900/80 dark:to-neutral-900"
+        class="absolute -inset-1 bg-linear-to-b from-white/90 via-white/75 to-white dark:from-neutral-950/90 dark:via-neutral-950/75 dark:to-neutral-950"
       />
     </div>
 
-    <div class="absolute p-4">
-      <!-- Back to home -->
-      <UTooltip :text="$t('ui.action.home.tooltip')">
-        <UButton
-          variant="ghost"
-          color="neutral"
-          icon="tabler:arrow-left"
-          :label="$t('ui.action.home.tooltip')"
-          size="sm"
-          to="/"
-        />
-      </UTooltip>
-    </div>
-
-    <!-- Titles -->
-    <div class="flex flex-col items-center pt-16 sm:pt-48 pb-24">
-      <h1
-        class="font-display bg-linear-to-br bg-clip-text text-6xl font-bold text-transparent drop-shadow-2xl from-neutral-800 to-neutral-400 sm:text-7xl dark:from-white dark:to-neutral-500"
-      >
-        {{ $t('title.albums').toUpperCase() }}
-      </h1>
-      <p
-        class="mt-2 text-lg text-neutral-600 dark:text-neutral-400 font-medium font-[Pacifico]"
-      >
-        {{ config.public.app.slogan }}
-      </p>
-    </div>
-
-    <!-- Albums Grid -->
-    <div class="container mx-auto px-10 sm:px-6 lg:px-8 py-12">
+    <header
+      class="relative z-10 border-b border-neutral-200/80 dark:border-neutral-800/80"
+    >
       <div
-        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-16"
+        class="mx-auto flex h-16 max-w-[1600px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8"
       >
         <NuxtLink
-          v-for="album in visibleAlbums"
-          :key="album.id"
-          :to="`/albums/${album.id}`"
-          class="block"
-          @mouseenter="hoveredAlbum = album.id"
-          @mouseleave="hoveredAlbum = null"
+          to="/"
+          class="inline-flex min-w-0 items-center gap-2.5 text-neutral-950 dark:text-white"
+          :aria-label="`${siteTitle} home`"
         >
-          <!-- Stacked Photos Card -->
-          <div class="relative h-48 mb-4 group">
-            <!-- Photo Stack (3 layers) -->
-            <motion.div
-              v-for="(photo, index) in getAlbumDisplayPhotos(album)"
-              :key="photo.id"
-              class="absolute inset-0 rounded-xl shadow-lg overflow-hidden bg-white dark:bg-neutral-800"
-              :initial="{
-                x: getPhotoTransform(index, false).x,
-                y: getPhotoTransform(index, false).y,
-                rotate: getPhotoTransform(index, false).rotate,
-                opacity: 1 - index * 0.12,
-              }"
-              :animate="{
-                x: getPhotoTransform(index, hoveredAlbum === album.id).x,
-                y: getPhotoTransform(index, hoveredAlbum === album.id).y,
-                rotate: getPhotoTransform(index, hoveredAlbum === album.id)
-                  .rotate,
-                opacity: hoveredAlbum === album.id ? 1 : 1 - index * 0.12,
-              }"
-              :transition="{
-                type: 'spring',
-                stiffness: 300,
-                damping: 30,
-                mass: 0.8,
-              }"
-              :style="{
-                zIndex: 3 - index,
-              }"
-            >
-              <ThumbImage
-                class="w-full h-full object-cover"
-                :src="photo.thumbnailUrl!"
-                :thumbhash="photo.thumbnailHash"
-                :alt="album.title"
-                :style="{
-                  aspectRatio: photo.aspectRatio || 1,
-                }"
-              />
-              <!-- Overlay for stacked cards -->
-              <motion.div
-                v-if="index > 0"
-                class="absolute inset-0 bg-black/10 dark:bg-black/30"
-                :initial="{ opacity: 1 }"
-                :animate="{ opacity: hoveredAlbum === album.id ? 0 : 1 }"
-                :transition="{ duration: 0.3 }"
-              />
-            </motion.div>
+          <span
+            class="flex size-7 shrink-0 items-center justify-center border border-neutral-900 dark:border-white"
+          >
+            <Icon
+              name="lucide:aperture"
+              class="size-4"
+            />
+          </span>
+          <span class="font-display truncate text-base font-semibold">
+            {{ siteTitle }}
+          </span>
+        </NuxtLink>
 
-            <!-- Empty state -->
-            <div
-              v-if="!album.photoIds || album.photoIds.length === 0"
-              class="absolute inset-0 rounded-xl shadow-lg bg-linear-to-br from-neutral-100 to-neutral-50 dark:from-neutral-700 dark:to-neutral-800 flex flex-col items-center justify-center gap-3 border border-neutral-200 dark:border-neutral-600 group-hover:shadow-xl dark:group-hover:shadow-neutral-900/50 transition-shadow"
+        <nav class="hidden items-center gap-6 text-sm text-neutral-500 sm:flex">
+          <NuxtLink
+            to="/"
+            class="hover:text-neutral-950 dark:hover:text-white"
+            >{{ $t('title.gallery') }}</NuxtLink
+          >
+          <NuxtLink
+            to="/explore"
+            class="hover:text-neutral-950 dark:hover:text-white"
+            >{{ $t('discovery.title') }}</NuxtLink
+          >
+          <NuxtLink
+            to="/globe"
+            class="hover:text-neutral-950 dark:hover:text-white"
+            >{{ $t('title.globe') }}</NuxtLink
+          >
+          <span class="font-medium text-neutral-950 dark:text-white">
+            {{ $t('title.albums') }}
+          </span>
+        </nav>
+
+        <div class="flex items-center gap-1">
+          <UButton
+            color="neutral"
+            variant="ghost"
+            icon="lucide:arrow-left"
+            :aria-label="$t('ui.action.home.tooltip')"
+            to="/"
+          />
+          <UButton
+            color="neutral"
+            variant="ghost"
+            :icon="colorMode.value === 'dark' ? 'lucide:sun' : 'lucide:moon'"
+            :aria-label="$t('ui.action.theme.tooltip')"
+            @click="toggleColorMode"
+          />
+        </div>
+      </div>
+    </header>
+
+    <main
+      class="relative z-10 mx-auto max-w-[1600px] px-4 pb-16 pt-10 sm:px-6 lg:px-8"
+    >
+      <div
+        class="flex flex-col gap-5 border-b border-neutral-200 pb-8 dark:border-neutral-800"
+      >
+        <p class="text-sm font-medium text-neutral-500">影像档案</p>
+        <div
+          class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"
+        >
+          <div>
+            <h1
+              class="font-display text-4xl font-bold tracking-tight text-neutral-950 dark:text-white sm:text-5xl"
             >
-              <Icon
-                name="tabler:library-photo"
-                class="size-10 text-neutral-400 dark:text-neutral-500"
-              />
-              <div class="text-center">
-                <p
-                  class="text-sm font-medium text-neutral-700 dark:text-neutral-300"
-                >
-                  {{ $t('ui.album.noImage') }}
-                </p>
-                <!-- <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
+              {{ $t('title.albums') }}
+            </h1>
+            <p
+              v-if="siteSlogan"
+              class="mt-2 max-w-xl text-sm leading-6 text-neutral-500 dark:text-neutral-400"
+            >
+              {{ siteSlogan }}
+            </p>
+          </div>
+          <p class="text-sm text-neutral-500 dark:text-neutral-400">
+            {{ visibleAlbums.length }} 个相册
+          </p>
+        </div>
+      </div>
+
+      <!-- Albums Grid -->
+      <div class="pt-8">
+        <div
+          class="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+        >
+          <NuxtLink
+            v-for="album in visibleAlbums"
+            :key="album.id"
+            :to="`/albums/${album.id}`"
+            class="block"
+            @mouseenter="hoveredAlbum = album.id"
+            @mouseleave="hoveredAlbum = null"
+          >
+            <!-- Stacked Photos Card -->
+            <div class="group relative mb-4 aspect-[4/3]">
+              <!-- Photo Stack (3 layers) -->
+              <motion.div
+                v-for="(photo, index) in getAlbumDisplayPhotos(album)"
+                :key="photo.id"
+                class="absolute inset-0 overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-800"
+                :initial="{
+                  x: getPhotoTransform(index, false).x,
+                  y: getPhotoTransform(index, false).y,
+                  rotate: getPhotoTransform(index, false).rotate,
+                  opacity: 1 - index * 0.12,
+                }"
+                :animate="{
+                  x: getPhotoTransform(index, hoveredAlbum === album.id).x,
+                  y: getPhotoTransform(index, hoveredAlbum === album.id).y,
+                  rotate: getPhotoTransform(index, hoveredAlbum === album.id)
+                    .rotate,
+                  opacity: hoveredAlbum === album.id ? 1 : 1 - index * 0.12,
+                }"
+                :transition="{
+                  type: 'spring',
+                  stiffness: 300,
+                  damping: 30,
+                  mass: 0.8,
+                }"
+                :style="{
+                  zIndex: 3 - index,
+                }"
+              >
+                <ThumbImage
+                  class="w-full h-full object-cover"
+                  :src="photo.thumbnailUrl!"
+                  :thumbhash="photo.thumbnailHash"
+                  :alt="album.title"
+                  :style="{
+                    aspectRatio: photo.aspectRatio || 1,
+                  }"
+                />
+                <!-- Overlay for stacked cards -->
+                <motion.div
+                  v-if="index > 0"
+                  class="absolute inset-0 bg-black/10 dark:bg-black/30"
+                  :initial="{ opacity: 1 }"
+                  :animate="{ opacity: hoveredAlbum === album.id ? 0 : 1 }"
+                  :transition="{ duration: 0.3 }"
+                />
+              </motion.div>
+
+              <!-- Empty state -->
+              <div
+                v-if="!album.photoIds || album.photoIds.length === 0"
+                class="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-lg border border-neutral-200 bg-neutral-50 shadow-sm transition-shadow group-hover:shadow-md dark:border-neutral-700 dark:bg-neutral-800 dark:group-hover:shadow-neutral-900/50"
+              >
+                <Icon
+                  name="tabler:library-photo"
+                  class="size-10 text-neutral-400 dark:text-neutral-500"
+                />
+                <div class="text-center">
+                  <p
+                    class="text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                  >
+                    {{ $t('ui.album.noImage') }}
+                  </p>
+                  <!-- <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
                   {{ $t('ui.album.emptyAlbumTip') }}
                 </p> -->
+                </div>
               </div>
             </div>
-          </div>
 
-          <!-- Album Info -->
-          <div class="px-2">
-            <div class="flex flex-col gap-0">
-              <div class="flex items-center gap-8">
-                <h2
-                  class="flex-1 truncate text-lg font-semibold text-neutral-800 dark:text-neutral-200 transition-colors"
-                  :class="{
-                    'text-primary-600 dark:text-primary-400':
-                      hoveredAlbum === album.id,
-                  }"
-                >
-                  {{ album.title }}
-                </h2>
+            <!-- Album Info -->
+            <div class="px-1">
+              <div class="flex flex-col gap-0">
+                <div class="flex items-center gap-8">
+                  <h2
+                    class="font-display flex-1 truncate text-lg font-semibold text-neutral-800 transition-colors dark:text-neutral-200"
+                    :class="{
+                      'text-primary-600 dark:text-primary-400':
+                        hoveredAlbum === album.id,
+                    }"
+                  >
+                    {{ album.title }}
+                  </h2>
 
+                  <p
+                    class="flex items-center gap-0.5 text-sm text-neutral-600 dark:text-neutral-400"
+                  >
+                    <Icon
+                      name="tabler:clock"
+                      class="h-lh size-4"
+                    />
+                    {{ $dayjs(album.createdAt).fromNow() }}
+                  </p>
+                </div>
                 <p
-                  class="flex items-center gap-0.5 text-sm text-neutral-600 dark:text-neutral-400"
+                  class="text-sm text-neutral-600 dark:text-neutral-400 line-clamp-2"
                 >
-                  <Icon
-                    name="tabler:clock"
-                    class="h-lh size-4"
-                  />
-                  {{ $dayjs(album.createdAt).fromNow() }}
+                  {{ album.description || $t('ui.album.noDescription') }}
                 </p>
               </div>
-              <p
-                class="text-sm text-neutral-600 dark:text-neutral-400 line-clamp-2"
-              >
-                {{ album.description || $t('ui.album.noDescription') }}
-              </p>
             </div>
-          </div>
-        </NuxtLink>
+          </NuxtLink>
+        </div>
       </div>
-    </div>
+    </main>
   </div>
 </template>
 

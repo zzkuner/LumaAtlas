@@ -43,11 +43,16 @@ const cornerRadius = computed(() =>
     Math.min(16, Number(setting('appearance.home.cornerRadius', 2)) || 0),
   ),
 )
-const headingFont = computed(() =>
-  setting('appearance.home.headingFont', 'sans') === 'serif'
-    ? 'Georgia, Cambria, "Times New Roman", serif'
-    : 'ui-sans-serif, system-ui, sans-serif',
-)
+const headingFont = computed(() => {
+  const value = setting('appearance.home.headingFont', 'wenkai')
+  if (value === 'serif') {
+    return 'Georgia, Cambria, "Times New Roman", serif'
+  }
+  if (value === 'wenkai') {
+    return 'var(--font-display)'
+  }
+  return 'var(--font-sans)'
+})
 const surfaceStyle = computed(() =>
   String(setting('appearance.home.surfaceStyle', 'clean')),
 )

@@ -209,7 +209,7 @@ onMounted(() => {
               class="size-4"
             />
           </span>
-          <span class="truncate font-semibold">{{
+          <span class="font-display truncate text-base font-semibold">{{
             getSetting('app:title') || 'LumaAtlas'
           }}</span>
         </NuxtLink>
@@ -265,7 +265,7 @@ onMounted(() => {
             <p class="text-sm font-medium text-neutral-500">
               {{ $t('discovery.eyebrow') }}
             </p>
-            <h1 class="mt-1 text-3xl font-semibold sm:text-4xl">
+            <h1 class="font-display mt-1 text-3xl font-bold sm:text-4xl">
               {{ $t('discovery.title') }}
             </h1>
             <p

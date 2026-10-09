@@ -128,7 +128,7 @@ const presets: Record<string, Record<string, unknown>> = {
     'appearance.home.accentColor': '#171717',
     'appearance.home.surfaceStyle': 'clean',
     'appearance.home.cornerRadius': 2,
-    'appearance.home.headingFont': 'sans',
+    'appearance.home.headingFont': 'wenkai',
   },
   minimal: {
     'appearance.home.style': 'minimal',
@@ -686,7 +686,7 @@ const updateSocial = (key: string, value: string) => {
             >
             <select
               class="h-9 w-full rounded-md border border-neutral-300 bg-white px-3 text-sm dark:border-neutral-700 dark:bg-neutral-950"
-              :value="setting('appearance.home.headingFont', 'sans')"
+              :value="setting('appearance.home.headingFont', 'wenkai')"
               @change="
                 update(
                   'appearance.home.headingFont',
@@ -695,6 +695,7 @@ const updateSocial = (key: string, value: string) => {
               "
             >
               <option value="sans">现代无衬线</option>
+              <option value="wenkai">文艺文楷</option>
               <option value="serif">编辑衬线</option>
             </select>
           </label>

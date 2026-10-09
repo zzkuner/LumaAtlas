@@ -9,7 +9,6 @@ export default defineNuxtConfig({
   modules: [
     'reka-ui/nuxt',
     '@nuxt/ui',
-    '@nuxt/fonts',
     '@nuxt/icon',
     '@nuxt/test-utils',
     '@pinia/nuxt',
@@ -239,6 +238,10 @@ export default defineNuxtConfig({
     clientBundle: {
       scan: true,
     },
+  },
+
+  fonts: {
+    provider: 'local',
   },
 
   ogImage: {

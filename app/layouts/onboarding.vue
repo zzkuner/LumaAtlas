@@ -215,7 +215,7 @@ const currentStepIndex = computed(() => {
               alt="LumaAtlas Logo"
               class="size-8 object-contain"
             />
-            <span class="font-bold">LumaAtlas</span>
+            <span class="font-display font-bold">LumaAtlas</span>
           </div>
           <div class="text-sm text-neutral-400">
             {{

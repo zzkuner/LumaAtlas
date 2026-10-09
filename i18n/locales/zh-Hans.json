@@ -231,21 +231,21 @@
     },
     "indexPanelCountCity": "等 {count} 个城市",
     "album": {
-      "noImage": "空相簿",
+      "noImage": "空相册",
       "emptyAlbumTip": "添加照片开始吧",
       "noDescription": "无描述"
     }
   },
   "album": {
-    "notFound": "相簿未找到",
+    "notFound": "相册未找到",
     "noDateInfo": "无日期信息",
-    "noPhotosTip": "该相簿中还没有照片",
-    "emptyAlbumTitle": "相簿是空的",
+    "noPhotosTip": "该相册中还没有照片",
+    "emptyAlbumTitle": "相册是空的",
     "emptyAlbumDescription": "更多精彩，将会呈现于此。",
-    "failedToLoadTitle": "加载相簿失败",
-    "failedToLoadDescription": "加载此相簿时出现问题。",
-    "failedToLoad": "加载相簿失败",
-    "backToAlbums": "返回相簿",
+    "failedToLoadTitle": "加载相册失败",
+    "failedToLoadDescription": "加载此相册时出现问题。",
+    "failedToLoad": "加载相册失败",
+    "backToAlbums": "返回相册",
     "noDescription": "无描述",
     "photo": "无照片 | 一张照片 | {count} 张照片",
     "createdAt": "创建于 {time}",
@@ -256,20 +256,20 @@
     }
   },
   "albumShare": {
-    "pageTitle": "共享相簿",
+    "pageTitle": "共享相册",
     "unavailable": "这个链接不可用",
     "unavailableHint": "链接可能已过期、暂停，或被所有者撤销。",
-    "passwordRequired": "请输入相簿所有者提供的密码后继续。",
+    "passwordRequired": "请输入相册所有者提供的密码后继续。",
     "password": "访问密码",
     "incorrectPassword": "密码不正确。",
-    "open": "打开相簿",
-    "sharedAlbum": "共享相簿",
+    "open": "打开相册",
+    "sharedAlbum": "共享相册",
     "photoCount": "{count} 张照片",
     "expires": "有效期至 {date}",
-    "empty": "这个相簿中没有可见照片。",
-    "share": "分享相簿",
+    "empty": "这个相册中没有可见照片。",
+    "share": "分享相册",
     "download": "下载当前照片",
-    "copied": "相簿链接已复制"
+    "copied": "相册链接已复制"
   },
   "photoDetail": {
     "actions": {
@@ -522,14 +522,14 @@
     "fallback": {
       "photo": "照片"
     },
-    "gallery": "相册",
+    "gallery": "图库",
     "locations": "位置管理",
     "photos": "照片库",
     "globe": "照片地球仪",
     "queue": "队列管理",
     "logs": "系统日志",
     "backup": "备份与恢复",
-    "albums": "相簿",
+    "albums": "相册",
     "siteAdministration": "站点设置",
     "generalSettings": "基本设置",
     "publishingSettings": "发布设置",
@@ -963,43 +963,43 @@
       }
     },
     "albums": {
-      "title": "相簿管理",
-      "subtitle": "创建和管理您的照片相簿",
-      "createButton": "创建相簿",
-      "noAlbums": "还没有相簿",
-      "noAlbumsTip": "创建您的第一个相簿来组织您的照片",
+      "title": "相册管理",
+      "subtitle": "创建和管理您的照片相册",
+      "createButton": "创建相册",
+      "noAlbums": "还没有相册",
+      "noAlbumsTip": "创建您的第一个相册来组织您的照片",
       "form": {
         "title": "标题",
-        "titlePlaceholder": "输入相簿标题",
-        "titleRequired": "请输入相簿标题",
+        "titlePlaceholder": "输入相册标题",
+        "titleRequired": "请输入相册标题",
         "description": "描述",
-        "descriptionPlaceholder": "输入相簿描述（可选）",
-        "coverPhoto": "相簿封面",
+        "descriptionPlaceholder": "输入相册描述（可选）",
+        "coverPhoto": "相册封面",
         "addCoverPhoto": "添加封面照片",
         "selectPhotos": "选择照片",
         "editPhotos": "修改照片选择",
         "selectedCount": "已选择 {count} 张照片",
         "clearAll": "全部清除",
-        "isHidden": "隐藏相簿",
-        "isHiddenHint": "隐藏的相簿中的照片不会在首页展示"
+        "isHidden": "隐藏相册",
+        "isHiddenHint": "隐藏的相册中的照片不会在首页展示"
       },
       "visibility": {
         "label": "可见范围",
-        "hint": "公开相簿会出现在相簿列表；链接可见不会出现在列表；私密相簿仅登录后可见。",
+        "hint": "公开相册会出现在相册列表；链接可见不会出现在列表；私密相册仅登录后可见。",
         "public": "公开",
         "unlisted": "链接可见",
         "private": "私密"
       },
       "share": {
         "action": "管理分享链接",
-        "title": "相簿分享",
-        "heading": "按你的规则分享相簿",
+        "title": "相册分享",
+        "heading": "按你的规则分享相册",
         "description": "创建独立链接，并分别控制密码、有效期、原图下载、EXIF 信息和地图位置。",
         "link": "分享链接",
         "views": "访问次数",
         "password": "密码保护",
         "lastViewed": "最近访问",
-        "empty": "这个相簿还没有创建分享链接。",
+        "empty": "这个相册还没有创建分享链接。",
         "create": "创建分享链接",
         "rules": "访问规则",
         "newPassword": "设置或更换密码",
@@ -1046,32 +1046,32 @@
       },
       "slideover": {
         "create": {
-          "title": "创建相簿",
-          "description": "创建一个新的相簿来组织您的照片"
+          "title": "创建相册",
+          "description": "创建一个新的相册来组织您的照片"
         },
         "edit": {
-          "title": "编辑相簿",
-          "description": "修改相簿的信息和照片"
+          "title": "编辑相册",
+          "description": "修改相册的信息和照片"
         },
         "submitCreate": "创建",
         "submitEdit": "保存",
         "cancel": "取消"
       },
       "delete": {
-        "title": "删除相簿",
-        "message": "确定要删除相簿\"{title}\"吗？删除相簿不会删除其中的照片，仅删除相簿本身。",
+        "title": "删除相册",
+        "message": "确定要删除相册\"{title}\"吗？删除相册不会删除其中的照片，仅删除相册本身。",
         "cancel": "取消",
         "confirm": "确认删除"
       },
       "messages": {
-        "createSuccess": "相簿创建成功",
-        "updateSuccess": "相簿更新成功",
-        "deleteSuccess": "相簿删除成功",
-        "createError": "创建相簿失败",
-        "updateError": "更新相簿失败",
-        "deleteError": "删除相簿失败",
-        "loadError": "加载相簿失败",
-        "loadDetailError": "加载相簿详情失败",
+        "createSuccess": "相册创建成功",
+        "updateSuccess": "相册更新成功",
+        "deleteSuccess": "相册删除成功",
+        "createError": "创建相册失败",
+        "updateError": "更新相册失败",
+        "deleteError": "删除相册失败",
+        "loadError": "加载相册失败",
+        "loadDetailError": "加载相册详情失败",
         "loadPhotosError": "加载照片失败"
       }
     },

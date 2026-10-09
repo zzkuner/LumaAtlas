@@ -195,7 +195,7 @@ const hoveredAlbum = ref<number | null>(null)
     <!-- Titles -->
     <div class="flex flex-col items-center pt-16 sm:pt-48 pb-24">
       <h1
-        class="font-black text-6xl sm:text-7xl drop-shadow-2xl bg-clip-text bg-linear-to-br from-neutral-800 to-neutral-400 dark:from-white dark:to-neutral-500 text-transparent"
+        class="font-display bg-linear-to-br bg-clip-text text-6xl font-bold text-transparent drop-shadow-2xl from-neutral-800 to-neutral-400 sm:text-7xl dark:from-white dark:to-neutral-500"
       >
         {{ $t('title.albums').toUpperCase() }}
       </h1>

@@ -60,6 +60,7 @@
     "exiftool-vendored": "^35.20.0",
     "file-type": "^22.0.1",
     "heic-convert": "^2.1.0",
+    "lxgw-wenkai-lite-webfont": "^1.7.0",
     "maplibre-gl": "^5.24.0",
     "motion-v": "^2.2.1",
     "nuxt": "^4.4.6",

@@ -89,11 +89,16 @@ const cornerRadius = computed(() => {
   return Math.max(0, Math.min(16, Number.isFinite(value) ? value : 2))
 })
 
-const headingFont = computed(() =>
-  getSetting('app:appearance.home.headingFont') === 'serif'
-    ? 'Georgia, Cambria, "Times New Roman", serif'
-    : 'ui-sans-serif, system-ui, sans-serif',
-)
+const headingFont = computed(() => {
+  const value = getSetting('app:appearance.home.headingFont')
+  if (value === 'serif') {
+    return 'Georgia, Cambria, "Times New Roman", serif'
+  }
+  if (value === 'wenkai') {
+    return 'var(--font-display)'
+  }
+  return 'var(--font-sans)'
+})
 
 const surfaceStyle = computed(() =>
   String(getSetting('app:appearance.home.surfaceStyle') || 'clean'),

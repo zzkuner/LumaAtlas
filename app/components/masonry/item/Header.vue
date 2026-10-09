@@ -138,11 +138,9 @@ const { openCommandPalette } = useCommandPalette()
                   class="size-4"
                 />
               </span>
-              <span
-                class="truncate text-lg font-semibold"
-                :style="{ fontFamily: 'var(--la-heading-font)' }"
-                >{{ siteTitle }}</span
-              >
+              <span class="font-display truncate text-lg font-semibold">{{
+                siteTitle
+              }}</span>
             </NuxtLink>
 
             <nav

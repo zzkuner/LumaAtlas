@@ -186,7 +186,9 @@ const downloadCurrent = async () => {
                   class="size-4"
                 />
               </div>
-              <span class="truncate text-sm font-semibold">LumaAtlas</span>
+              <span class="font-display truncate text-base font-semibold"
+                >LumaAtlas</span
+              >
             </div>
             <div class="flex items-center gap-1">
               <UButton

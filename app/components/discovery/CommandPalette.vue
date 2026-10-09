@@ -34,7 +34,7 @@ const photoResults = computed(() => {
 const navigationItems = computed(() => [
   { label: $t('title.gallery'), icon: 'lucide:images', to: '/' },
   { label: $t('discovery.title'), icon: 'lucide:compass', to: '/explore' },
-  { label: $t('title.globe'), icon: 'lucide:globe-2', to: '/globe' },
+  { label: $t('title.globe'), icon: 'lucide:map', to: '/globe' },
   { label: $t('title.albums'), icon: 'lucide:library', to: '/albums' },
   ...(loggedIn.value
     ? [

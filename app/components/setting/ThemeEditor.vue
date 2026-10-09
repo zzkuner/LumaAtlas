@@ -231,7 +231,7 @@ const moduleLabels: Record<ModuleId, { label: string; icon: string }> = {
 const navigationLabels: Record<NavigationId, { label: string; icon: string }> =
   {
     explore: { label: '探索', icon: 'lucide:compass' },
-    globe: { label: '地球', icon: 'lucide:globe-2' },
+    globe: { label: '地图', icon: 'lucide:map' },
     albums: { label: '相册', icon: 'lucide:folder-heart' },
   }
 

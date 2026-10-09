@@ -163,7 +163,7 @@
         "tooltip": "颜色主题"
       },
       "globe": {
-        "tooltip": "地球仪"
+        "tooltip": "地图"
       },
       "home": {
         "tooltip": "返回首页"
@@ -525,7 +525,7 @@
     "gallery": "图库",
     "locations": "位置管理",
     "photos": "照片库",
-    "globe": "照片地球仪",
+    "globe": "地图",
     "queue": "队列管理",
     "logs": "系统日志",
     "backup": "备份与恢复",
@@ -1339,8 +1339,8 @@
             "description": "在首页导航中显示照片发现页面"
           },
           "showGlobeNav": {
-            "label": "显示地球仪入口",
-            "description": "在首页导航中显示地球仪页面"
+            "label": "显示地图入口",
+            "description": "在首页导航中显示地图页面"
           },
           "showAlbumsNav": {
             "label": "显示相册入口",
@@ -1736,7 +1736,7 @@
     },
     "map": {
       "title": "地图服务",
-      "description": "为地球仪视图以及照片详情中的小地图配置地图服务"
+      "description": "为地图视图以及照片详情中的小地图配置地图服务"
     },
     "complete": {
       "title": "即将完成！",

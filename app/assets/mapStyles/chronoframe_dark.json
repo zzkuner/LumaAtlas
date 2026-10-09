@@ -11,7 +11,7 @@
   },
   "center": [116.4074, 39.9042],
   "zoom": 2,
-  "projection": { "type": "globe" },
+  "projection": { "type": "mercator" },
   "sources": {
     "openmaptiles": {
       "type": "vector",

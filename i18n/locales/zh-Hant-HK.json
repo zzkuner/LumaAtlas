@@ -104,7 +104,7 @@
         "tooltip": "色彩主題"
       },
       "globe": {
-        "tooltip": "地球儀"
+        "tooltip": "地圖"
       },
       "home": {
         "tooltip": "返回首頁"
@@ -462,7 +462,7 @@
     "locations": "位置管理",
     "photos": "相片庫",
     "gallery": "相片集",
-    "globe": "照片地球儀",
+    "globe": "地圖",
     "queue": "佇列管理",
     "logs": "系統日誌",
     "backup": "備份與還原",
@@ -1168,8 +1168,8 @@
             "description": "喺首頁導覽顯示相片探索頁面"
           },
           "showGlobeNav": {
-            "label": "顯示地球儀入口",
-            "description": "喺首頁導覽顯示地球儀頁面"
+            "label": "顯示地圖入口",
+            "description": "喺首頁導覽顯示地圖頁面"
           },
           "showAlbumsNav": {
             "label": "顯示相簿入口",
@@ -1565,7 +1565,7 @@
     },
     "map": {
       "title": "地圖服務",
-      "description": "為地球儀檢視與照片詳情小地圖設定地圖服務"
+      "description": "為地圖檢視與照片詳情小地圖設定地圖服務"
     },
     "complete": {
       "title": "即將完成！",

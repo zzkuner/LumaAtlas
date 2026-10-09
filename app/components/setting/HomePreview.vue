@@ -111,7 +111,7 @@ const navigationItems = computed(() => {
   )
   const labels: Record<string, string> = {
     explore: 'Explore',
-    globe: 'Globe',
+    globe: 'Map',
     albums: 'Albums',
   }
   const visible: Record<string, boolean> = {

@@ -159,7 +159,7 @@
         "tooltip": "Logout"
       },
       "globe": {
-        "tooltip": "Globe"
+        "tooltip": "Map"
       },
       "home": {
         "tooltip": "Back to Home"
@@ -525,7 +525,7 @@
     "dashboard": "Dashboard",
     "photos": "Photos",
     "locations": "Locations",
-    "globe": "Photo Globe",
+    "globe": "Map",
     "queue": "Queue Management",
     "logs": "System Logs",
     "backup": "Backup & Restore",
@@ -1335,8 +1335,8 @@
             "description": "Display the photo discovery page in the homepage navigation"
           },
           "showGlobeNav": {
-            "label": "Show Globe Navigation",
-            "description": "Display the globe entry in the homepage navigation"
+            "label": "Show Map Navigation",
+            "description": "Display the map entry in the homepage navigation"
           },
           "showAlbumsNav": {
             "label": "Show Albums Navigation",
@@ -1732,7 +1732,7 @@
     },
     "map": {
       "title": "Map Service",
-      "description": "Configure map service for globe view and photo minimap"
+      "description": "Configure map service for the map view and photo minimap"
     },
     "complete": {
       "title": "Almost Done!",

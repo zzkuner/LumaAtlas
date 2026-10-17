@@ -1,0 +1,56 @@
+name: Build Server Image
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: server-image
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build server image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          platforms: linux/amd64
+          tags: lumaatlas:local
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Export server image
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker save lumaatlas:local | gzip -1 > lumaatlas-linux-amd64.tar.gz
+          sha256sum lumaatlas-linux-amd64.tar.gz > lumaatlas-linux-amd64.tar.gz.sha256
+
+      - name: Publish server image release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh release delete server-latest --cleanup-tag --yes || true
+          gh release create server-latest \
+            lumaatlas-linux-amd64.tar.gz \
+            lumaatlas-linux-amd64.tar.gz.sha256 \
+            --target "$GITHUB_SHA" \
+            --title "LumaAtlas server image" \
+            --notes "Automated linux/amd64 image for commit $GITHUB_SHA."

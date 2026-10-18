@@ -260,7 +260,7 @@ const introCopy = computed(() =>
       </div>
 
       <nav
-        class="mt-3 flex gap-5 overflow-x-auto border-t border-neutral-200 pt-3 text-sm text-neutral-500 md:hidden dark:border-neutral-800 dark:text-neutral-400"
+        class="scrollbar-hidden mt-3 flex gap-5 overflow-x-auto border-t border-neutral-200 pt-3 text-sm text-neutral-500 md:hidden dark:border-neutral-800 dark:text-neutral-400"
         aria-label="Primary navigation"
       >
         <NuxtLink
@@ -279,7 +279,7 @@ const introCopy = computed(() =>
         class="mt-3 flex items-center justify-between gap-3 border-t border-neutral-200 pt-3 dark:border-neutral-800"
       >
         <div
-          class="flex min-w-0 gap-5 overflow-x-auto text-sm text-neutral-500 dark:text-neutral-400"
+          class="scrollbar-hidden flex min-w-0 gap-5 overflow-x-auto text-sm text-neutral-500 dark:text-neutral-400"
         >
           <button
             v-for="item in viewItems"

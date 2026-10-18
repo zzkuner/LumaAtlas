@@ -68,6 +68,14 @@ body {
   font-family: var(--font-sans);
 }
 
+.scrollbar-hidden {
+  scrollbar-width: none;
+}
+
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+}
+
 ::selection {
   background: color-mix(in oklab, var(--color-amber-300) 55%, transparent);
   color: var(--ui-text-highlighted);

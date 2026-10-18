@@ -17,10 +17,8 @@ import {
 } from '../image/processor'
 import { generateThumbnailVariantsAndHash } from '../image/thumbnail'
 import { extractExifData, extractPhotoInfo } from '../image/exif'
-import {
-  extractLocationFromGPS,
-  parseGPSCoordinates,
-} from '../location/geocoding'
+import { extractLocationFromGPS } from '../location/geocoding'
+import { parseGPSCoordinates } from '../location/gps'
 import { settingsManager } from '../settings/settingsManager'
 import { findLivePhotoVideoForImage } from '../video/livephoto'
 import { processMotionPhotoFromXmp } from '../video/motion-photo'
@@ -410,7 +408,7 @@ export class QueueManager {
             const { latitude, longitude } =
               parseGPSCoordinates(normalizedExifData)
             coordinates = { latitude, longitude }
-            if (latitude && longitude) {
+            if (latitude != null && longitude != null) {
               locationInfo = await extractLocationFromGPS(latitude, longitude)
             }
           }
@@ -505,8 +503,8 @@ export class QueueManager {
               : null,
             exif: normalizedExifData,
             // 地理位置信息
-            latitude: coordinates?.latitude || null,
-            longitude: coordinates?.longitude || null,
+            latitude: coordinates?.latitude ?? null,
+            longitude: coordinates?.longitude ?? null,
             country: locationInfo?.country || null,
             city: locationInfo?.city || null,
             locationName: locationInfo?.locationName || null,

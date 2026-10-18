@@ -1017,6 +1017,7 @@ const swiperModules = [Navigation, Keyboard, Virtual]
               :allow-share="allowShare"
               :allow-download="allowDownload"
               :on-close="closeExifPanel"
+              @share="openShareModal"
             />
           </AnimatePresence>
           <InfoPanel
@@ -1025,6 +1026,7 @@ const swiperModules = [Navigation, Keyboard, Virtual]
             :exif-data="currentPhoto?.exif"
             :allow-share="allowShare"
             :allow-download="allowDownload"
+            @share="openShareModal"
           />
         </div>
       </motion.div>

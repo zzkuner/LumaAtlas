@@ -33,6 +33,15 @@ export const APP_SETTINGS_UI: Record<string, FieldUIConfig> = {
     placeholder: 'https://example.com/avatar.jpg',
     help: 'settings.app.avatarUrl.help',
   },
+  logoUrl: {
+    type: 'url',
+    placeholder: 'https://example.com/logo.png',
+    help: 'settings.app.logoUrl.help',
+  },
+  aboutText: {
+    type: 'textarea',
+    placeholder: '介绍你的创作、摄影经历或这个网站。',
+  },
   'appearance.theme': {
     type: 'tabs',
     options: [
@@ -83,8 +92,8 @@ export const APP_SETTINGS_UI: Record<string, FieldUIConfig> = {
         icon: 'lucide:grid-3x3',
       },
       {
-        label: 'settings.app.appearance.home.layout.feed',
-        value: 'feed',
+        label: 'settings.app.appearance.home.layout.big',
+        value: 'big',
         icon: 'lucide:rows-3',
       },
     ],
@@ -101,6 +110,26 @@ export const APP_SETTINGS_UI: Record<string, FieldUIConfig> = {
         label: 'settings.app.appearance.home.source.featured',
         value: 'featured',
         icon: 'lucide:sparkles',
+      },
+      {
+        label: 'settings.app.appearance.home.source.recent',
+        value: 'recent',
+        icon: 'lucide:clock-3',
+      },
+      {
+        label: 'settings.app.appearance.home.source.random',
+        value: 'random',
+        icon: 'lucide:dices',
+      },
+      {
+        label: 'settings.app.appearance.home.source.nearby',
+        value: 'nearby',
+        icon: 'lucide:navigation',
+      },
+      {
+        label: 'settings.app.appearance.home.source.faraway',
+        value: 'faraway',
+        icon: 'lucide:plane',
       },
     ],
   },
@@ -188,13 +217,13 @@ export const APP_SETTINGS_UI: Record<string, FieldUIConfig> = {
   'appearance.home.showPhotoInfo': {
     type: 'toggle',
   },
-  'appearance.home.showExploreNav': {
-    type: 'toggle',
-  },
   'appearance.home.showGlobeNav': {
     type: 'toggle',
   },
   'appearance.home.showAlbumsNav': {
+    type: 'toggle',
+  },
+  'appearance.home.showAboutNav': {
     type: 'toggle',
   },
   'appearance.home.preset': {

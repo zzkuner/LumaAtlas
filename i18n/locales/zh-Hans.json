@@ -5,21 +5,26 @@
     "searchPlaceholder": "搜索标题、标签、地点、相机或镜头",
     "quickFilters": "快速筛选",
     "clearFilters": "清除筛选",
+    "loading": "正在整理照片",
     "resultCount": "{count} 张照片",
     "radius": "范围",
     "reshuffle": "重新随机",
     "untitled": "未命名照片",
     "modes": {
+      "all": {
+        "label": "全部",
+        "description": "浏览全部公开照片。"
+      },
       "featured": {
         "label": "精选",
         "description": "查看站长挑选的代表作品。"
       },
       "recent": {
-        "label": "最近",
+        "label": "最新",
         "description": "按照拍摄时间浏览最新照片。"
       },
       "random": {
-        "label": "随机",
+        "label": "随览",
         "description": "打乱时间顺序，重新遇见照片。"
       },
       "nearby": {
@@ -39,7 +44,9 @@
     },
     "empty": {
       "title": "没有找到照片",
-      "description": "尝试更换发现方式或清除当前筛选。"
+      "description": "可以切换首页内容，或清除当前筛选后再试。",
+      "noPublicPhotos": "暂无公开照片。上传完成后，请确认照片的公开状态与处理队列。",
+      "reset": "查看全部照片"
     },
     "command": {
       "title": "快速搜索",
@@ -522,6 +529,8 @@
     "photo": "没有照片 | 一张照片 | {count} 张照片"
   },
   "title": {
+    "home": "首页",
+    "about": "关于",
     "dashboard": "仪表板",
     "fallback": {
       "photo": "照片"
@@ -1279,7 +1288,16 @@
       "avatarUrl": {
         "label": "头像 URL",
         "description": "所有者头像的图片链接",
-        "help": "头像显示加载页面和首页头像中"
+        "help": "头像可显示在首页作者信息和关于页面中"
+      },
+      "logoUrl": {
+        "label": "Logo URL",
+        "description": "网站 Logo 的图片链接",
+        "help": "留空时前台自动使用网站图标"
+      },
+      "aboutText": {
+        "label": "关于正文",
+        "description": "关于页面中用于介绍作者和网站的正文"
       },
       "appearance": {
         "theme": {
@@ -1302,13 +1320,18 @@
             "description": "选择首页照片的排列方式",
             "masonry": "瀑布流",
             "grid": "规整网格",
-            "feed": "单列摄影流"
+            "feed": "单列摄影流",
+            "big": "纵向大图"
           },
           "source": {
             "label": "首页照片范围",
             "description": "展示全部公开照片，或仅展示标记为精选的照片",
             "all": "全部公开照片",
-            "featured": "仅精选照片"
+            "featured": "仅精选照片",
+            "recent": "最新照片",
+            "random": "随览",
+            "nearby": "附近",
+            "faraway": "远方"
           },
           "imageRatio": {
             "label": "图片比例",
@@ -1357,10 +1380,6 @@
             "label": "显示图片信息",
             "description": "在图片上显示标题、时间、地点和相机参数"
           },
-          "showExploreNav": {
-            "label": "显示发现入口",
-            "description": "在首页导航中显示照片发现页面"
-          },
           "showGlobeNav": {
             "label": "显示地图入口",
             "description": "在首页导航中显示地图页面"
@@ -1368,6 +1387,10 @@
           "showAlbumsNav": {
             "label": "显示相册入口",
             "description": "在首页导航中显示相册页面"
+          },
+          "showAboutNav": {
+            "label": "显示关于入口",
+            "description": "在首页导航中显示关于页面"
           }
         }
       },

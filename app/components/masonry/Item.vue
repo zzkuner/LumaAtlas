@@ -7,7 +7,7 @@ const props = withDefaults(
     index: number
     hasAnimated: boolean
     firstScreenItems?: number
-    presentation?: 'masonry' | 'grid' | 'feed'
+    presentation?: 'masonry' | 'grid' | 'big' | 'feed'
     imageRatio?: 'natural' | 'square' | 'landscape'
   }>(),
   {
@@ -40,15 +40,11 @@ const animateDelay = computed(() => {
 const itemVariants = {
   hidden: {
     opacity: 0,
-    y: 30,
-    scale: 0.95,
-    filter: 'blur(6px)',
+    y: 8,
   },
   visible: {
     opacity: 1,
     y: 0,
-    scale: 1,
-    filter: 'blur(0px)',
     transition: {
       type: 'spring' as const,
       duration: 0.3,

@@ -39,13 +39,19 @@ export default defineEventHandler(async (event) => {
     .where(visibilityCondition)
     .get()
 
-  const sourceKey = photo?.thumbnailKey || photo?.storageKey
-  if (!sourceKey) {
+  const sourceKeys = [photo?.thumbnailKey, photo?.storageKey].filter(
+    (key): key is string => Boolean(key),
+  )
+  if (!sourceKeys.length) {
     throw createError({ statusCode: 404, statusMessage: 'Photo not found' })
   }
 
   const { storageProvider } = useStorageProvider(event)
-  const source = await storageProvider.get(sourceKey)
+  let source: Buffer | null = null
+  for (const sourceKey of sourceKeys) {
+    source = await storageProvider.get(sourceKey)
+    if (source) break
+  }
   if (!source) {
     throw createError({
       statusCode: 404,

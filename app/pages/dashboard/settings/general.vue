@@ -16,6 +16,18 @@ const appFields = computed(() =>
   fields.value.filter((f) => !f.key.startsWith('appearance.')),
 )
 
+const identityFields = computed(() =>
+  appFields.value.filter((field) =>
+    ['title', 'slogan', 'description', 'logoUrl'].includes(field.key),
+  ),
+)
+
+const aboutFields = computed(() =>
+  appFields.value.filter((field) =>
+    ['author', 'avatarUrl', 'aboutText'].includes(field.key),
+  ),
+)
+
 const appearanceFields = computed(() =>
   fields.value.filter((f) => f.key.startsWith('appearance.')),
 )
@@ -117,7 +129,7 @@ const handleAppearanceSettingsSubmit = async () => {
             {{ $t('title.generalSettings') }}
           </h2>
           <p class="text-sm text-neutral-600 dark:text-neutral-400">
-            管理站点基础信息与展示外观。更改会立即影响控制台和前台展示。
+            管理站点基础信息与展示外观。保存后会同步更新前台展示。
           </p>
         </section>
 
@@ -130,8 +142,11 @@ const handleAppearanceSettingsSubmit = async () => {
             <h3
               class="text-base font-semibold text-neutral-900 dark:text-neutral-100"
             >
-              {{ $t('title.generalSettings') }}
+              站点内容
             </h3>
+            <p class="mt-1 text-sm text-neutral-500">
+              保存后会同步更新首页、浏览器分享卡片和关于页面。
+            </p>
           </header>
 
           <div
@@ -149,16 +164,40 @@ const handleAppearanceSettingsSubmit = async () => {
           <UForm
             v-else
             id="appSettingsForm"
-            class="space-y-5 px-5 py-5"
+            class="divide-y divide-neutral-200 px-5 dark:divide-neutral-800"
             @submit="handleAppSettingsSubmit"
           >
-            <SettingField
-              v-for="field in appFields"
-              :key="field.key"
-              :field="field"
-              :model-value="state[field.key]"
-              @update:model-value="(val) => (state[field.key] = val)"
-            />
+            <section class="space-y-5 py-5">
+              <div>
+                <h4 class="text-sm font-semibold">站点标识</h4>
+                <p class="mt-1 text-sm text-neutral-500">
+                  网站名称、简介与 Logo。Logo 留空时前台自动使用站点图标。
+                </p>
+              </div>
+              <SettingField
+                v-for="field in identityFields"
+                :key="field.key"
+                :field="field"
+                :model-value="state[field.key]"
+                @update:model-value="(val) => (state[field.key] = val)"
+              />
+            </section>
+
+            <section class="space-y-5 py-5">
+              <div>
+                <h4 class="text-sm font-semibold">作者与关于</h4>
+                <p class="mt-1 text-sm text-neutral-500">
+                  作者信息可用于首页简介，也会组成可选的关于页面。
+                </p>
+              </div>
+              <SettingField
+                v-for="field in aboutFields"
+                :key="field.key"
+                :field="field"
+                :model-value="state[field.key]"
+                @update:model-value="(val) => (state[field.key] = val)"
+              />
+            </section>
           </UForm>
 
           <footer
@@ -250,7 +289,7 @@ const handleAppearanceSettingsSubmit = async () => {
                   首页展示
                 </h4>
                 <p class="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
-                  调整公开相册的页头风格、图片密度与辅助信息。
+                  按内容来源、导航、布局、信息和视觉顺序调整公开首页。
                 </p>
               </div>
 

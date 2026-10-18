@@ -2351,12 +2351,12 @@ onUnmounted(() => {
           :title="$t('dashboard.photos.slideover.title')"
           :description="$t('dashboard.photos.slideover.description')"
           :ui="{
-            content: 'sm:max-w-xl',
-            body: 'p-2',
+            content: 'w-full max-w-full sm:max-w-xl',
+            body: 'px-4 py-3 sm:px-6',
             header:
-              'px-6 py-5 border-b border-neutral-200 dark:border-neutral-800',
+              'px-4 py-4 sm:px-6 border-b border-neutral-200 dark:border-neutral-800',
             footer:
-              'px-6 py-5 border-t border-neutral-200 dark:border-neutral-800',
+              'px-4 py-4 sm:px-6 border-t border-neutral-200 dark:border-neutral-800',
           }"
         >
           <template #body>
@@ -2490,7 +2490,7 @@ onUnmounted(() => {
 
         <!-- 统合容器：工具栏 + 照片列表 -->
         <div
-          class="relative flex-1 min-h-0 flex flex-col bg-white dark:bg-neutral-900 border border-neutral-200/80 dark:border-neutral-800/80 rounded-2xl shadow-sm overflow-hidden"
+          class="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-md border border-neutral-200/80 bg-white shadow-sm dark:border-neutral-800/80 dark:bg-neutral-900"
         >
           <!-- 工具栏 -->
           <div
@@ -2542,7 +2542,9 @@ onUnmounted(() => {
               </div>
             </div>
 
-            <div class="flex items-center gap-2">
+            <div
+              class="flex w-full min-w-0 flex-wrap items-center gap-2 sm:w-auto sm:flex-nowrap"
+            >
               <UPopover>
                 <UTooltip :text="$t('ui.action.filter.tooltip')">
                   <UChip
@@ -2676,7 +2678,7 @@ onUnmounted(() => {
               class="h-full flex-1"
               :ui="{
                 root: 'relative h-full overflow-auto scroll-smooth',
-                base: 'min-w-full table-fixed',
+                base: 'w-max min-w-[1120px] table-auto',
                 thead:
                   'bg-neutral-50/80 dark:bg-neutral-900/80 backdrop-blur-md sticky top-0 z-10 whitespace-nowrap',
                 tbody:
@@ -2718,10 +2720,10 @@ onUnmounted(() => {
             >
               <div
                 v-if="selectedRowsCount > 0"
-                class="fixed bottom-8 left-1/2 -translate-x-1/2 px-2 py-1.5 bg-white/90 dark:bg-neutral-900/90 backdrop-blur-xl shadow-xl rounded-full border border-neutral-200/80 dark:border-neutral-800/80 z-60 flex items-center gap-3 sm:gap-6 shadow-black/5 dark:shadow-black/20"
+                class="fixed bottom-3 left-1/2 z-60 flex max-w-[calc(100vw-1rem)] -translate-x-1/2 items-center gap-2 overflow-x-auto rounded-md border border-neutral-200/80 bg-white/95 px-2 py-1.5 shadow-xl shadow-black/5 backdrop-blur-xl sm:bottom-8 sm:gap-6 dark:border-neutral-800/80 dark:bg-neutral-900/95 dark:shadow-black/20"
               >
                 <div
-                  class="pl-4 pr-1 border-r border-neutral-200 dark:border-neutral-800 min-w-max"
+                  class="hidden min-w-max border-r border-neutral-200 pl-3 pr-3 sm:block dark:border-neutral-800"
                 >
                   <p
                     class="text-sm font-medium tracking-wide text-neutral-700 dark:text-neutral-200"
@@ -3018,12 +3020,12 @@ onUnmounted(() => {
           :title="$t('dashboard.photos.editModal.title')"
           :description="$t('dashboard.photos.editModal.description')"
           :ui="{
-            content: 'sm:max-w-xl',
-            body: 'p-2',
+            content: 'w-full max-w-full sm:max-w-xl',
+            body: 'px-4 py-3 sm:px-6',
             header:
-              'px-6 py-5 border-b border-neutral-200 dark:border-neutral-800',
+              'px-4 py-4 sm:px-6 border-b border-neutral-200 dark:border-neutral-800',
             footer:
-              'px-6 py-5 border-t border-neutral-200 dark:border-neutral-800',
+              'px-4 py-4 sm:px-6 border-t border-neutral-200 dark:border-neutral-800',
           }"
         >
           <template #body>
@@ -3079,7 +3081,9 @@ onUnmounted(() => {
                   </p>
                 </div>
 
-                <div class="flex items-center justify-between space-y-2">
+                <div
+                  class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+                >
                   <label
                     class="text-sm font-medium text-neutral-700 dark:text-neutral-200"
                   >

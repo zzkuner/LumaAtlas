@@ -12,6 +12,9 @@ const siteTitle = computed(() => String(getSetting('app:title') || 'LumaAtlas'))
 const siteSlogan = computed(() =>
   String(getSetting('app:slogan') || config.public.app.slogan || ''),
 )
+const showAboutNav = computed(
+  () => getSetting('app:appearance.home.showAboutNav') === true,
+)
 const toggleColorMode = () => {
   colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark'
 }
@@ -216,12 +219,7 @@ const hoveredAlbum = ref<number | null>(null)
           <NuxtLink
             to="/"
             class="hover:text-neutral-950 dark:hover:text-white"
-            >{{ $t('title.gallery') }}</NuxtLink
-          >
-          <NuxtLink
-            to="/explore"
-            class="hover:text-neutral-950 dark:hover:text-white"
-            >{{ $t('discovery.title') }}</NuxtLink
+            >{{ $t('title.home') }}</NuxtLink
           >
           <NuxtLink
             to="/globe"
@@ -231,6 +229,12 @@ const hoveredAlbum = ref<number | null>(null)
           <span class="font-medium text-neutral-950 dark:text-white">
             {{ $t('title.albums') }}
           </span>
+          <NuxtLink
+            v-if="showAboutNav"
+            to="/about"
+            class="hover:text-neutral-950 dark:hover:text-white"
+            >{{ $t('title.about') }}</NuxtLink
+          >
         </nav>
 
         <div class="flex items-center gap-1">
@@ -264,7 +268,7 @@ const hoveredAlbum = ref<number | null>(null)
         >
           <div>
             <h1
-              class="font-display text-4xl font-bold tracking-tight text-neutral-950 dark:text-white sm:text-5xl"
+              class="font-display text-4xl font-bold text-neutral-950 dark:text-white sm:text-5xl"
             >
               {{ $t('title.albums') }}
             </h1>

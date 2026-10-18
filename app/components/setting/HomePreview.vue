@@ -21,9 +21,10 @@ const props = withDefaults(defineProps<Props>(), {
 const setting = (key: string, fallback: unknown) =>
   props.settings[key] ?? fallback
 
-const layout = computed(() =>
-  String(setting('appearance.home.layout', 'masonry')),
-)
+const layout = computed(() => {
+  const value = String(setting('appearance.home.layout', 'masonry'))
+  return value === 'feed' ? 'big' : value
+})
 const imageRatio = computed(() =>
   String(setting('appearance.home.imageRatio', 'natural')),
 )
@@ -68,8 +69,8 @@ const showGlobeNav = computed(
 const showAlbumsNav = computed(
   () => setting('appearance.home.showAlbumsNav', true) !== false,
 )
-const showExploreNav = computed(
-  () => setting('appearance.home.showExploreNav', true) !== false,
+const showAboutNav = computed(
+  () => setting('appearance.home.showAboutNav', false) === true,
 )
 
 const asRecord = (value: unknown): Record<string, unknown> =>
@@ -102,22 +103,16 @@ const moduleOrder = (id: string) => {
 const moduleVisible = (id: string) => !moduleSettings.value.hidden.includes(id)
 
 const navigationItems = computed(() => {
-  const value = asRecord(setting('appearance.home.navigation', {}))
-  const allowed = ['explore', 'globe', 'albums']
-  const source = Array.isArray(value.order) ? value.order : []
-  const order = [...new Set([...source, ...allowed])].filter(
-    (item): item is string =>
-      typeof item === 'string' && allowed.includes(item),
-  )
+  const order = ['globe', 'albums', 'about']
   const labels: Record<string, string> = {
-    explore: 'Explore',
     globe: 'Map',
     albums: 'Albums',
+    about: 'About',
   }
   const visible: Record<string, boolean> = {
-    explore: showExploreNav.value,
     globe: showGlobeNav.value,
     albums: showAlbumsNav.value,
+    about: showAboutNav.value,
   }
   return order
     .filter((id) => visible[id])
@@ -177,7 +172,7 @@ const fallbackColors = [
 const fallbackRatios = [1.45, 0.78, 1.1, 1.6, 0.92, 1.28, 0.7, 1.5]
 
 const previewItems = computed(() => {
-  const count = layout.value === 'feed' ? 2 : 8
+  const count = layout.value === 'big' ? 2 : 8
   return Array.from({ length: count }, (_, index) => {
     const photo = props.photos[index]
     return {
@@ -246,7 +241,7 @@ const itemRatio = (naturalRatio: number) => {
             <span class="truncate text-[10px] font-semibold">{{ title }}</span>
           </div>
           <div class="flex items-center gap-2 text-[8px] text-neutral-500">
-            <span>Gallery</span>
+            <span>Home</span>
             <span
               v-for="item in navigationItems"
               :key="item.id"
@@ -347,7 +342,7 @@ const itemRatio = (naturalRatio: number) => {
               />
             </div>
             <div
-              v-if="layout === 'feed'"
+              v-if="layout === 'big'"
               class="flex items-center justify-between border-b border-neutral-200 py-1.5 text-[8px] dark:border-neutral-800"
             >
               <span class="font-medium">{{ item.title }}</span>

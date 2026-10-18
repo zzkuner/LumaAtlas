@@ -5,11 +5,16 @@
     "searchPlaceholder": "Search titles, tags, places, cameras, or lenses",
     "quickFilters": "Quick filters",
     "clearFilters": "Clear filters",
+    "loading": "Preparing photos",
     "resultCount": "{count} photos",
     "radius": "Radius",
     "reshuffle": "Shuffle again",
     "untitled": "Untitled photo",
     "modes": {
+      "all": {
+        "label": "All",
+        "description": "Browse every public photo."
+      },
       "featured": {
         "label": "Featured",
         "description": "Browse a curated selection of representative work."
@@ -39,7 +44,9 @@
     },
     "empty": {
       "title": "No photos found",
-      "description": "Try another view or clear the current filters."
+      "description": "Try another homepage view or clear the current filters.",
+      "noPublicPhotos": "There are no public photos yet. After uploading, check photo visibility and the processing queue.",
+      "reset": "View all photos"
     },
     "command": {
       "title": "Quick search",
@@ -522,6 +529,8 @@
     }
   },
   "title": {
+    "home": "Home",
+    "about": "About",
     "gallery": "Gallery",
     "fallback": {
       "photo": "Photo"
@@ -1275,7 +1284,16 @@
       "avatarUrl": {
         "label": "Avatar URL",
         "description": "Link to the owner's avatar image",
-        "help": "The avatar is displayed on the loading page and homepage"
+        "help": "The avatar can appear in the homepage author block and About page"
+      },
+      "logoUrl": {
+        "label": "Logo URL",
+        "description": "Image URL for the site logo",
+        "help": "Leave blank to use the site icon automatically"
+      },
+      "aboutText": {
+        "label": "About Text",
+        "description": "Long-form author and site introduction for the About page"
       },
       "appearance": {
         "theme": {
@@ -1298,13 +1316,18 @@
             "description": "Choose how photos are arranged on the homepage",
             "masonry": "Masonry",
             "grid": "Grid",
-            "feed": "Photo Feed"
+            "feed": "Photo Feed",
+            "big": "Vertical Big Image"
           },
           "source": {
             "label": "Homepage Photos",
             "description": "Show every public photo or only photos marked as featured",
             "all": "All Public",
-            "featured": "Featured Only"
+            "featured": "Featured Only",
+            "recent": "Recent",
+            "random": "Random",
+            "nearby": "Nearby",
+            "faraway": "Far Away"
           },
           "imageRatio": {
             "label": "Image Ratio",
@@ -1353,10 +1376,6 @@
             "label": "Show Photo Information",
             "description": "Display titles, dates, locations and camera details with photos"
           },
-          "showExploreNav": {
-            "label": "Show Explore Navigation",
-            "description": "Display the photo discovery page in the homepage navigation"
-          },
           "showGlobeNav": {
             "label": "Show Map Navigation",
             "description": "Display the map entry in the homepage navigation"
@@ -1364,6 +1383,10 @@
           "showAlbumsNav": {
             "label": "Show Albums Navigation",
             "description": "Display the albums entry in the homepage navigation"
+          },
+          "showAboutNav": {
+            "label": "Show About Navigation",
+            "description": "Display the About page in the homepage navigation"
           }
         }
       },

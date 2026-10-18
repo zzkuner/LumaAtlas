@@ -5,7 +5,7 @@ import { motion, useDomRef } from 'motion-v'
 interface Props {
   photo: Photo
   index: number
-  presentation?: 'masonry' | 'grid' | 'feed'
+  presentation?: 'masonry' | 'grid' | 'big' | 'feed'
   imageRatio?: 'natural' | 'square' | 'landscape'
 }
 
@@ -61,13 +61,17 @@ const naturalAspectRatio = computed(() => {
   return 1.2
 })
 
+const isBig = computed(
+  () => props.presentation === 'big' || props.presentation === 'feed',
+)
 const displayAspectRatio = computed(() => {
+  if (isBig.value) return naturalAspectRatio.value
   if (props.imageRatio === 'square') return 1
   if (props.imageRatio === 'landscape') return 4 / 3
   return naturalAspectRatio.value
 })
 
-const isFeed = computed(() => props.presentation === 'feed')
+const isFeed = computed(() => isBig.value)
 const showPhotoInfo = computed(
   () => getSetting('app:appearance.home.showPhotoInfo') === true,
 )
@@ -75,6 +79,15 @@ const thumbnailSizes = computed(() =>
   isFeed.value
     ? '(max-width: 1024px) 100vw, 960px'
     : '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw',
+)
+
+const bigFrameStyle = computed(() =>
+  isBig.value
+    ? {
+        width: `min(100%, calc(72svh * ${naturalAspectRatio.value}))`,
+        marginInline: 'auto',
+      }
+    : undefined,
 )
 
 // Show info overlay only when not playing video or video has finished
@@ -501,7 +514,11 @@ onUnmounted(() => {
 <template>
   <div
     ref="photoRef"
-    class="w-full transition-all duration-300 cursor-pointer select-none"
+    class="w-full cursor-pointer select-none transition-all duration-300"
+    :class="{
+      'flex min-h-[calc(100svh-9rem)] flex-col justify-center py-8 sm:py-12':
+        isBig,
+    }"
     :style="{
       transform: 'translateZ(0)',
     }"
@@ -515,8 +532,11 @@ onUnmounted(() => {
     @contextmenu.prevent=""
   >
     <div
-      class="relative group overflow-hidden transition-all duration-300"
-      :style="{ borderRadius: 'var(--la-radius, 0px)' }"
+      class="group relative overflow-hidden transition-all duration-300"
+      :style="{
+        ...bigFrameStyle,
+        borderRadius: 'var(--la-radius, 0px)',
+      }"
     >
       <!-- Container with fixed aspect ratio -->
       <div
@@ -529,7 +549,13 @@ onUnmounted(() => {
           :sizes="thumbnailSizes"
           :alt="photo.title || 'Photo thumbnail'"
           :thumbhash="photo.thumbnailHash || ''"
-          class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          :image-contain="isBig"
+          class="absolute inset-0 h-full w-full transition-transform duration-500"
+          :class="
+            isBig
+              ? 'bg-neutral-100 dark:bg-neutral-900'
+              : 'object-cover group-hover:scale-105'
+          "
           @load="handleImageLoad"
           @error="handleImageError"
         />
@@ -717,9 +743,9 @@ onUnmounted(() => {
 
     <div
       v-if="showPhotoInfo && isFeed"
-      class="flex flex-col gap-2 border-b border-neutral-200 py-4 sm:flex-row sm:items-start sm:justify-between dark:border-neutral-800"
+      class="mx-auto flex w-full max-w-5xl flex-col gap-3 border-b border-neutral-200 py-4 sm:flex-row sm:items-end sm:justify-between dark:border-neutral-800"
     >
-      <div class="min-w-0">
+      <div class="min-w-0 sm:max-w-md">
         <p
           v-if="photo.title"
           class="text-sm font-medium text-neutral-950 dark:text-white"
@@ -747,13 +773,51 @@ onUnmounted(() => {
       </div>
 
       <div
-        class="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-1 text-xs text-neutral-500 sm:max-w-72 sm:justify-end dark:text-neutral-500"
+        class="flex max-w-full shrink-0 items-center gap-x-4 overflow-x-auto pb-1 text-xs text-neutral-500 sm:justify-end dark:text-neutral-500"
       >
+        <Rating
+          v-if="photo.exif?.Rating"
+          :model-value="photo.exif.Rating"
+          readonly
+          size="sm"
+          class="shrink-0"
+        />
+        <span
+          v-if="photo.exif?.FocalLengthIn35mmFormat"
+          class="shrink-0"
+        >
+          {{ photo.exif.FocalLengthIn35mmFormat }}mm
+        </span>
+        <span
+          v-if="photo.exif?.FNumber"
+          class="shrink-0"
+        >
+          f/{{ photo.exif.FNumber }}
+        </span>
+        <span
+          v-if="photo.exif?.ExposureTime"
+          class="shrink-0"
+        >
+          {{ formatExposureTime(photo.exif.ExposureTime) }}
+        </span>
+        <span
+          v-if="photo.exif?.ISO"
+          class="shrink-0"
+        >
+          ISO {{ photo.exif.ISO }}
+        </span>
         <span v-if="photo.dateTaken">
           {{ $dayjs(photo.dateTaken).format('YYYY-MM-DD') }}
         </span>
-        <span v-if="photo.city">{{ photo.city }}</span>
-        <span v-if="photo.exif?.Model">
+        <span
+          v-if="photo.city"
+          class="shrink-0"
+          >{{ photo.city }}</span
+        >
+        <span
+          v-if="photo.exif?.Model"
+          class="shrink-0"
+        >
           {{ formatCameraInfo(photo.exif.Make, photo.exif.Model) }}
         </span>
       </div>

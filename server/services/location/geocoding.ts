@@ -262,7 +262,7 @@ export async function extractLocationFromGPS(
   gpsLongitude?: number,
   provider?: GeocodingProvider,
 ): Promise<LocationInfo | null> {
-  if (!gpsLatitude || !gpsLongitude) {
+  if (gpsLatitude == null || gpsLongitude == null) {
     return null
   }
 
@@ -302,44 +302,4 @@ export async function extractLocationFromGPS(
   }
 }
 
-/**
- * 解析EXIF GPS数据为十进制度数
- */
-export function parseGPSCoordinates(exifData: any): {
-  latitude?: number
-  longitude?: number
-} {
-  try {
-    let latitude: number | undefined
-    let longitude: number | undefined
-
-    // 尝试从GPSLatitude和GPSLongitude获取
-    if (exifData.GPSLatitude && exifData.GPSLongitude) {
-      latitude = parseFloat(exifData.GPSLatitude.toString())
-      longitude = parseFloat(exifData.GPSLongitude.toString())
-    }
-
-    // 如果上面的方法失败，尝试从GPSCoordinates获取
-    if ((!latitude || !longitude) && exifData.GPSCoordinates) {
-      const coords = exifData.GPSCoordinates.toString()
-      const match = coords.match(/([-+]?\d+\.?\d*)[°,\s]+([-+]?\d+\.?\d*)/)
-      if (match) {
-        latitude = parseFloat(match[1])
-        longitude = parseFloat(match[2])
-      }
-    }
-
-    // 应用GPS参考（南纬为负，西经为负）
-    if (latitude && exifData.GPSLatitudeRef === 'S') {
-      latitude = -Math.abs(latitude)
-    }
-    if (longitude && exifData.GPSLongitudeRef === 'W') {
-      longitude = -Math.abs(longitude)
-    }
-
-    return { latitude, longitude }
-  } catch (error) {
-    logger.location.error('Failed to parse GPS coordinates:', error)
-    return {}
-  }
-}
+export { parseGPSCoordinates } from './gps'

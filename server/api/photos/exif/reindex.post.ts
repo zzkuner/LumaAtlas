@@ -3,6 +3,20 @@ import {
   extractExifData,
   extractPhotoInfo,
 } from '~~/server/services/image/exif'
+import { extractLocationFromGPS } from '~~/server/services/location/geocoding'
+import { parseGPSCoordinates } from '~~/server/services/location/gps'
+
+const extractLocationUpdate = async (exifData: unknown) => {
+  const { latitude, longitude } = parseGPSCoordinates(exifData)
+  if (latitude == null || longitude == null) return {}
+
+  const location = await extractLocationFromGPS(latitude, longitude)
+  return {
+    latitude,
+    longitude,
+    ...location,
+  }
+}
 
 export default eventHandler(async (event) => {
   await requireUserSession(event)
@@ -47,6 +61,7 @@ export default eventHandler(async (event) => {
         logger.chrono,
       )
       const photoInfo = extractPhotoInfo(photo.storageKey!, exifData)
+      const locationUpdate = await extractLocationUpdate(exifData)
 
       // 更新数据库中的 EXIF 数据
       await useDB()
@@ -56,6 +71,7 @@ export default eventHandler(async (event) => {
           title: photoInfo.title,
           dateTaken: photoInfo.dateTaken,
           tags: photoInfo.tags,
+          ...locationUpdate,
           lastModified: new Date().toISOString(),
         })
         .where(eq(tables.photos.id, photoId))
@@ -144,6 +160,7 @@ export default eventHandler(async (event) => {
             logger.chrono,
           )
           const photoInfo = extractPhotoInfo(photo.storageKey!, exifData)
+          const locationUpdate = await extractLocationUpdate(exifData)
 
           // 更新数据库
           await useDB()
@@ -153,6 +170,7 @@ export default eventHandler(async (event) => {
               title: photoInfo.title,
               dateTaken: photoInfo.dateTaken,
               tags: photoInfo.tags,
+              ...locationUpdate,
               lastModified: new Date().toISOString(),
             })
             .where(eq(tables.photos.id, photo.id))

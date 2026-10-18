@@ -474,7 +474,7 @@ const onMapLoaded = (map: any) => {
   const { photoId } = route.query
   if (photoId && typeof photoId === 'string') {
     const photo = photosWithLocation.value.find((photo) => photo.id === photoId)
-    if (photo && photo.latitude && photo.longitude) {
+    if (photo && photo.latitude != null && photo.longitude != null) {
       setTimeout(() => {
         map.flyTo({
           center: [photo.longitude, photo.latitude],

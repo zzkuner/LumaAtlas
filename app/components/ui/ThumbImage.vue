@@ -101,11 +101,16 @@ const onError = () => {
     :class="twMerge('relative overflow-hidden', $props.class)"
     :style="style"
   >
-    <ThumbHash
-      v-if="thumbhash"
-      :thumbhash="thumbhash"
-      :class="twMerge('absolute inset-0 scale-110 blur-sm', thumbhashClass)"
-    />
+    <div
+      v-if="!isLoaded && !isError"
+      class="absolute inset-0 flex items-center justify-center bg-neutral-100 dark:bg-neutral-900"
+      :class="thumbhashClass"
+    >
+      <Icon
+        name="lucide:aperture"
+        class="size-4 animate-pulse text-neutral-300 dark:text-neutral-700"
+      />
+    </div>
 
     <img
       v-if="isElemVisible"
@@ -117,7 +122,7 @@ const onError = () => {
       :alt="alt"
       :class="
         twMerge(
-          'absolute inset-0 w-full h-full transition-opacity duration-300',
+          'absolute inset-0 w-full h-full transition-opacity duration-500',
           imageContain ? 'object-contain' : 'object-cover',
           isLoaded ? 'opacity-100' : 'opacity-0',
         )

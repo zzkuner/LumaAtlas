@@ -16,14 +16,17 @@ const { photos } = usePhotos()
         />
         <template #fallback>
           <div
-            class="fixed inset-0 flex flex-col gap-4 items-center justify-center"
+            class="fixed inset-0 flex flex-col items-center justify-center gap-3 bg-white dark:bg-neutral-950"
           >
-            <LoaderAvatar />
-            <span class="loading-scan-wrapper">
-              <span class="text-base font-medium loading-scan-text">
-                LOADING
-              </span>
+            <span
+              class="flex size-9 items-center justify-center border border-neutral-300 dark:border-neutral-700"
+            >
+              <Icon
+                name="lucide:aperture"
+                class="size-5 animate-spin text-neutral-500"
+              />
             </span>
+            <span class="font-display text-sm text-neutral-500">LumaAtlas</span>
           </div>
         </template>
       </ClientOnly>
@@ -31,38 +34,3 @@ const { photos } = usePhotos()
     </div>
   </div>
 </template>
-
-<style scoped>
-.loading-scan-wrapper {
-  display: inline-block;
-  position: relative;
-}
-
-.loading-scan-text {
-  display: inline-block;
-  background: linear-gradient(
-    90deg,
-    var(--ui-text-highlighted) 0%,
-    var(--ui-text-highlighted) 30%,
-    var(--ui-text-muted) 50%,
-    var(--ui-text-highlighted) 70%,
-    var(--ui-text-highlighted) 100%
-  );
-  background-size: 200% 100%;
-  background-position: 200% 0;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  color: transparent;
-  animation: scan-x-text 1.2s linear infinite;
-}
-
-@keyframes scan-x-text {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
-}
-</style>

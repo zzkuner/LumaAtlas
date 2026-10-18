@@ -1,5 +1,13 @@
 <script setup lang="ts">
 import { motion } from 'motion-v'
+import type {
+  DiscoveryLocation,
+  DiscoveryMode,
+} from '~/composables/usePhotoDiscovery'
+
+type HomeViewMode = 'all' | DiscoveryMode
+type GalleryLayout = 'big' | 'masonry' | 'grid'
+
 interface Props {
   photos: Photo[]
   columns?: number | 'auto'
@@ -15,9 +23,35 @@ const props = withDefaults(defineProps<Props>(), {
 
 const dayjs = useDayjs()
 const router = useRouter()
+const route = useRoute()
 
-const { filteredPhotos, hasActiveFilters } = usePhotoFilters()
+const { status: photosStatus } = usePhotos()
+const { filteredPhotos, hasActiveFilters, clearAllFilters } = usePhotoFilters()
 const { sortedPhotos } = usePhotoSort()
+
+const allowedViewModes: HomeViewMode[] = [
+  'all',
+  'featured',
+  'recent',
+  'random',
+  'nearby',
+  'faraway',
+]
+const configuredSource = computed<HomeViewMode>(() => {
+  const value = String(getSetting('app:appearance.home.source') || 'all')
+  return allowedViewModes.includes(value as HomeViewMode)
+    ? (value as HomeViewMode)
+    : 'all'
+})
+const viewMode = computed<HomeViewMode>(() => {
+  const value = String(route.query.view || '')
+  return allowedViewModes.includes(value as HomeViewMode)
+    ? (value as HomeViewMode)
+    : configuredSource.value
+})
+const visitorLocation = ref<DiscoveryLocation | null>(null)
+const locationStatus = ref<'idle' | 'loading' | 'ready' | 'denied'>('idle')
+const randomSeed = computed(() => Number(route.query.seed || 1) || 1)
 
 const displayPhotos = computed(() => {
   if (props.mode === 'collection') {
@@ -27,11 +61,14 @@ const displayPhotos = computed(() => {
   const photos = hasActiveFilters.value
     ? filteredPhotos.value
     : sortedPhotos.value
-  const source = String(getSetting('app:appearance.home.source') || 'all')
 
-  return source === 'featured'
-    ? photos.filter((photo) => photo.isFeatured)
-    : photos
+  if (viewMode.value === 'all') return photos
+  return discoverPhotos(photos, {
+    mode: viewMode.value,
+    location: visitorLocation.value,
+    radiusKm: 100,
+    randomSeed: randomSeed.value,
+  })
 })
 
 const { currentPhotoIndex, isViewerOpen } = storeToRefs(useViewerState())
@@ -119,12 +156,17 @@ const themeStyle = computed(() => ({
   '--la-heading-font': headingFont.value,
 }))
 
-const galleryLayout = computed(() => {
+const configuredLayout = computed<GalleryLayout>(() => {
   const value = String(getSetting('app:appearance.home.layout') || 'masonry')
-  return ['masonry', 'grid', 'feed'].includes(value)
-    ? (value as 'masonry' | 'grid' | 'feed')
+  if (value === 'feed') return 'big'
+  return ['big', 'masonry', 'grid'].includes(value)
+    ? (value as GalleryLayout)
     : 'masonry'
 })
+const visitorLayout = ref<GalleryLayout | null>(null)
+const galleryLayout = computed(
+  () => visitorLayout.value || configuredLayout.value,
+)
 const imageRatio = computed(() => {
   const value = String(
     getSetting('app:appearance.home.imageRatio') || 'natural',
@@ -175,7 +217,7 @@ const minColumns = computed(() => {
 })
 
 const galleryMaxWidth = computed(() => {
-  if (galleryLayout.value === 'feed') {
+  if (galleryLayout.value === 'big') {
     return (
       {
         contained: '880px',
@@ -385,6 +427,54 @@ const handleScroll = () => {
   showFloatingActions.value = scrollTop > 500
 }
 
+const requestLocation = () => {
+  if (!import.meta.client || !navigator.geolocation) {
+    locationStatus.value = 'denied'
+    return
+  }
+
+  locationStatus.value = 'loading'
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      visitorLocation.value = {
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+      }
+      locationStatus.value = 'ready'
+      localStorage.setItem(
+        'lumaatlas:discovery-location',
+        JSON.stringify(visitorLocation.value),
+      )
+    },
+    () => {
+      locationStatus.value = 'denied'
+    },
+    { enableHighAccuracy: false, timeout: 10000, maximumAge: 600000 },
+  )
+}
+
+const setViewMode = (value: HomeViewMode) => {
+  const query = { ...route.query }
+  if (value === configuredSource.value) delete query.view
+  else query.view = value
+  if (value === 'random') query.seed = String(Date.now())
+  else delete query.seed
+  router.replace({ query })
+
+  if ((value === 'nearby' || value === 'faraway') && !visitorLocation.value) {
+    requestLocation()
+  }
+}
+
+const setGalleryLayout = (value: GalleryLayout) => {
+  visitorLayout.value = value
+}
+
+const resetEmptyView = () => {
+  clearAllFilters()
+  setViewMode('all')
+}
+
 const scrollToTop = () => {
   window.scrollTo({
     top: 0,
@@ -394,6 +484,23 @@ const scrollToTop = () => {
 
 onMounted(() => {
   window.addEventListener('scroll', handleScroll, { passive: true })
+
+  const savedLocation = localStorage.getItem('lumaatlas:discovery-location')
+  if (savedLocation) {
+    try {
+      visitorLocation.value = JSON.parse(savedLocation) as DiscoveryLocation
+      locationStatus.value = 'ready'
+    } catch {
+      localStorage.removeItem('lumaatlas:discovery-location')
+    }
+  }
+
+  if (
+    (viewMode.value === 'nearby' || viewMode.value === 'faraway') &&
+    !visitorLocation.value
+  ) {
+    requestLocation()
+  }
 
   nextTick(() => {
     if (currentPhotoIndex.value) {
@@ -455,7 +562,11 @@ watch(currentPhotoIndex, (newIndex) => {
       :stats="photoStats"
       :date-range-text
       :max-width="galleryMaxWidth"
+      :view-mode="viewMode"
+      :layout-mode="galleryLayout"
       :style="{ order: moduleOrder('header') }"
+      @update:view-mode="setViewMode"
+      @update:layout-mode="setGalleryLayout"
     />
 
     <DateRangeIndicator
@@ -493,8 +604,88 @@ watch(currentPhotoIndex, (newIndex) => {
       :style="{ maxWidth: galleryMaxWidth, order: moduleOrder('gallery') }"
     >
       <div class="relative">
+        <section
+          v-if="
+            (viewMode === 'nearby' || viewMode === 'faraway') &&
+            locationStatus !== 'ready'
+          "
+          class="mx-auto flex max-w-lg flex-col items-center py-20 text-center"
+        >
+          <Icon
+            name="lucide:map-pin"
+            class="size-6 text-neutral-400"
+          />
+          <h2 class="font-display mt-4 text-lg font-semibold">
+            {{ $t('discovery.location.title') }}
+          </h2>
+          <p class="mt-2 text-sm leading-6 text-neutral-500">
+            {{
+              locationStatus === 'denied'
+                ? $t('discovery.location.denied')
+                : $t('discovery.location.description')
+            }}
+          </p>
+          <UButton
+            class="mt-5"
+            color="neutral"
+            icon="lucide:navigation"
+            :loading="locationStatus === 'loading'"
+            @click="requestLocation"
+          >
+            {{ $t('discovery.location.action') }}
+          </UButton>
+        </section>
+
+        <section
+          v-else-if="photosStatus === 'pending' && photos.length === 0"
+          class="flex min-h-[48svh] flex-col items-center justify-center text-center"
+          aria-live="polite"
+        >
+          <span
+            class="flex size-10 items-center justify-center border border-neutral-200 dark:border-neutral-800"
+          >
+            <Icon
+              name="lucide:aperture"
+              class="size-5 animate-pulse text-neutral-400"
+            />
+          </span>
+          <p class="font-display mt-3 text-sm text-neutral-500">
+            {{ $t('discovery.loading') }}
+          </p>
+        </section>
+
+        <section
+          v-else-if="displayPhotos.length === 0"
+          class="flex min-h-[48svh] flex-col items-center justify-center px-4 text-center"
+        >
+          <Icon
+            name="lucide:image"
+            class="size-6 text-neutral-400"
+          />
+          <h2 class="font-display mt-4 text-lg font-semibold">
+            {{ $t('discovery.empty.title') }}
+          </h2>
+          <p class="mt-2 max-w-sm text-sm leading-6 text-neutral-500">
+            {{
+              photos.length === 0
+                ? $t('discovery.empty.noPublicPhotos')
+                : $t('discovery.empty.description')
+            }}
+          </p>
+          <UButton
+            v-if="photos.length > 0"
+            class="mt-5"
+            color="neutral"
+            variant="outline"
+            icon="lucide:rotate-ccw"
+            @click="resetEmptyView"
+          >
+            {{ $t('discovery.empty.reset') }}
+          </UButton>
+        </section>
+
         <MasonryWall
-          v-if="galleryLayout === 'masonry'"
+          v-else-if="galleryLayout === 'masonry'"
           :items="masonryItems"
           :column-width="columnWidth"
           :gap="masonryGap"
@@ -528,7 +719,7 @@ watch(currentPhotoIndex, (newIndex) => {
           ]"
           :style="{
             gap:
-              galleryLayout === 'feed'
+              galleryLayout === 'big'
                 ? `${Math.max(36, masonryGap * 3)}px`
                 : `${masonryGap}px`,
           }"

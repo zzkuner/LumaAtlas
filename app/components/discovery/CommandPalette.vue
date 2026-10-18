@@ -32,8 +32,7 @@ const photoResults = computed(() => {
 })
 
 const navigationItems = computed(() => [
-  { label: $t('title.gallery'), icon: 'lucide:images', to: '/' },
-  { label: $t('discovery.title'), icon: 'lucide:compass', to: '/explore' },
+  { label: $t('title.home'), icon: 'lucide:images', to: '/' },
   { label: $t('title.globe'), icon: 'lucide:map', to: '/globe' },
   { label: $t('title.albums'), icon: 'lucide:library', to: '/albums' },
   ...(loggedIn.value
@@ -54,8 +53,8 @@ const openPath = async (path: string) => {
 }
 
 const openSearch = async () => {
-  const value = query.value.trim()
-  await openPath(value ? `/explore?q=${encodeURIComponent(value)}` : '/explore')
+  const firstResult = photoResults.value[0]
+  await openPath(query.value.trim() && firstResult ? `/${firstResult.id}` : '/')
 }
 
 watch(isCommandPaletteOpen, async (isOpen) => {

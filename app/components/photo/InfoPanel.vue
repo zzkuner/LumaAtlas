@@ -36,6 +36,9 @@ const props = withDefaults(defineProps<Props>(), {
   allowShare: true,
   allowDownload: true,
 })
+const emit = defineEmits<{
+  share: []
+}>()
 const toast = useToast()
 const { loggedIn } = useUserSession()
 const { refresh } = usePhotos()
@@ -218,7 +221,10 @@ const formatGPSCoordinatesMultiLine = (
 
 const gpsCoordinates = computed(() => {
   // 优先使用数据库中存储的坐标
-  if (props.currentPhoto.latitude && props.currentPhoto.longitude) {
+  if (
+    props.currentPhoto.latitude != null &&
+    props.currentPhoto.longitude != null
+  ) {
     return {
       latitude: props.currentPhoto.latitude,
       longitude: props.currentPhoto.longitude,
@@ -574,16 +580,6 @@ const onAlbumClick = (albumId: number) => {
   window.open(`/albums/${albumId}`)
 }
 
-const sharePhoto = async () => {
-  const url = `${window.location.origin}/${props.currentPhoto.id}`
-  if (navigator.share) {
-    await navigator.share({ title: props.currentPhoto.title || 'Photo', url })
-  } else {
-    await navigator.clipboard.writeText(url)
-    toast.add({ title: $t('photoDetail.actions.linkCopied'), color: 'success' })
-  }
-}
-
 const downloadPhoto = () => {
   if (!props.currentPhoto.originalUrl) return
   const anchor = document.createElement('a')
@@ -704,7 +700,7 @@ const handlePhotoSaved = async () => {
             variant="ghost"
             size="sm"
             :aria-label="$t('photoDetail.actions.share')"
-            @click="sharePhoto"
+            @click="emit('share')"
           />
         </UTooltip>
         <UTooltip

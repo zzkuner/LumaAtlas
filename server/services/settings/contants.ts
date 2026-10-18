@@ -170,6 +170,15 @@ export const DEFAULT_SETTINGS = [
   },
   {
     namespace: 'app',
+    key: 'appearance.home.showPhotoInfo',
+    type: 'boolean',
+    defaultValue: false,
+    label: 'settings.app.appearance.home.showPhotoInfo.label',
+    description: 'settings.app.appearance.home.showPhotoInfo.description',
+    isPublic: true,
+  },
+  {
+    namespace: 'app',
     key: 'appearance.home.showExploreNav',
     type: 'boolean',
     defaultValue: true,

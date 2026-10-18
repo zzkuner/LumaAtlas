@@ -63,6 +63,7 @@ export default eventHandler(async (event) => {
         ? storageProvider.config.prefix
         : undefined
     const objectKey = `${(prefix || '').replace(/\/+$/, '')}/${fileName}`
+    const photoId = generateSafePhotoId(objectKey)
 
     // 重复文件检测
     const duplicateCheckEnabled =
@@ -75,7 +76,6 @@ export default eventHandler(async (event) => {
     let existingPhoto = null
 
     if (duplicateCheckEnabled) {
-      const photoId = generateSafePhotoId(objectKey)
       const db = useDB()
 
       existingPhoto = await db
@@ -124,6 +124,7 @@ export default eventHandler(async (event) => {
             skipped: true,
             duplicate: true,
             existingPhoto,
+            photoId: existingPhoto.id,
             fileKey: objectKey,
             title: t('upload.duplicate.skip.title'),
             message: t('upload.duplicate.skip.message', { fileName }),
@@ -146,6 +147,7 @@ export default eventHandler(async (event) => {
       const response: any = {
         signedUrl,
         fileKey: objectKey,
+        photoId,
         expiresIn: 3600,
       }
 
@@ -172,6 +174,7 @@ export default eventHandler(async (event) => {
     const response: any = {
       signedUrl: internalUploadUrl,
       fileKey: objectKey,
+      photoId,
       expiresIn: 3600,
     }
 

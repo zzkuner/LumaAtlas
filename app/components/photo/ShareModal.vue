@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { motion, AnimatePresence } from 'motion-v'
+import QRCode from 'qrcode'
 
 interface Props {
   isOpen: boolean
@@ -41,15 +42,25 @@ const shareTextAndUrl = computed(() => {
 const ogImageLoading = ref(true)
 const ogImageError = ref(false)
 const loadingTimer = ref<NodeJS.Timeout | null>(null)
+const wechatQrCode = ref('')
 
 const ogImageUrl = computed(() => {
   if (typeof window !== 'undefined') {
-    // Add timestamp to prevent caching issues
-    const timestamp = Date.now()
-    return `${window.location.origin}/__og-image__/image/${props.photo.id}/og.png?t=${timestamp}`
+    return `${window.location.origin}/api/photos/${encodeURIComponent(props.photo.id)}/share-card`
   }
   return ''
 })
+
+const updateWechatQrCode = async () => {
+  wechatQrCode.value =
+    props.isOpen && shareUrl.value
+      ? await QRCode.toDataURL(shareUrl.value, {
+          width: 320,
+          margin: 1,
+          color: { dark: '#171717', light: '#ffffff' },
+        })
+      : ''
+}
 
 // Reset loading state when photo changes or modal opens
 const resetLoadingState = () => {
@@ -80,8 +91,13 @@ watch(
     if (newValue) {
       resetLoadingState()
     }
+    void updateWechatQrCode()
   },
 )
+
+watch(shareUrl, () => {
+  void updateWechatQrCode()
+})
 
 // Handle image load events
 const handleOgImageLoad = () => {
@@ -152,6 +168,44 @@ const shareToWeibo = () => {
   const url = encodeURIComponent(shareUrl.value)
   window.open(
     `https://service.weibo.com/share/share.php?url=${url}&title=${text}`,
+    '_blank',
+  )
+}
+
+const shareToQZone = () => {
+  gtag('event', 'photo_share', {
+    photo_id: props.photo.id,
+    photo_title: props.photo.title || 'Untitled',
+    share_method: 'qzone',
+  })
+
+  const params = new URLSearchParams({
+    url: shareUrl.value,
+    title: shareText.value,
+    summary: props.photo.description || '',
+    pics: ogImageUrl.value,
+  })
+  window.open(
+    `https://sns.qzone.qq.com/cgi-bin/qzshare/cgi_qzshare_onekey?${params.toString()}`,
+    '_blank',
+  )
+}
+
+const shareToQQ = () => {
+  gtag('event', 'photo_share', {
+    photo_id: props.photo.id,
+    photo_title: props.photo.title || 'Untitled',
+    share_method: 'qq',
+  })
+
+  const params = new URLSearchParams({
+    url: shareUrl.value,
+    title: shareText.value,
+    summary: props.photo.description || '',
+    pics: ogImageUrl.value,
+  })
+  window.open(
+    `https://connect.qq.com/widget/shareqq/index.html?${params.toString()}`,
     '_blank',
   )
 }
@@ -315,6 +369,24 @@ const canNativeShare = computed(() => {
 // Social media platforms data
 const socialPlatforms = computed(() => [
   {
+    name: $t('ui.action.share.platforms.weibo'),
+    icon: 'tabler:brand-weibo',
+    color: 'text-red-500',
+    action: shareToWeibo,
+  },
+  {
+    name: $t('ui.action.share.platforms.qq'),
+    icon: 'tabler:brand-qq',
+    color: 'text-sky-500',
+    action: shareToQQ,
+  },
+  {
+    name: $t('ui.action.share.platforms.qzone'),
+    icon: 'tabler:star',
+    color: 'text-amber-500',
+    action: shareToQZone,
+  },
+  {
     name: $t('ui.action.share.platforms.twitter'),
     icon: 'tabler:brand-twitter',
     color: 'text-blue-500',
@@ -325,12 +397,6 @@ const socialPlatforms = computed(() => [
     icon: 'tabler:brand-telegram',
     color: 'text-blue-400',
     action: shareToTelegram,
-  },
-  {
-    name: $t('ui.action.share.platforms.weibo'),
-    icon: 'tabler:brand-weibo',
-    color: 'text-red-500',
-    action: shareToWeibo,
   },
   {
     name: $t('ui.action.share.platforms.facebook'),
@@ -388,7 +454,7 @@ defineShortcuts({
             duration: 0.3,
             bounce: 0.1,
           }"
-          class="relative mx-4 w-full max-w-md overflow-hidden rounded-2xl border border-white/10 bg-white/90 shadow-2xl backdrop-blur-2xl dark:bg-neutral-900/90"
+          class="relative mx-3 flex max-h-[calc(100dvh-1.5rem)] w-full max-w-2xl flex-col overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-2xl dark:border-neutral-800 dark:bg-neutral-900"
           @click.stop
         >
           <!-- Header -->
@@ -418,7 +484,7 @@ defineShortcuts({
           <!-- Content -->
           <div
             v-if="photo"
-            class="p-4"
+            class="overflow-y-auto p-4 sm:p-5"
           >
             <!-- Native Share (Mobile) -->
             <div
@@ -472,6 +538,29 @@ defineShortcuts({
                     icon="tabler:copy"
                     @click="copyLink"
                   />
+                </div>
+              </div>
+
+              <div
+                v-if="wechatQrCode"
+                class="flex items-center gap-4 border-y border-neutral-200 py-3 dark:border-neutral-800"
+              >
+                <img
+                  :src="wechatQrCode"
+                  :alt="$t('ui.action.share.platforms.wechat')"
+                  class="size-24 shrink-0 bg-white p-1"
+                />
+                <div class="min-w-0">
+                  <div class="flex items-center gap-2 font-medium">
+                    <Icon
+                      name="tabler:brand-wechat"
+                      class="size-5 text-green-600"
+                    />
+                    {{ $t('ui.action.share.platforms.wechat') }}
+                  </div>
+                  <p class="mt-1 text-sm text-neutral-500">
+                    {{ $t('ui.action.share.wechatHint') }}
+                  </p>
                 </div>
               </div>
 
@@ -537,7 +626,7 @@ defineShortcuts({
                   <!-- OG Image -->
                   <img
                     v-show="!ogImageLoading && !ogImageError"
-                    :key="`og-image-${props.photo.id}-${Date.now()}`"
+                    :key="`og-image-${props.photo.id}`"
                     :src="ogImageUrl"
                     :alt="$t('ui.action.share.ogImage.alt')"
                     class="w-full h-auto aspect-2/1 object-cover rounded"
@@ -549,12 +638,12 @@ defineShortcuts({
               </div>
 
               <!-- Social Platforms Grid -->
-              <div class="grid grid-cols-3 gap-3">
+              <div class="grid grid-cols-3 gap-2 sm:grid-cols-4">
                 <button
                   v-for="platform in socialPlatforms"
                   :key="platform.name"
                   type="button"
-                  class="cursor-pointer flex flex-col items-center justify-center gap-2 rounded-xl border border-neutral-200/50 bg-white/50 p-4 transition-all hover:scale-105 hover:border-neutral-300/50 hover:bg-white/70 dark:border-neutral-700/50 dark:bg-neutral-800/50 dark:hover:border-neutral-600/50 dark:hover:bg-neutral-700/50"
+                  class="flex min-h-20 cursor-pointer flex-col items-center justify-center gap-2 rounded-md border border-neutral-200 bg-white p-3 transition-colors hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-900 dark:hover:bg-neutral-800"
                   @click="platform.action"
                 >
                   <Icon

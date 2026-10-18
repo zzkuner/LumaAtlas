@@ -130,7 +130,14 @@ interface UploadingFile {
   error?: string
   warning?: string
   taskId?: number
-  signedUrlResponse?: { signedUrl: string; fileKey: string; expiresIn: number }
+  signedUrlResponse?: {
+    signedUrl: string
+    fileKey: string
+    photoId: string
+    expiresIn: number
+  }
+  targetAlbumIds?: number[]
+  albumAssignmentCompleted?: boolean
   uploadProgress?: {
     loaded: number
     total: number
@@ -274,10 +281,24 @@ const formattedCoordinates = computed(() => {
   }
 })
 
+const addPhotoToAlbums = async (photoId: string, albumIds: number[]) => {
+  if (!photoId || albumIds.length === 0) return
+
+  await $fetch('/api/photos/batch', {
+    method: 'PATCH',
+    body: {
+      photoIds: [photoId],
+      addToAlbumIds: albumIds,
+    },
+  })
+  await refreshAlbums()
+}
+
 const uploadImage = async (
   file: File,
   existingFileId?: string,
   eraseLocationOnUpload?: boolean,
+  targetAlbumIds: number[] = [],
 ) => {
   const fileName = file.name
   const fileId = existingFileId || `${Date.now()}-${fileName}`
@@ -294,6 +315,7 @@ const uploadImage = async (
       fileName,
       fileId,
       status: 'preparing',
+      targetAlbumIds: [...targetAlbumIds],
       canAbort: false,
       abortUpload: () => uploadManager.abortUpload(),
     }
@@ -303,6 +325,8 @@ const uploadImage = async (
     uploadingFile.status = 'preparing'
     uploadingFile.canAbort = false
     uploadingFile.warning = undefined
+    uploadingFile.targetAlbumIds = [...targetAlbumIds]
+    uploadingFile.albumAssignmentCompleted = false
     uploadingFile.abortUpload = () => uploadManager.abortUpload()
     uploadingFiles.value = new Map(uploadingFiles.value)
   }
@@ -336,6 +360,21 @@ const uploadImage = async (
           $t('upload.duplicate.skip.message', { fileName }),
         color: 'warning',
       })
+
+      if (signedUrlResponse.existingPhoto?.id && targetAlbumIds.length > 0) {
+        try {
+          await addPhotoToAlbums(
+            signedUrlResponse.existingPhoto.id,
+            targetAlbumIds,
+          )
+          uploadingFile.albumAssignmentCompleted = true
+        } catch (error) {
+          uploadingFile.warning = $t(
+            'dashboard.photos.slideover.options.albums.assignFailed',
+          )
+          console.error('Failed to add duplicate photo to albums:', error)
+        }
+      }
 
       uploadingFiles.value = new Map(uploadingFiles.value)
       return
@@ -501,6 +540,7 @@ const toast = useToast()
 const selectedFiles = ref<File[]>([])
 const isUploadSlideoverOpen = ref(false)
 const uploadEraseLocationEnabled = ref(systemUploadEraseLocationDefault.value)
+const uploadAlbumIds = ref<number[]>([])
 
 const hasSelectedFiles = computed(() => selectedFiles.value.length > 0)
 
@@ -533,11 +573,13 @@ watch(isUploadSlideoverOpen, (open) => {
   if (!open) {
     clearSelectedFiles()
     uploadEraseLocationEnabled.value = systemUploadEraseLocationDefault.value
+    uploadAlbumIds.value = []
   }
 })
 
 const openUploadSlideover = () => {
   uploadEraseLocationEnabled.value = systemUploadEraseLocationDefault.value
+  uploadAlbumIds.value = []
   isUploadSlideoverOpen.value = true
 }
 
@@ -781,6 +823,31 @@ const startTaskStatusCheck = (taskId: number, fileId: string) => {
         // 停止状态检查
         clearInterval(intervalId)
         statusIntervals.value.delete(taskId)
+
+        if (
+          uploadingFile.signedUrlResponse?.photoId &&
+          uploadingFile.targetAlbumIds?.length &&
+          !uploadingFile.albumAssignmentCompleted
+        ) {
+          try {
+            await addPhotoToAlbums(
+              uploadingFile.signedUrlResponse.photoId,
+              uploadingFile.targetAlbumIds,
+            )
+            uploadingFile.albumAssignmentCompleted = true
+          } catch (error) {
+            uploadingFile.warning = $t(
+              'dashboard.photos.slideover.options.albums.assignFailed',
+            )
+            toast.add({
+              title: $t(
+                'dashboard.photos.slideover.options.albums.assignFailed',
+              ),
+              color: 'warning',
+            })
+            console.error('Failed to add uploaded photo to albums:', error)
+          }
+        }
 
         // 不再显示单独的成功提示，由上传组件统一处理
 
@@ -1277,6 +1344,8 @@ const validateFile = (
 
 const handleUpload = async () => {
   const fileList = selectedFiles.value
+  const targetAlbumIds = [...uploadAlbumIds.value]
+  const eraseLocationOnUpload = uploadEraseLocationEnabled.value
 
   if (fileList.length === 0) {
     return
@@ -1355,6 +1424,7 @@ const handleUpload = async () => {
       fileName: file.name,
       fileId,
       status: 'waiting',
+      targetAlbumIds: [...targetAlbumIds],
       canAbort: false,
     }
     uploadingFiles.value.set(fileId, uploadingFile)
@@ -1362,6 +1432,17 @@ const handleUpload = async () => {
 
   // 触发队列更新
   uploadingFiles.value = new Map(uploadingFiles.value)
+
+  selectedFiles.value = []
+  isUploadSlideoverOpen.value = false
+  toast.add({
+    title: $t('dashboard.photos.slideover.queued', {
+      count: validFiles.length,
+    }),
+    description: $t('dashboard.photos.slideover.queuedDescription'),
+    color: 'success',
+    icon: 'lucide:upload-cloud',
+  })
 
   // 动态并发上传，始终保持 CONCURRENT_LIMIT 个文件在上传
   const CONCURRENT_LIMIT = 3 // 限制同时上传的文件数量
@@ -1374,7 +1455,7 @@ const handleUpload = async () => {
   const startUpload = async (file: File): Promise<void> => {
     const fileId = fileIdMapping.get(file)!
     try {
-      await uploadImage(file, fileId, uploadEraseLocationEnabled.value)
+      await uploadImage(file, fileId, eraseLocationOnUpload, targetAlbumIds)
     } catch (error: any) {
       errors.push(`${file.name}: ${error.message || '上传失败'}`)
       console.error('上传错误:', error)
@@ -1410,10 +1491,6 @@ const handleUpload = async () => {
   if (errors.length > 0) {
     console.error('批量上传错误详情:', errors)
   }
-
-  // 清空选中的文件
-  selectedFiles.value = []
-  isUploadSlideoverOpen.value = false
 }
 
 const openMetadataEditor = (photo: Photo) => {
@@ -2302,13 +2379,13 @@ onUnmounted(() => {
                 :file-delete="{ variant: 'soft', color: 'neutral' }"
                 :ui="{
                   root: 'w-full',
-                  base: 'group relative flex flex-col items-center justify-center gap-3 rounded-3xl border-2 border-dashed border-neutral-200/80 bg-white/90 px-6 py-12 text-center shadow-sm transition-all duration-300 hover:border-primary-400/80 hover:bg-primary-500/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/60 dark:border-neutral-700/70 dark:bg-neutral-900/80',
+                  base: 'group relative flex flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed border-neutral-200 bg-white px-6 py-10 text-center transition-colors hover:border-primary-400 hover:bg-primary-500/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/60 dark:border-neutral-700 dark:bg-neutral-900',
                   wrapper: 'flex flex-col items-center gap-2',
                   label:
                     'text-base font-semibold text-neutral-800 dark:text-neutral-100',
                   description: 'text-sm text-neutral-500 dark:text-neutral-400',
                   files: 'mt-2 flex w-full flex-col gap-2 overflow-y-auto',
-                  file: 'flex items-center justify-between gap-3 rounded-2xl border border-neutral-200/80 bg-white/80 px-4 py-3 text-left shadow-sm shadow-black/5 backdrop-blur-sm dark:border-neutral-800/80 dark:bg-neutral-900/70',
+                  file: 'flex items-center justify-between gap-3 rounded-md border border-neutral-200 bg-white px-4 py-3 text-left dark:border-neutral-800 dark:bg-neutral-900',
                   fileLeadingAvatar:
                     'ring-1 ring-white/80 dark:ring-neutral-800',
                   fileWrapper: 'min-w-0 flex-1',
@@ -2319,10 +2396,29 @@ onUnmounted(() => {
                 }"
               />
 
-              <UCard
-                variant="soft"
-                class="border border-neutral-200/80 dark:border-neutral-800/80"
+              <section
+                class="space-y-4 border-y border-neutral-200 py-4 dark:border-neutral-800"
               >
+                <UFormField
+                  :label="$t('dashboard.photos.slideover.options.albums.label')"
+                  :description="
+                    $t('dashboard.photos.slideover.options.albums.description')
+                  "
+                >
+                  <USelectMenu
+                    v-model="uploadAlbumIds"
+                    :items="albumOptions"
+                    multiple
+                    value-key="value"
+                    class="w-full"
+                    :placeholder="
+                      $t(
+                        'dashboard.photos.slideover.options.albums.placeholder',
+                      )
+                    "
+                  />
+                </UFormField>
+
                 <div class="flex items-start justify-between gap-4">
                   <div class="space-y-1">
                     <p
@@ -2344,7 +2440,7 @@ onUnmounted(() => {
                   </div>
                   <USwitch v-model="uploadEraseLocationEnabled" />
                 </div>
-              </UCard>
+              </section>
             </div>
           </template>
 

@@ -451,12 +451,27 @@ export class SettingsManager {
 
     async updateProvider(
       id: number,
-      providerConfig: Partial<NewSettingStorageProvider['config']>,
+      providerConfig: {
+        name?: string
+        provider?: NewSettingStorageProvider['provider']
+        config?: Partial<NewSettingStorageProvider['config']>
+      },
     ): Promise<void> {
       const db = useDB()
+      const existing = await this.getProviderById(id)
+      if (!existing) return
+
       db.update(tables.settings_storage_providers)
         .set({
-          ...providerConfig,
+          name: providerConfig.name ?? existing.name,
+          provider: providerConfig.provider ?? existing.provider,
+          config: providerConfig.config
+            ? ({
+                ...existing.config,
+                ...providerConfig.config,
+              } as NewSettingStorageProvider['config'])
+            : existing.config,
+          updatedAt: new Date(),
         })
         .where(eq(tables.settings_storage_providers.id, id))
         .run()

@@ -19,7 +19,6 @@ export default defineNuxtConfig({
     '@nuxtjs/i18n',
     'nuxt-mapbox',
     'nuxt-maplibre',
-    'nuxt-og-image',
     'nuxt-gtag',
   ],
 
@@ -155,6 +154,7 @@ export default defineNuxtConfig({
         'dayjs/plugin/isBetween',
         '@yeger/vue-masonry-wall',
         'motion-v',
+        'qrcode',
         'swiper/vue',
         'swiper/modules',
         'tailwind-merge',
@@ -242,10 +242,6 @@ export default defineNuxtConfig({
 
   fonts: {
     provider: 'local',
-  },
-
-  ogImage: {
-    fonts: ['Rubik:400', 'Rubik:700', 'Noto+Sans+SC:400', 'Noto+Sans+SC:700'],
   },
 
   dayjs: {

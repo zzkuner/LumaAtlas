@@ -129,7 +129,7 @@ const clearAllFiles = () => {
 <template>
   <div
     v-if="uploadingFiles.size > 0"
-    class="fixed bottom-2 inset-x-2 sm:inset-x-6 sm:bottom-6 sm:left-auto z-50 min-w-sm sm:w-md"
+    class="fixed inset-x-2 bottom-2 z-50 min-w-0 sm:inset-x-auto sm:right-6 sm:bottom-6 sm:w-md"
   >
     <motion.div
       class="bg-white dark:bg-neutral-900 rounded-xl shadow-2xl border border-neutral-200 dark:border-neutral-700 overflow-hidden"
@@ -293,12 +293,10 @@ const clearAllFiles = () => {
         <motion.div
           v-if="
             !isCollapsed &&
-              (
-                stats.completed > 0 ||
-                stats.error > 0 ||
-                stats.skipped > 0 ||
-                stats.blocked > 0
-              )
+            (stats.completed > 0 ||
+              stats.error > 0 ||
+              stats.skipped > 0 ||
+              stats.blocked > 0)
           "
           :initial="{ opacity: 0, scaleY: 0 }"
           :animate="{ opacity: 1, scaleY: 1 }"
@@ -309,9 +307,8 @@ const clearAllFiles = () => {
         >
           <div class="flex items-center justify-between gap-2">
             <div class="text-xs text-neutral-500 dark:text-neutral-400">
-              {{ stats.completed }} 完成, {{ stats.error }} 失败, {{
-                stats.skipped
-              }} 跳过, {{ stats.blocked }} 阻止
+              {{ stats.completed }} 完成, {{ stats.error }} 失败,
+              {{ stats.skipped }} 跳过, {{ stats.blocked }} 阻止
             </div>
 
             <div class="flex items-center gap-0.5">

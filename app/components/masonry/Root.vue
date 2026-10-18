@@ -489,7 +489,7 @@ watch(currentPhotoIndex, (newIndex) => {
 
     <div
       v-if="moduleVisible('gallery')"
-      class="mx-auto px-3 pb-3 sm:px-5 sm:pb-5 lg:px-7 lg:pb-7"
+      class="mx-auto w-full px-3 pb-3 sm:px-5 sm:pb-5 lg:px-7 lg:pb-7"
       :style="{ maxWidth: galleryMaxWidth, order: moduleOrder('gallery') }"
     >
       <div class="relative">

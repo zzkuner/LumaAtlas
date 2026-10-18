@@ -179,6 +179,9 @@
           "twitter": "Twitter",
           "telegram": "Telegram",
           "weibo": "微博",
+          "wechat": "微信",
+          "qq": "QQ",
+          "qzone": "QQ 空间",
           "facebook": "Facebook",
           "whatsapp": "WhatsApp",
           "linkedin": "LinkedIn"
@@ -214,6 +217,7 @@
           "loading": "加载中...",
           "loadError": "加载失败"
         },
+        "wechatHint": "使用微信扫描二维码分享",
         "fallback": {
           "photoTitle": "美丽的照片"
         },
@@ -786,6 +790,12 @@
             "label": "上传时抹除位置信息",
             "description": "本次上传将覆盖系统默认值，可随时开启或关闭。"
           },
+          "albums": {
+            "label": "直接加入相册",
+            "description": "照片处理完成后会自动加入所选相册，可多选。",
+            "placeholder": "不指定相册",
+            "assignFailed": "照片已上传，但加入相册失败"
+          },
           "duplicateCheck": {
             "label": "重复文件处理策略",
             "descriptionEnabled": "当前已启用重复检测，上传时会按所选模式处理同名文件。",
@@ -802,7 +812,9 @@
         "footer": {
           "noSelection": "请选择要上传的照片",
           "prepared": "{count} 个文件 · {size}"
-        }
+        },
+        "queued": "已开始上传 {count} 个文件",
+        "queuedDescription": "窗口已收起，可在页面底部查看上传和处理进度。"
       },
       "delete": {
         "single": {
@@ -976,6 +988,9 @@
         "descriptionPlaceholder": "输入相册描述（可选）",
         "coverPhoto": "相册封面",
         "addCoverPhoto": "添加封面照片",
+        "changeCoverPhoto": "更换封面",
+        "removeCoverPhoto": "移除封面",
+        "removePhoto": "从相册移除照片",
         "selectPhotos": "选择照片",
         "editPhotos": "修改照片选择",
         "selectedCount": "已选择 {count} 张照片",
@@ -1333,6 +1348,10 @@
           "showStats": {
             "label": "显示照片统计",
             "description": "在相册上方显示照片数量和日期范围"
+          },
+          "showPhotoInfo": {
+            "label": "显示图片信息",
+            "description": "在图片上显示标题、时间、地点和相机参数"
           },
           "showExploreNav": {
             "label": "显示发现入口",

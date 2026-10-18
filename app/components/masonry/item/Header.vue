@@ -18,6 +18,9 @@ const siteTitle = computed(() => String(getSetting('app:title') || 'LumaAtlas'))
 const siteDescription = computed(() =>
   String(getSetting('app:description') || ''),
 )
+const siteAuthor = computed(() => String(getSetting('app:author') || ''))
+const siteSlogan = computed(() => String(getSetting('app:slogan') || ''))
+const avatarUrl = computed(() => String(getSetting('app:avatarUrl') || ''))
 const homeStyle = computed(() =>
   String(getSetting('app:appearance.home.style') || 'minimal'),
 )
@@ -28,6 +31,14 @@ const showSlogan = computed(
 const showStats = computed(
   () => getSetting('app:appearance.home.showStats') !== false,
 )
+const introTitle = computed(
+  () => siteAuthor.value || (showSlogan.value ? siteSlogan.value : ''),
+)
+const introCopy = computed(() => {
+  if (siteAuthor.value && showSlogan.value) return siteSlogan.value
+  return isEditorial.value ? siteDescription.value : ''
+})
+const showIntro = computed(() => Boolean(introTitle.value || introCopy.value))
 const showGlobeNav = computed(
   () => getSetting('app:appearance.home.showGlobeNav') !== false,
 )
@@ -118,7 +129,7 @@ const { openCommandPalette } = useCommandPalette()
 <template>
   <header class="w-full">
     <div
-      class="mx-auto px-3 pt-6 pb-5 sm:px-5 sm:pt-8 lg:px-7"
+      class="mx-auto px-3 py-4 sm:px-5 lg:px-7"
       :style="{ maxWidth: maxWidth || '1600px' }"
     >
       <AuthState>
@@ -329,7 +340,7 @@ const { openCommandPalette } = useCommandPalette()
           </div>
 
           <nav
-            class="mt-5 flex items-center gap-6 overflow-x-auto border-t border-neutral-200 pt-4 text-sm font-medium text-neutral-500 sm:hidden dark:border-neutral-800 dark:text-neutral-400"
+            class="mt-3 flex items-center gap-6 overflow-x-auto border-t border-neutral-200 pt-3 text-sm font-medium text-neutral-500 sm:hidden dark:border-neutral-800 dark:text-neutral-400"
             :aria-label="$t('title.gallery')"
           >
             <NuxtLink
@@ -349,37 +360,32 @@ const { openCommandPalette } = useCommandPalette()
           </nav>
 
           <div
-            class="mt-8 flex flex-col gap-4 border-t border-neutral-200 pt-5 sm:mt-10 sm:flex-row sm:items-end sm:justify-between dark:border-neutral-800"
+            v-if="showIntro || showStats"
+            class="mt-3 flex flex-col gap-3 border-t border-neutral-200 pt-3 sm:flex-row sm:items-center sm:justify-between dark:border-neutral-800"
           >
-            <div class="flex min-w-0 items-center gap-4">
+            <div
+              v-if="showIntro"
+              class="flex min-w-0 items-center gap-3"
+            >
               <img
-                v-if="isEditorial && getSetting('app:avatarUrl')"
-                :src="String(getSetting('app:avatarUrl'))"
-                :alt="String(getSetting('app:author') || siteTitle)"
-                class="size-14 shrink-0 rounded-full object-cover"
+                v-if="avatarUrl"
+                :src="avatarUrl"
+                :alt="siteAuthor || siteTitle"
+                class="size-9 shrink-0 rounded-full object-cover"
               />
               <div class="min-w-0">
                 <p
-                  :class="
-                    isEditorial
-                      ? 'text-xl font-semibold text-neutral-950 sm:text-2xl dark:text-white'
-                      : 'text-sm font-medium text-neutral-950 dark:text-white'
-                  "
+                  v-if="introTitle"
+                  class="truncate text-sm font-medium text-neutral-950 dark:text-white"
                   :style="{ fontFamily: 'var(--la-heading-font)' }"
                 >
-                  {{ isEditorial ? siteTitle : $t('title.gallery') }}
+                  {{ introTitle }}
                 </p>
                 <p
-                  v-if="showSlogan && getSetting('app:slogan')"
-                  class="mt-1 text-sm text-neutral-500 dark:text-neutral-400"
+                  v-if="introCopy"
+                  class="mt-0.5 line-clamp-1 text-xs text-neutral-500 dark:text-neutral-400"
                 >
-                  {{ getSetting('app:slogan') }}
-                </p>
-                <p
-                  v-if="isEditorial && siteDescription"
-                  class="mt-2 max-w-2xl text-sm leading-6 text-neutral-600 dark:text-neutral-400"
-                >
-                  {{ siteDescription }}
+                  {{ introCopy }}
                 </p>
               </div>
             </div>

@@ -176,13 +176,16 @@ const openDeleteConfirm = (album: AlbumItem) => {
 const onFormSubmit = async (event: FormSubmitEvent<AlbumFormState>) => {
   isSubmittingForm.value = true
   try {
+    const resolvedCoverPhotoId =
+      coverPhotoId.value || selectedPhotoIds.value[0] || undefined
+
     if (currentAlbum.value) {
       await $fetch(`/api/albums/${currentAlbum.value.id}`, {
         method: 'PUT',
         body: {
           title: event.data.title,
           description: event.data.description || undefined,
-          coverPhotoId: coverPhotoId.value || undefined,
+          coverPhotoId: resolvedCoverPhotoId,
           photoIds: selectedPhotoIds.value,
           visibility: event.data.visibility,
         },
@@ -200,7 +203,7 @@ const onFormSubmit = async (event: FormSubmitEvent<AlbumFormState>) => {
         body: {
           title: event.data.title,
           description: event.data.description || undefined,
-          coverPhotoId: coverPhotoId.value || undefined,
+          coverPhotoId: resolvedCoverPhotoId,
           photoIds: selectedPhotoIds.value,
           visibility: event.data.visibility,
         },
@@ -264,6 +267,20 @@ const togglePhotoSelection = (photoId: string) => {
   }
 }
 
+const setCoverPhoto = (photoId: string) => {
+  if (!selectedPhotoIds.value.includes(photoId)) return
+  coverPhotoId.value = photoId
+}
+
+const clearSelectedPhotos = () => {
+  selectedPhotoIds.value = []
+  coverPhotoId.value = ''
+}
+
+const clearCoverPhoto = () => {
+  coverPhotoId.value = ''
+}
+
 const openPhotoSelector = () => {
   draftSelectedPhotoIds.value = [...selectedPhotoIds.value]
   draftCoverPhotoId.value =
@@ -285,7 +302,7 @@ const confirmPhotoSelection = () => {
     draftCoverPhotoId.value,
   )
     ? draftCoverPhotoId.value
-    : ''
+    : draftSelectedPhotoIds.value[0] || ''
   isPhotoSelectorOpen.value = false
 }
 
@@ -618,15 +635,32 @@ const columns: any[] = [
                 :alt="coverPhotoId"
                 class="absolute inset-0 w-full h-full object-cover"
               />
-              <button
-                class="absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center"
-                @click="coverPhotoId = ''"
+              <div
+                class="absolute inset-x-0 bottom-0 flex items-center justify-between bg-linear-to-t from-black/70 to-transparent px-4 pb-3 pt-10"
               >
-                <Icon
-                  name="tabler:x"
-                  class="text-white"
-                />
-              </button>
+                <span class="text-sm font-medium text-white">{{
+                  $t('dashboard.albums.form.coverPhoto')
+                }}</span>
+                <div class="flex items-center gap-2">
+                  <UButton
+                    size="sm"
+                    color="neutral"
+                    variant="solid"
+                    icon="lucide:images"
+                    @click="openPhotoSelector"
+                  >
+                    {{ $t('dashboard.albums.form.changeCoverPhoto') }}
+                  </UButton>
+                  <UButton
+                    size="sm"
+                    color="neutral"
+                    variant="solid"
+                    icon="lucide:x"
+                    :aria-label="$t('dashboard.albums.form.removeCoverPhoto')"
+                    @click="clearCoverPhoto"
+                  />
+                </div>
+              </div>
             </div>
             <button
               v-else
@@ -725,7 +759,7 @@ const columns: any[] = [
                       color="neutral"
                       size="xs"
                       icon="tabler:trash"
-                      @click="selectedPhotoIds = []"
+                      @click="clearSelectedPhotos"
                     >
                       {{ $t('dashboard.albums.form.clearAll') }}
                     </UButton>
@@ -737,7 +771,7 @@ const columns: any[] = [
                     <div
                       v-for="photoId in selectedPhotoIds"
                       :key="photoId"
-                      class="relative group aspect-square rounded-lg overflow-hidden bg-gray-200 dark:bg-neutral-700"
+                      class="relative aspect-square overflow-hidden rounded-md bg-gray-200 dark:bg-neutral-700"
                     >
                       <img
                         :src="
@@ -750,20 +784,34 @@ const columns: any[] = [
 
                       <div
                         v-if="coverPhotoId === photoId"
-                        class="absolute top-1 left-1 bg-primary-500 text-white px-1.5 py-0.5 rounded text-xs font-medium"
+                        class="absolute inset-x-1 bottom-1 flex items-center gap-1 rounded-sm bg-black/70 px-1.5 py-1 text-[10px] font-medium text-white"
                       >
+                        <Icon
+                          name="lucide:star"
+                          class="size-3"
+                        />
                         {{ $t('dashboard.albums.modal.setCover') }}
                       </div>
 
-                      <button
-                        class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
-                        @click="togglePhotoSelection(photoId)"
-                      >
-                        <Icon
-                          name="tabler:x"
-                          class="text-white"
+                      <div class="absolute right-1 top-1 flex gap-1">
+                        <UButton
+                          v-if="coverPhotoId !== photoId"
+                          size="xs"
+                          color="neutral"
+                          variant="solid"
+                          icon="lucide:star"
+                          :aria-label="$t('dashboard.albums.modal.setCover')"
+                          @click="setCoverPhoto(photoId)"
                         />
-                      </button>
+                        <UButton
+                          size="xs"
+                          color="neutral"
+                          variant="solid"
+                          icon="lucide:x"
+                          :aria-label="$t('dashboard.albums.form.removePhoto')"
+                          @click="togglePhotoSelection(photoId)"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>

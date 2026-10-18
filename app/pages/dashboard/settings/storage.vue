@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { UChip, UButton } from '#components'
+import { UBadge, UButton, UChip } from '#components'
 import type { TableColumn } from '@nuxt/ui'
 import {
   s3StorageConfigSchema,
@@ -62,6 +62,22 @@ const PROVIDER_ICON = {
   openlist: 'tabler:cloud',
 }
 
+const PROVIDER_LABEL = {
+  s3: 'S3 兼容存储',
+  local: '本地存储',
+  openlist: 'OpenList',
+}
+
+const isActiveProvider = (provider: SettingStorageProvider) =>
+  currentStorageProvider.value?.value === provider.id
+
+const getProviderDisplayName = (provider: SettingStorageProvider) => {
+  if (/^Migrated\s+.+\s+Provider$/i.test(provider.name)) {
+    return PROVIDER_LABEL[provider.provider] || provider.name
+  }
+  return provider.name
+}
+
 const availableStorageColumns: TableColumn<SettingStorageProvider>[] = [
   {
     accessorKey: 'status',
@@ -85,8 +101,29 @@ const availableStorageColumns: TableColumn<SettingStorageProvider>[] = [
       })
     },
   },
-  { accessorKey: 'name', header: '存储名称' },
-  { accessorKey: 'provider', header: '存储类型' },
+  {
+    accessorKey: 'name',
+    header: '存储名称',
+    cell: (cell) =>
+      h('div', { class: 'flex items-center gap-2' }, [
+        h('span', getProviderDisplayName(cell.row.original)),
+        ...(isActiveProvider(cell.row.original)
+          ? [
+              h(
+                UBadge,
+                { color: 'success', variant: 'soft', size: 'sm' },
+                { default: () => '当前使用' },
+              ),
+            ]
+          : []),
+      ]),
+  },
+  {
+    accessorKey: 'provider',
+    header: '存储类型',
+    cell: (cell) =>
+      PROVIDER_LABEL[cell.row.original.provider] || cell.row.original.provider,
+  },
   {
     accessorKey: 'actions',
     header: '操作',
@@ -503,7 +540,7 @@ const onStorageDelete = async (storageId: number) => {
                 :items="
                   availableStorage?.map((item) => ({
                     icon: PROVIDER_ICON[item.provider] || 'tabler:database',
-                    label: item.name,
+                    label: `${getProviderDisplayName(item)}${isActiveProvider(item) ? ' · 当前使用' : ''}`,
                     value: item.id,
                   }))
                 "
@@ -671,6 +708,12 @@ const onStorageDelete = async (storageId: number) => {
               </USlideover>
             </div>
           </header>
+          <p
+            class="border-b border-neutral-200 px-5 py-3 text-sm leading-6 text-neutral-600 dark:border-neutral-800 dark:text-neutral-400"
+          >
+            安装时创建的本地存储就是当前照片目录，可直接使用。只有要更换磁盘目录或接入
+            S3、OpenList 时，才需要添加新的存储方案。
+          </p>
 
           <div
             v-if="availableStorageStatus !== 'success' && !availableStorage"

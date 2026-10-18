@@ -175,6 +175,9 @@
           "twitter": "Twitter",
           "telegram": "Telegram",
           "weibo": "Weibo",
+          "wechat": "WeChat",
+          "qq": "QQ",
+          "qzone": "Qzone",
           "facebook": "Facebook",
           "whatsapp": "WhatsApp",
           "linkedin": "LinkedIn"
@@ -210,6 +213,7 @@
           "loading": "Loading...",
           "loadError": "Failed to load"
         },
+        "wechatHint": "Scan with WeChat to share",
         "fallback": {
           "photoTitle": "Beautiful Photo"
         },
@@ -784,6 +788,12 @@
             "label": "Erase location info on upload",
             "description": "This upload can override the system default and be toggled on or off anytime."
           },
+          "albums": {
+            "label": "Add directly to albums",
+            "description": "Photos are added to the selected albums after processing. Multiple albums are supported.",
+            "placeholder": "No album",
+            "assignFailed": "Photo uploaded, but could not be added to the album"
+          },
           "duplicateCheck": {
             "label": "Duplicate file strategy",
             "descriptionEnabled": "Duplicate detection is enabled and same-name files will follow the selected handling mode.",
@@ -800,7 +810,9 @@
         "footer": {
           "noSelection": "Please select photos to upload",
           "prepared": "{count} file(s) · {size}"
-        }
+        },
+        "queued": "Uploading {count} file(s)",
+        "queuedDescription": "The panel is closed. Follow upload and processing progress at the bottom of the page."
       },
       "delete": {
         "single": {
@@ -974,6 +986,9 @@
         "descriptionPlaceholder": "Enter album description (optional)",
         "coverPhoto": "Album Cover",
         "addCoverPhoto": "Add cover photo",
+        "changeCoverPhoto": "Change Cover",
+        "removeCoverPhoto": "Remove Cover",
+        "removePhoto": "Remove Photo from Album",
         "selectPhotos": "Select Photos",
         "editPhotos": "Edit photo selection",
         "selectedCount": "Selected {count} photos",
@@ -1329,6 +1344,10 @@
           "showStats": {
             "label": "Show Photo Summary",
             "description": "Display the photo count and date range above the gallery"
+          },
+          "showPhotoInfo": {
+            "label": "Show Photo Information",
+            "description": "Display titles, dates, locations and camera details with photos"
           },
           "showExploreNav": {
             "label": "Show Explore Navigation",

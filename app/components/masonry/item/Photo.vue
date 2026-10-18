@@ -68,6 +68,9 @@ const displayAspectRatio = computed(() => {
 })
 
 const isFeed = computed(() => props.presentation === 'feed')
+const showPhotoInfo = computed(
+  () => getSetting('app:appearance.home.showPhotoInfo') === true,
+)
 const thumbnailSizes = computed(() =>
   isFeed.value
     ? '(max-width: 1024px) 100vw, 960px'
@@ -571,6 +574,7 @@ onUnmounted(() => {
 
       <!-- Overlay -->
       <div
+        v-if="showPhotoInfo"
         class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300"
       />
 
@@ -585,7 +589,7 @@ onUnmounted(() => {
 
       <!-- Photo info overlay (bottom) -->
       <motion.div
-        v-if="!isFeed"
+        v-if="showPhotoInfo && !isFeed"
         v-show="shouldShowInfoOverlay"
         class="absolute bottom-0 left-0 right-0 bg-linear-to-t from-black/60 to-transparent p-3"
         :initial="{ y: '100%', opacity: 0 }"
@@ -712,7 +716,7 @@ onUnmounted(() => {
     </div>
 
     <div
-      v-if="isFeed"
+      v-if="showPhotoInfo && isFeed"
       class="flex flex-col gap-2 border-b border-neutral-200 py-4 sm:flex-row sm:items-start sm:justify-between dark:border-neutral-800"
     >
       <div class="min-w-0">

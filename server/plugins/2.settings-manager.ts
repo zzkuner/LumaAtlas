@@ -20,6 +20,9 @@ export default defineNitroPlugin(async (_nitroApp) => {
     // Note: Storage manager will be initialized in the next plugin (2_storage.ts)
     await migrateRuntimeConfigToSettings()
 
+    // Replace the technical migration label used by older installations.
+    await normalizeLegacyStorageProviderNames()
+
     // Sync GitHub OAuth credentials from settings to process.env for auth-utils.
     await syncGithubOAuthEnvFromSettings()
   } finally {
@@ -105,7 +108,13 @@ async function migrateRuntimeConfigToSettings() {
     for (const [key, value] of Object.entries(githubOauthSettings)) {
       if (typeof value === 'string' && value.length > 0) {
         try {
-          await settingsManager.set('system', key as any, value, undefined, true)
+          await settingsManager.set(
+            'system',
+            key as any,
+            value,
+            undefined,
+            true,
+          )
           _logger.debug(`Migrated system.${key}`)
         } catch (error) {
           _logger.warn(`Failed to migrate system.${key}:`, error)
@@ -134,7 +143,8 @@ async function migrateRuntimeConfigToSettings() {
         } else {
           try {
             // Check if a provider of the same type already exists
-            const existingProviders = await settingsManager.storage.getProviders()
+            const existingProviders =
+              await settingsManager.storage.getProviders()
             const sameTypeProviderExists = existingProviders.some(
               (provider) => provider.provider === storageProvider,
             )
@@ -145,7 +155,8 @@ async function migrateRuntimeConfigToSettings() {
               )
             } else {
               // Create a storage provider from the current configuration
-              const providerName = `Migrated ${storageProvider} Provider`
+              const providerName =
+                getDefaultStorageProviderName(storageProvider)
 
               const providerId = await settingsManager.storage.addProvider({
                 name: providerName,
@@ -175,6 +186,28 @@ async function migrateRuntimeConfigToSettings() {
     _logger.info('Configuration migration completed')
   } catch (error) {
     _logger.error('Failed to migrate configurations:', error)
+  }
+}
+
+function getDefaultStorageProviderName(provider: string): string {
+  return (
+    {
+      local: 'Local storage',
+      s3: 'S3 storage',
+      openlist: 'OpenList storage',
+    }[provider] || `${provider} storage`
+  )
+}
+
+async function normalizeLegacyStorageProviderNames() {
+  const providers = await settingsManager.storage.getProviders()
+
+  for (const provider of providers) {
+    if (!/^Migrated\s+.+\s+Provider$/i.test(provider.name)) continue
+
+    await settingsManager.storage.updateProvider(provider.id, {
+      name: getDefaultStorageProviderName(provider.provider),
+    })
   }
 }
 
@@ -281,9 +314,9 @@ function isRuntimeProviderConfigUsable(config: any): boolean {
     case 's3':
       return Boolean(
         config.endpoint &&
-          config.bucket &&
-          config.accessKeyId &&
-          config.secretAccessKey,
+        config.bucket &&
+        config.accessKeyId &&
+        config.secretAccessKey,
       )
     case 'local':
       return Boolean(config.basePath)

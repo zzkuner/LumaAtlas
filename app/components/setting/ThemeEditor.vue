@@ -125,6 +125,7 @@ const presets: Record<string, Record<string, unknown>> = {
     'appearance.home.maxColumns': 6,
     'appearance.home.showSlogan': true,
     'appearance.home.showStats': true,
+    'appearance.home.showPhotoInfo': false,
     'appearance.home.accentColor': '#171717',
     'appearance.home.surfaceStyle': 'clean',
     'appearance.home.cornerRadius': 2,
@@ -140,6 +141,7 @@ const presets: Record<string, Record<string, unknown>> = {
     'appearance.home.maxColumns': 5,
     'appearance.home.showSlogan': false,
     'appearance.home.showStats': true,
+    'appearance.home.showPhotoInfo': false,
     'appearance.home.accentColor': '#171717',
     'appearance.home.surfaceStyle': 'soft',
     'appearance.home.cornerRadius': 0,
@@ -155,6 +157,7 @@ const presets: Record<string, Record<string, unknown>> = {
     'appearance.home.maxColumns': 3,
     'appearance.home.showSlogan': true,
     'appearance.home.showStats': true,
+    'appearance.home.showPhotoInfo': false,
     'appearance.home.accentColor': '#9f3f33',
     'appearance.home.surfaceStyle': 'clean',
     'appearance.home.cornerRadius': 4,
@@ -567,7 +570,7 @@ const updateSocial = (key: string, value: string) => {
             </label>
           </div>
 
-          <div class="grid gap-3 sm:grid-cols-2">
+          <div class="grid gap-3 sm:grid-cols-3">
             <label
               class="flex items-center justify-between border-y border-neutral-200 py-3 text-sm dark:border-neutral-800"
             >
@@ -591,6 +594,19 @@ const updateSocial = (key: string, value: string) => {
                 "
                 @update:model-value="
                   update('appearance.home.showStats', $event)
+                "
+              />
+            </label>
+            <label
+              class="flex items-center justify-between border-y border-neutral-200 py-3 text-sm dark:border-neutral-800"
+            >
+              <span>显示图片信息</span>
+              <USwitch
+                :model-value="
+                  setting('appearance.home.showPhotoInfo', false) === true
+                "
+                @update:model-value="
+                  update('appearance.home.showPhotoInfo', $event)
                 "
               />
             </label>

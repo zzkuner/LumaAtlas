@@ -19,17 +19,21 @@ const currentPhoto = computed(() =>
   photos.value.find((photo) => photo.id === photoId.value),
 )
 
-defineOgImageComponent('Photo', {
-  headline: currentPhoto.value ? 'PHOTO' : 'LumaAtlas',
-  title: currentPhoto.value?.title || getSetting('app:title'),
-  description: currentPhoto.value
-    ? currentPhoto.value.description
-    : getSetting('app:description') || getSetting('app:slogan'),
-  thumbnailJpegUrl:
-    currentPhoto.value && currentPhoto.value.thumbnailKey
-      ? `/thumb/${encodeURIComponent(currentPhoto.value.thumbnailUrl || '')}`
-      : undefined,
-  photo: currentPhoto.value || undefined,
+const requestUrl = useRequestURL()
+const shareImageUrl = computed(() =>
+  currentPhoto.value
+    ? `${requestUrl.origin}/api/photos/${encodeURIComponent(currentPhoto.value.id)}/share-card`
+    : undefined,
+)
+
+useSeoMeta({
+  ogTitle: () => currentPhoto.value?.title || String(getSetting('app:title')),
+  ogDescription: () =>
+    currentPhoto.value?.description ||
+    String(getSetting('app:description') || getSetting('app:slogan') || ''),
+  ogImage: () => shareImageUrl.value,
+  twitterCard: 'summary_large_image',
+  twitterImage: () => shareImageUrl.value,
 })
 
 // 处理标签查询参数

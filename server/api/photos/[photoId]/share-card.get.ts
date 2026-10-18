@@ -1,5 +1,5 @@
 import sharp from 'sharp'
-import { and, eq, notInArray } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 
 import { tables, useDB } from '~~/server/utils/db'
 import { useStorageProvider } from '~~/server/utils/useStorageProvider'
@@ -14,21 +14,10 @@ export default defineEventHandler(async (event) => {
   }
 
   const db = useDB()
-  const hiddenPhotoIds = db
-    .select({ photoId: tables.albumPhotos.photoId })
-    .from(tables.albumPhotos)
-    .innerJoin(tables.albums, eq(tables.albumPhotos.albumId, tables.albums.id))
-    .where(eq(tables.albums.isHidden, true))
-    .all()
-    .map((row) => row.photoId)
-  const visibilityCondition =
-    hiddenPhotoIds.length > 0
-      ? and(
-          eq(tables.photos.id, photoId),
-          eq(tables.photos.isVisible, true),
-          notInArray(tables.photos.id, hiddenPhotoIds),
-        )
-      : and(eq(tables.photos.id, photoId), eq(tables.photos.isVisible, true))
+  const visibilityCondition = and(
+    eq(tables.photos.id, photoId),
+    eq(tables.photos.isVisible, true),
+  )
 
   const photo = db
     .select({

@@ -1,4 +1,4 @@
-import { and, count, desc, eq, notInArray } from 'drizzle-orm'
+import { count, desc, eq } from 'drizzle-orm'
 import { z } from 'zod'
 
 export default eventHandler(async (event) => {
@@ -11,25 +11,9 @@ export default eventHandler(async (event) => {
     }).parse,
   )
 
-  // 获取所有隐藏相册中的照片ID
-  const hiddenAlbumPhotos = db
-    .select({
-      photoId: tables.albumPhotos.photoId,
-    })
-    .from(tables.albumPhotos)
-    .innerJoin(tables.albums, eq(tables.albumPhotos.albumId, tables.albums.id))
-    .where(eq(tables.albums.isHidden, true))
-    .all()
-
-  const hiddenPhotoIds = hiddenAlbumPhotos.map((row) => row.photoId)
-
-  const visibilityCondition =
-    hiddenPhotoIds.length > 0
-      ? and(
-          eq(tables.photos.isVisible, true),
-          notInArray(tables.photos.id, hiddenPhotoIds),
-        )
-      : eq(tables.photos.isVisible, true)
+  // Album visibility controls album discovery. Photo visibility independently
+  // controls whether the image appears in the public gallery.
+  const visibilityCondition = eq(tables.photos.isVisible, true)
 
   setResponseHeaders(event, {
     'Cache-Control': 'public, max-age=30, stale-while-revalidate=120',

@@ -1,4 +1,4 @@
-import { and, desc, eq, notInArray } from 'drizzle-orm'
+import { and, desc, eq } from 'drizzle-orm'
 
 import { settingsManager } from '~~/server/services/settings/settingsManager'
 import { tables, useDB } from '~~/server/utils/db'
@@ -69,14 +69,6 @@ export default eventHandler(async (event) => {
     `${title} photo feed`
 
   const db = useDB()
-  const hiddenPhotoIds = db
-    .select({ photoId: tables.albumPhotos.photoId })
-    .from(tables.albumPhotos)
-    .innerJoin(tables.albums, eq(tables.albumPhotos.albumId, tables.albums.id))
-    .where(eq(tables.albums.isHidden, true))
-    .all()
-    .map((row) => row.photoId)
-
   const photos = db
     .select()
     .from(tables.photos)
@@ -84,9 +76,6 @@ export default eventHandler(async (event) => {
       and(
         eq(tables.photos.isVisible, true),
         source === 'featured' ? eq(tables.photos.isFeatured, true) : undefined,
-        hiddenPhotoIds.length > 0
-          ? notInArray(tables.photos.id, hiddenPhotoIds)
-          : undefined,
       ),
     )
     .orderBy(desc(tables.photos.dateTaken), desc(tables.photos.lastModified))

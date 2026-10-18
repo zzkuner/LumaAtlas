@@ -63,6 +63,11 @@ const isLayoutSelected = (value: string) => {
     ? current === 'big' || current === 'feed'
     : current === value
 }
+
+const gridImageRatio = computed(() => {
+  const value = String(setting('appearance.home.imageRatio', 'square'))
+  return value === 'landscape' ? 'landscape' : 'square'
+})
 </script>
 
 <template>
@@ -187,11 +192,11 @@ const isLayoutSelected = (value: string) => {
           </label>
           <label class="block">
             <span class="mb-2 block text-xs font-medium text-neutral-500"
-              >缩略图比例</span
+              >方格图片比例</span
             >
             <select
               class="h-9 w-full rounded-md border border-neutral-300 bg-white px-3 text-sm dark:border-neutral-700 dark:bg-neutral-950"
-              :value="setting('appearance.home.imageRatio', 'natural')"
+              :value="gridImageRatio"
               @change="
                 update(
                   'appearance.home.imageRatio',
@@ -199,7 +204,6 @@ const isLayoutSelected = (value: string) => {
                 )
               "
             >
-              <option value="natural">保持原比例</option>
               <option value="square">正方形</option>
               <option value="landscape">横向 4:3</option>
             </select>
@@ -261,7 +265,7 @@ const isLayoutSelected = (value: string) => {
       <section class="py-8">
         <h5 class="text-sm font-semibold">首页信息</h5>
         <p class="mt-1 text-sm text-neutral-500">
-          控制作者简介、统计文字和照片上的说明信息。
+          控制作者简介、统计文字，以及不同布局中的照片说明。
         </p>
         <div class="mt-4 grid gap-x-6 sm:grid-cols-2">
           <label
@@ -302,13 +306,26 @@ const isLayoutSelected = (value: string) => {
           <label
             class="flex items-center justify-between border-b border-neutral-200 py-3 text-sm dark:border-neutral-800"
           >
-            <span>照片标注与拍摄参数</span>
+            <span>缩略图悬浮信息</span>
             <USwitch
               :model-value="
                 setting('appearance.home.showPhotoInfo', false) === true
               "
               @update:model-value="
                 update('appearance.home.showPhotoInfo', $event)
+              "
+            />
+          </label>
+          <label
+            class="flex items-center justify-between border-b border-neutral-200 py-3 text-sm dark:border-neutral-800"
+          >
+            <span>大图下方拍摄参数</span>
+            <USwitch
+              :model-value="
+                setting('appearance.home.showBigPhotoInfo', true) !== false
+              "
+              @update:model-value="
+                update('appearance.home.showBigPhotoInfo', $event)
               "
             />
           </label>

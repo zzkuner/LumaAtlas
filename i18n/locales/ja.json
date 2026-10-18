@@ -607,6 +607,7 @@
       "actions": {
         "reprocess": "再処理",
         "refreshLocation": "都市情報を再取得",
+        "setLocation": "撮影場所を設定",
         "eraseLocationInfo": "位置情報を抹消",
         "delete": "削除",
         "editMetadata": "メタデータを編集",

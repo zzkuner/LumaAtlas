@@ -656,8 +656,8 @@ export class QueueManager {
           )
 
           if (!locationInfo) {
-            throw new Error(
-              `Failed to extract location from GPS coordinates (${latitude}, ${longitude}), maybe network issue?`,
+            this.logger.warn(
+              `[${taskId}:reverse-geocoding] address lookup unavailable; preserving coordinates for photo ${photoId}`,
             )
           }
 
@@ -666,9 +666,11 @@ export class QueueManager {
             .set({
               latitude: latitude!,
               longitude: longitude!,
-              country: locationInfo.country ?? null,
-              city: locationInfo.city ?? null,
-              locationName: locationInfo.locationName ?? null,
+              country: locationInfo?.country ?? null,
+              city: locationInfo?.city ?? null,
+              locationName:
+                locationInfo?.locationName ??
+                `${latitude!.toFixed(5)}, ${longitude!.toFixed(5)}`,
             })
             .where(eq(tables.photos.id, photoId))
 

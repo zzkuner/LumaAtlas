@@ -75,6 +75,26 @@ const isFeed = computed(() => isBig.value)
 const showPhotoInfo = computed(
   () => getSetting('app:appearance.home.showPhotoInfo') === true,
 )
+const showBigPhotoInfo = computed(
+  () => getSetting('app:appearance.home.showBigPhotoInfo') !== false,
+)
+const formattedFocalLength = computed(() => {
+  const value = props.photo.exif?.FocalLengthIn35mmFormat
+  if (value == null || value === '') return ''
+  const text = String(value).trim()
+  return /mm$/i.test(text) ? text : `${text}mm`
+})
+const formattedLocation = computed(() => {
+  if (props.photo.city) return props.photo.city
+  if (props.photo.locationName) return props.photo.locationName
+  if (
+    typeof props.photo.latitude === 'number' &&
+    typeof props.photo.longitude === 'number'
+  ) {
+    return `${props.photo.latitude.toFixed(5)}, ${props.photo.longitude.toFixed(5)}`
+  }
+  return ''
+})
 const thumbnailSizes = computed(() =>
   isFeed.value
     ? '(max-width: 1024px) 100vw, 960px'
@@ -742,10 +762,13 @@ onUnmounted(() => {
     </div>
 
     <div
-      v-if="showPhotoInfo && isFeed"
-      class="mx-auto flex w-full max-w-5xl flex-col gap-3 border-b border-neutral-200 py-4 sm:flex-row sm:items-end sm:justify-between dark:border-neutral-800"
+      v-if="showBigPhotoInfo && isFeed"
+      class="mx-auto w-full max-w-5xl border-b border-neutral-200 py-4 dark:border-neutral-800"
     >
-      <div class="min-w-0 sm:max-w-md">
+      <div
+        v-if="photo.title || photo.description || photo.tags?.length"
+        class="mb-3 min-w-0"
+      >
         <p
           v-if="photo.title"
           class="text-sm font-medium text-neutral-950 dark:text-white"
@@ -773,53 +796,70 @@ onUnmounted(() => {
       </div>
 
       <div
-        class="flex max-w-full shrink-0 items-center gap-x-4 overflow-x-auto pb-1 text-xs text-neutral-500 sm:justify-end dark:text-neutral-500"
+        class="flex max-w-full items-start gap-x-5 overflow-x-auto pb-1 text-xs text-neutral-500 dark:text-neutral-400"
       >
-        <Rating
+        <div
           v-if="photo.exif?.Rating"
-          :model-value="photo.exif.Rating"
-          readonly
-          size="sm"
-          class="shrink-0"
-        />
-        <span
-          v-if="photo.exif?.FocalLengthIn35mmFormat"
           class="shrink-0"
         >
-          {{ photo.exif.FocalLengthIn35mmFormat }}mm
-        </span>
-        <span
+          <span class="mb-1 block text-[10px] text-neutral-400">评分</span>
+          <Rating
+            :model-value="photo.exif.Rating"
+            readonly
+            size="sm"
+          />
+        </div>
+        <div
+          v-if="formattedFocalLength"
+          class="shrink-0"
+        >
+          <span class="mb-1 block text-[10px] text-neutral-400">焦段</span>
+          <span>{{ formattedFocalLength }}</span>
+        </div>
+        <div
           v-if="photo.exif?.FNumber"
           class="shrink-0"
         >
-          f/{{ photo.exif.FNumber }}
-        </span>
-        <span
+          <span class="mb-1 block text-[10px] text-neutral-400">光圈</span>
+          <span>f/{{ photo.exif.FNumber }}</span>
+        </div>
+        <div
           v-if="photo.exif?.ExposureTime"
           class="shrink-0"
         >
-          {{ formatExposureTime(photo.exif.ExposureTime) }}
-        </span>
-        <span
+          <span class="mb-1 block text-[10px] text-neutral-400">快门</span>
+          <span>{{ formatExposureTime(photo.exif.ExposureTime) }}</span>
+        </div>
+        <div
           v-if="photo.exif?.ISO"
           class="shrink-0"
         >
-          ISO {{ photo.exif.ISO }}
-        </span>
-        <span v-if="photo.dateTaken">
-          {{ $dayjs(photo.dateTaken).format('YYYY-MM-DD') }}
-        </span>
-        <span
-          v-if="photo.city"
-          class="shrink-0"
-          >{{ photo.city }}</span
-        >
-        <span
+          <span class="mb-1 block text-[10px] text-neutral-400">感光度</span>
+          <span>ISO {{ photo.exif.ISO }}</span>
+        </div>
+        <div
           v-if="photo.exif?.Model"
+          class="max-w-52 shrink-0"
+        >
+          <span class="mb-1 block text-[10px] text-neutral-400">设备</span>
+          <span class="block truncate">{{
+            formatCameraInfo(photo.exif.Make, photo.exif.Model)
+          }}</span>
+        </div>
+        <div
+          v-if="formattedLocation"
+          class="max-w-64 shrink-0"
+        >
+          <span class="mb-1 block text-[10px] text-neutral-400">地点</span>
+          <span class="block truncate">{{ formattedLocation }}</span>
+        </div>
+        <div
+          v-if="photo.dateTaken"
           class="shrink-0"
         >
-          {{ formatCameraInfo(photo.exif.Make, photo.exif.Model) }}
-        </span>
+          <span class="mb-1 block text-[10px] text-neutral-400">时间</span>
+          <span>{{ $dayjs(photo.dateTaken).format('YYYY-MM-DD HH:mm') }}</span>
+        </div>
       </div>
     </div>
   </div>

@@ -742,6 +742,7 @@
       "actions": {
         "reprocess": "重新处理",
         "refreshLocation": "重新获取城市",
+        "setLocation": "设置照片位置",
         "eraseLocationInfo": "抹除位置信息",
         "delete": "删除",
         "editMetadata": "编辑信息",

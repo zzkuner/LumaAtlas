@@ -604,6 +604,7 @@
       "actions": {
         "reprocess": "重新處理",
         "refreshLocation": "重新取得城市",
+        "setLocation": "設定相片位置",
         "eraseLocationInfo": "抹除位置資訊",
         "delete": "刪除",
         "editMetadata": "編輯資訊",

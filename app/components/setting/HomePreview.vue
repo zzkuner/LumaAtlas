@@ -186,9 +186,10 @@ const previewItems = computed(() => {
 })
 
 const itemRatio = (naturalRatio: number) => {
+  if (layout.value !== 'grid') return naturalRatio
   if (imageRatio.value === 'square') return 1
   if (imageRatio.value === 'landscape') return 4 / 3
-  return naturalRatio
+  return 1
 }
 </script>
 

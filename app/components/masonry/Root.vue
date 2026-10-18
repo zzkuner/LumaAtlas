@@ -175,6 +175,13 @@ const imageRatio = computed(() => {
     ? (value as 'natural' | 'square' | 'landscape')
     : 'natural'
 })
+const galleryImageRatio = computed(() =>
+  galleryLayout.value === 'grid'
+    ? imageRatio.value === 'natural'
+      ? 'square'
+      : imageRatio.value
+    : 'natural',
+)
 const contentWidth = computed(() =>
   String(getSetting('app:appearance.home.contentWidth') || 'wide'),
 )
@@ -704,7 +711,7 @@ watch(currentPhotoIndex, (newIndex) => {
               :has-animated
               :first-screen-items="FIRST_SCREEN_ITEMS_COUNT"
               presentation="masonry"
-              :image-ratio="imageRatio"
+              image-ratio="natural"
               @visibility-change="handleVisibilityChange"
               @open-viewer="handleOpenViewer($event)"
             />
@@ -732,7 +739,7 @@ watch(currentPhotoIndex, (newIndex) => {
             :has-animated
             :first-screen-items="FIRST_SCREEN_ITEMS_COUNT"
             :presentation="galleryLayout"
-            :image-ratio="imageRatio"
+            :image-ratio="galleryImageRatio"
             @visibility-change="handleVisibilityChange"
             @open-viewer="handleOpenViewer($event)"
           />

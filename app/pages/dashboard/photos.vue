@@ -1671,6 +1671,19 @@ const handleReverseGeocodeRequest = async (photo: Photo) => {
     return
   }
 
+  if (
+    typeof photo.latitude !== 'number' ||
+    typeof photo.longitude !== 'number'
+  ) {
+    openMetadataEditor(photo)
+    toast.add({
+      title: $t('dashboard.photos.actions.setLocation'),
+      description: $t('dashboard.photos.editModal.fields.locationHint'),
+      color: 'info',
+    })
+    return
+  }
+
   setReverseGeocodeLoading(photo.id, true)
 
   try {
@@ -1821,6 +1834,8 @@ const handleReprocessSingle = async (photo: Photo) => {
 const getRowActions = (photo: Photo): DropdownMenuItem[][] => {
   const isReverseLoading = !!reverseGeocodeLoading.value[photo.id]
   const isEraseLocationLoading = !!eraseLocationLoading.value[photo.id]
+  const hasCoordinates =
+    typeof photo.latitude === 'number' && typeof photo.longitude === 'number'
 
   return [
     [
@@ -1839,7 +1854,11 @@ const getRowActions = (photo: Photo): DropdownMenuItem[][] => {
         },
       },
       {
-        label: $t('dashboard.photos.actions.refreshLocation'),
+        label: $t(
+          hasCoordinates
+            ? 'dashboard.photos.actions.refreshLocation'
+            : 'dashboard.photos.actions.setLocation',
+        ),
         icon: isReverseLoading ? 'tabler:loader-2' : 'tabler:map-pin',
         disabled: isReverseLoading,
         onSelect() {

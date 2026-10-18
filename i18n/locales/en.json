@@ -740,6 +740,7 @@
       "actions": {
         "reprocess": "Reprocess",
         "refreshLocation": "Re-fetch City",
+        "setLocation": "Set Location",
         "eraseLocationInfo": "Erase location info",
         "delete": "Delete",
         "editMetadata": "Edit Metadata",

@@ -217,6 +217,9 @@ export const APP_SETTINGS_UI: Record<string, FieldUIConfig> = {
   'appearance.home.showPhotoInfo': {
     type: 'toggle',
   },
+  'appearance.home.showBigPhotoInfo': {
+    type: 'toggle',
+  },
   'appearance.home.showGlobeNav': {
     type: 'toggle',
   },

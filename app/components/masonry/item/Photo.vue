@@ -796,11 +796,11 @@ onUnmounted(() => {
       </div>
 
       <div
-        class="flex max-w-full items-start gap-x-5 overflow-x-auto pb-1 text-xs text-neutral-500 dark:text-neutral-400"
+        class="grid max-w-full grid-cols-2 gap-x-4 gap-y-3 text-xs text-neutral-500 sm:flex sm:items-start sm:gap-x-5 sm:overflow-x-auto sm:pb-1 dark:text-neutral-400"
       >
         <div
           v-if="photo.exif?.Rating"
-          class="shrink-0"
+          class="min-w-0 sm:shrink-0"
         >
           <span class="mb-1 block text-[10px] text-neutral-400">评分</span>
           <Rating
@@ -811,35 +811,35 @@ onUnmounted(() => {
         </div>
         <div
           v-if="formattedFocalLength"
-          class="shrink-0"
+          class="min-w-0 sm:shrink-0"
         >
           <span class="mb-1 block text-[10px] text-neutral-400">焦段</span>
           <span>{{ formattedFocalLength }}</span>
         </div>
         <div
           v-if="photo.exif?.FNumber"
-          class="shrink-0"
+          class="min-w-0 sm:shrink-0"
         >
           <span class="mb-1 block text-[10px] text-neutral-400">光圈</span>
           <span>f/{{ photo.exif.FNumber }}</span>
         </div>
         <div
           v-if="photo.exif?.ExposureTime"
-          class="shrink-0"
+          class="min-w-0 sm:shrink-0"
         >
           <span class="mb-1 block text-[10px] text-neutral-400">快门</span>
           <span>{{ formatExposureTime(photo.exif.ExposureTime) }}</span>
         </div>
         <div
           v-if="photo.exif?.ISO"
-          class="shrink-0"
+          class="min-w-0 sm:shrink-0"
         >
           <span class="mb-1 block text-[10px] text-neutral-400">感光度</span>
           <span>ISO {{ photo.exif.ISO }}</span>
         </div>
         <div
           v-if="photo.exif?.Model"
-          class="max-w-52 shrink-0"
+          class="min-w-0 sm:max-w-52 sm:shrink-0"
         >
           <span class="mb-1 block text-[10px] text-neutral-400">设备</span>
           <span class="block truncate">{{
@@ -848,14 +848,14 @@ onUnmounted(() => {
         </div>
         <div
           v-if="formattedLocation"
-          class="max-w-64 shrink-0"
+          class="min-w-0 sm:max-w-64 sm:shrink-0"
         >
           <span class="mb-1 block text-[10px] text-neutral-400">地点</span>
           <span class="block truncate">{{ formattedLocation }}</span>
         </div>
         <div
           v-if="photo.dateTaken"
-          class="shrink-0"
+          class="min-w-0 sm:shrink-0"
         >
           <span class="mb-1 block text-[10px] text-neutral-400">时间</span>
           <span>{{ $dayjs(photo.dateTaken).format('YYYY-MM-DD HH:mm') }}</span>

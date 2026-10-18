@@ -152,6 +152,15 @@ export const DEFAULT_SETTINGS = [
   },
   {
     namespace: 'app',
+    key: 'appearance.home.showAuthorIntro',
+    type: 'boolean',
+    defaultValue: true,
+    label: 'settings.app.appearance.home.showAuthorIntro.label',
+    description: 'settings.app.appearance.home.showAuthorIntro.description',
+    isPublic: true,
+  },
+  {
+    namespace: 'app',
     key: 'appearance.home.showSlogan',
     type: 'boolean',
     defaultValue: true,

@@ -1337,6 +1337,10 @@
             "description": "Maximum number of gallery columns on wide screens",
             "help": "Choose a value from 2 to 8"
           },
+          "showAuthorIntro": {
+            "label": "Show Author Information",
+            "description": "Display the avatar, author and site slogan above the gallery"
+          },
           "showSlogan": {
             "label": "Show Slogan",
             "description": "Display the site slogan above the gallery"

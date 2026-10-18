@@ -31,6 +31,9 @@ const showSlogan = computed(
 const showStats = computed(
   () => getSetting('app:appearance.home.showStats') !== false,
 )
+const showAuthorIntro = computed(
+  () => getSetting('app:appearance.home.showAuthorIntro') !== false,
+)
 const introTitle = computed(
   () => siteAuthor.value || (showSlogan.value ? siteSlogan.value : ''),
 )
@@ -38,7 +41,10 @@ const introCopy = computed(() => {
   if (siteAuthor.value && showSlogan.value) return siteSlogan.value
   return isEditorial.value ? siteDescription.value : ''
 })
-const showIntro = computed(() => Boolean(introTitle.value || introCopy.value))
+const showIntro = computed(
+  () =>
+    showAuthorIntro.value && Boolean(introTitle.value || introCopy.value),
+)
 const showGlobeNav = computed(
   () => getSetting('app:appearance.home.showGlobeNav') !== false,
 )

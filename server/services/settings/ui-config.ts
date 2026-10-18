@@ -176,6 +176,9 @@ export const APP_SETTINGS_UI: Record<string, FieldUIConfig> = {
     max: 8,
     help: 'settings.app.appearance.home.maxColumns.help',
   },
+  'appearance.home.showAuthorIntro': {
+    type: 'toggle',
+  },
   'appearance.home.showSlogan': {
     type: 'toggle',
   },

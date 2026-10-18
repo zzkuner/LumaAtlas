@@ -123,6 +123,7 @@ const presets: Record<string, Record<string, unknown>> = {
     'appearance.home.density': 'compact',
     'appearance.home.galleryGap': 8,
     'appearance.home.maxColumns': 6,
+    'appearance.home.showAuthorIntro': true,
     'appearance.home.showSlogan': true,
     'appearance.home.showStats': true,
     'appearance.home.showPhotoInfo': false,
@@ -139,6 +140,7 @@ const presets: Record<string, Record<string, unknown>> = {
     'appearance.home.density': 'comfortable',
     'appearance.home.galleryGap': 12,
     'appearance.home.maxColumns': 5,
+    'appearance.home.showAuthorIntro': false,
     'appearance.home.showSlogan': false,
     'appearance.home.showStats': true,
     'appearance.home.showPhotoInfo': false,
@@ -155,6 +157,7 @@ const presets: Record<string, Record<string, unknown>> = {
     'appearance.home.density': 'airy',
     'appearance.home.galleryGap': 20,
     'appearance.home.maxColumns': 3,
+    'appearance.home.showAuthorIntro': true,
     'appearance.home.showSlogan': true,
     'appearance.home.showStats': true,
     'appearance.home.showPhotoInfo': false,
@@ -570,7 +573,20 @@ const updateSocial = (key: string, value: string) => {
             </label>
           </div>
 
-          <div class="grid gap-3 sm:grid-cols-3">
+          <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <label
+              class="flex items-center justify-between border-y border-neutral-200 py-3 text-sm dark:border-neutral-800"
+            >
+              <span>显示作者信息</span>
+              <USwitch
+                :model-value="
+                  setting('appearance.home.showAuthorIntro', true) !== false
+                "
+                @update:model-value="
+                  update('appearance.home.showAuthorIntro', $event)
+                "
+              />
+            </label>
             <label
               class="flex items-center justify-between border-y border-neutral-200 py-3 text-sm dark:border-neutral-800"
             >

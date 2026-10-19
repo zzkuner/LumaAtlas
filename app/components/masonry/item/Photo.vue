@@ -767,18 +767,12 @@ onUnmounted(() => {
       :style="bigFrameStyle"
     >
       <div
-        v-if="photo.title || photo.description || photo.tags?.length"
+        v-if="photo.description || photo.tags?.length"
         class="mb-3 min-w-0"
       >
         <p
-          v-if="photo.title"
-          class="break-words font-display text-sm font-medium text-neutral-950 dark:text-white"
-        >
-          {{ photo.title }}
-        </p>
-        <p
           v-if="photo.description"
-          class="mt-1 max-w-2xl text-sm leading-6 text-neutral-600 dark:text-neutral-400"
+          class="max-w-2xl text-sm leading-6 text-neutral-600 dark:text-neutral-400"
         >
           {{ photo.description }}
         </p>

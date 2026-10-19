@@ -571,15 +571,26 @@ watch(currentPhotoIndex, (newIndex) => {
       :max-width="galleryMaxWidth"
       :view-mode="viewMode"
       :layout-mode="galleryLayout"
+      :show-context="false"
       :style="{ order: moduleOrder('header') }"
       @update:view-mode="setViewMode"
       @update:layout-mode="setGalleryLayout"
     />
 
+    <MasonryItemContext
+      v-if="showHeader && moduleVisible('header')"
+      :stats="photoStats"
+      :date-range-text
+      :max-width="galleryMaxWidth"
+      :style="{ order: moduleOrder('header') }"
+    />
+
     <DateRangeIndicator
       :date-range="dateRange"
       :locations="visibleCities"
-      :is-visible="!!dateRange && showFloatingActions"
+      :is-visible="
+        !!dateRange && showFloatingActions && galleryLayout !== 'big'
+      "
       :is-mobile="isMobile"
     />
 

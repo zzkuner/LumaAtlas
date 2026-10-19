@@ -104,7 +104,7 @@ const thumbnailSizes = computed(() =>
 const bigFrameStyle = computed(() =>
   isBig.value
     ? {
-        width: `min(100%, calc(72svh * ${naturalAspectRatio.value}))`,
+        width: `min(100%, calc(78svh * ${naturalAspectRatio.value}), calc(900px * ${naturalAspectRatio.value}))`,
         marginInline: 'auto',
       }
     : undefined,
@@ -536,7 +536,7 @@ onUnmounted(() => {
     ref="photoRef"
     class="w-full cursor-pointer select-none transition-all duration-300"
     :class="{
-      'flex min-h-[calc(100svh-9rem)] flex-col justify-center py-8 sm:py-12':
+      'flex min-h-[calc(100svh-7rem)] flex-col justify-center py-6 sm:py-8':
         isBig,
     }"
     :style="{
@@ -763,7 +763,8 @@ onUnmounted(() => {
 
     <div
       v-if="showBigPhotoInfo && isFeed"
-      class="mx-auto w-full max-w-5xl border-b border-neutral-200 py-4 dark:border-neutral-800"
+      class="w-full border-b border-neutral-200 py-4 dark:border-neutral-800"
+      :style="bigFrameStyle"
     >
       <div
         v-if="photo.title || photo.description || photo.tags?.length"
@@ -771,7 +772,7 @@ onUnmounted(() => {
       >
         <p
           v-if="photo.title"
-          class="text-sm font-medium text-neutral-950 dark:text-white"
+          class="font-display text-sm font-medium text-neutral-950 dark:text-white"
         >
           {{ photo.title }}
         </p>

@@ -44,7 +44,7 @@ const mobileVariants = {
       <!-- Desktop Date Range Indicator -->
       <motion.div
         v-if="shouldShow && !isMobile"
-        class="fixed top-4 left-4 z-50 lg:top-6 lg:left-6 flex flex-col gap-1 bg-black/40 backdrop-blur-3xl rounded-xl border border-white/10 px-4 py-2 pb-4 shadow-2xl"
+        class="fixed left-4 top-28 z-30 flex flex-col border border-neutral-200/80 bg-white/90 px-3 py-2 shadow-sm backdrop-blur-xl dark:border-neutral-800/80 dark:bg-neutral-950/90 lg:left-6"
         :initial="dateRangeVariants.initial"
         :animate="dateRangeVariants.animate"
         :exit="dateRangeVariants.initial"
@@ -54,21 +54,21 @@ const mobileVariants = {
           bounce: 0.15,
         }"
       >
-        <span
-          class="text-white text-4xl font-black leading-normal tracking-wide"
-          >{{ dateRange }}</span
-        >
+        <span class="text-sm font-medium text-neutral-900 dark:text-white">
+          {{ dateRange }}
+        </span>
         <span
           v-if="locations"
-          class="text-white/80 text-xl font-bold"
-          >{{ locations }}</span
+          class="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400"
         >
+          {{ locations }}
+        </span>
       </motion.div>
 
       <!-- Mobile Date Range Indicator -->
       <motion.div
         v-if="shouldShow && isMobile"
-        class="fixed inset-0 bottom-auto z-50"
+        class="fixed inset-x-0 top-40 z-30 flex justify-center px-3"
         :initial="mobileVariants.initial"
         :animate="mobileVariants.animate"
         :exit="mobileVariants.initial"
@@ -79,14 +79,19 @@ const mobileVariants = {
         }"
       >
         <div
-          class="bg-black/60 backdrop-blur-3xl border-b border-white/10 px-4 py-2 shadow-2xl flex flex-col"
+          class="flex max-w-full flex-col border border-neutral-200/80 bg-white/90 px-3 py-2 shadow-sm backdrop-blur-xl dark:border-neutral-800/80 dark:bg-neutral-950/90"
         >
-          <span class="text-white text-lg font-medium">{{ dateRange }}</span>
+          <span
+            class="truncate text-sm font-medium text-neutral-900 dark:text-white"
+          >
+            {{ dateRange }}
+          </span>
           <span
             v-if="locations"
-            class="text-white/80 text-xs"
-            >{{ locations }}</span
+            class="truncate text-xs text-neutral-500 dark:text-neutral-400"
           >
+            {{ locations }}
+          </span>
         </div>
       </motion.div>
     </AnimatePresence>

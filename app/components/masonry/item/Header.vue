@@ -121,8 +121,13 @@ const introCopy = computed(() =>
 </script>
 
 <template>
-  <header class="w-full font-display">
-    <div class="mx-auto px-3 pb-3 pt-4 sm:px-5 lg:max-w-[1600px] lg:px-7">
+  <header
+    class="sticky top-0 z-40 w-full border-b border-neutral-200/80 bg-white/90 font-display backdrop-blur-xl dark:border-neutral-800/80 dark:bg-neutral-950/90"
+  >
+    <div
+      class="mx-auto px-3 py-3 sm:px-5 lg:px-7"
+      :style="{ maxWidth }"
+    >
       <div class="flex min-h-10 items-center justify-between gap-3">
         <NuxtLink
           to="/"

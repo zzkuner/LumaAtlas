@@ -47,4 +47,24 @@ describe('EXIF GPS parsing', () => {
       parseGPSCoordinates({ GPSLatitude: 'Unknown ()', GPSLongitude: '' }),
     ).toEqual({})
   })
+
+  it('falls back to separate RawExif coordinates when normalized tags are blank', () => {
+    expect(
+      parseGPSCoordinates({
+        GPSLatitude: '',
+        GPSLatitudeRef: 'Unknown ()',
+        GPSLongitude: '',
+        GPSLongitudeRef: 'Unknown ()',
+        RawExif: {
+          GPSLatitude: `22 deg 32' 30.00"`,
+          GPSLatitudeRef: 'N',
+          GPSLongitude: `113 deg 56' 4.20"`,
+          GPSLongitudeRef: 'E',
+        },
+      }),
+    ).toEqual({
+      latitude: 22.541666666666668,
+      longitude: 113.9345,
+    })
+  })
 })

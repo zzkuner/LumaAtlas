@@ -115,25 +115,45 @@ export function parseGPSCoordinates(exifData: unknown): {
     source.RawExif && typeof source.RawExif === 'object'
       ? (source.RawExif as Record<string, unknown>)
       : {}
-  const read = (key: string, alias?: string) =>
-    source[key] ?? raw[key] ?? (alias ? raw[alias] : undefined)
+  const candidates = (key: string, alias?: string) => [
+    source[key],
+    raw[key],
+    ...(alias ? [source[alias], raw[alias]] : []),
+  ]
+  const readCoordinate = (key: string, alias?: string) => {
+    for (const value of candidates(key, alias)) {
+      const coordinate = parseCoordinate(value)
+      if (coordinate != null) return coordinate
+    }
+  }
+  const readReference = (key: string, alias?: string) =>
+    candidates(key, alias).find(
+      (value) =>
+        typeof value === 'string' &&
+        value.trim() !== '' &&
+        !/unknown|undefined|null/i.test(value),
+    )
 
   let latitude = applyCoordinateReference(
-    parseCoordinate(read('GPSLatitude', 'GPS Latitude')),
-    read('GPSLatitudeRef', 'GPS Latitude Ref'),
+    readCoordinate('GPSLatitude', 'GPS Latitude'),
+    readReference('GPSLatitudeRef', 'GPS Latitude Ref'),
   )
   let longitude = applyCoordinateReference(
-    parseCoordinate(read('GPSLongitude', 'GPS Longitude')),
-    read('GPSLongitudeRef', 'GPS Longitude Ref'),
+    readCoordinate('GPSLongitude', 'GPS Longitude'),
+    readReference('GPSLongitudeRef', 'GPS Longitude Ref'),
   )
 
   if (latitude == null || longitude == null) {
-    const pair = parseCoordinatePair(
-      read('GPSCoordinates', 'GPS Coordinates') ??
-        read('GPSPosition', 'GPS Position'),
-    )
-    latitude ??= pair.latitude
-    longitude ??= pair.longitude
+    const pairValues = [
+      ...candidates('GPSCoordinates', 'GPS Coordinates'),
+      ...candidates('GPSPosition', 'GPS Position'),
+    ]
+    for (const value of pairValues) {
+      const pair = parseCoordinatePair(value)
+      latitude ??= pair.latitude
+      longitude ??= pair.longitude
+      if (latitude != null && longitude != null) break
+    }
   }
 
   if (

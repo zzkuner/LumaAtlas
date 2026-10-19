@@ -12,6 +12,16 @@ const avatarUrl = computed(() => String(getSetting('app:avatarUrl') || ''))
 const slogan = computed(() => String(getSetting('app:slogan') || ''))
 const description = computed(() => String(getSetting('app:description') || ''))
 const aboutText = computed(() => String(getSetting('app:aboutText') || ''))
+const contentMaxWidth = computed(() => {
+  const width = String(getSetting('app:appearance.home.contentWidth') || 'wide')
+  return (
+    {
+      contained: '1280px',
+      wide: '1600px',
+      full: '1920px',
+    }[width] || '1600px'
+  )
+})
 
 const socialLinks = computed(() => {
   const value = getSetting('app:appearance.home.socialLinks')
@@ -37,75 +47,109 @@ const socialLinks = computed(() => {
   <div
     class="min-h-svh bg-white text-neutral-950 dark:bg-neutral-950 dark:text-white"
   >
-    <MasonryItemHeader
-      :show-gallery-controls="false"
-      :show-context="false"
-    />
+    <MasonryItemHeader :show-gallery-controls="false" />
 
-    <main class="mx-auto max-w-3xl px-5 pb-20 pt-14 sm:px-8 sm:pt-24">
-      <div class="flex flex-col items-start gap-8 sm:flex-row sm:gap-12">
-        <img
-          :src="siteLogo"
-          :alt="siteTitle"
-          class="size-24 shrink-0 object-contain sm:size-32"
-        />
-        <div class="min-w-0 flex-1">
-          <p class="font-display text-sm text-neutral-500">
-            {{ author || siteTitle }}
-          </p>
-          <h1 class="font-display mt-2 text-3xl font-semibold sm:text-4xl">
-            {{ siteTitle }}
-          </h1>
-          <p
-            v-if="slogan"
-            class="font-display mt-3 text-lg text-neutral-600 dark:text-neutral-300"
+    <main
+      class="mx-auto w-full px-3 pb-24 pt-8 sm:px-5 sm:pt-12 lg:px-7"
+      :style="{ maxWidth: contentMaxWidth }"
+    >
+      <header class="border-b border-neutral-200 pb-8 dark:border-neutral-800">
+        <p class="font-display text-sm text-neutral-500 dark:text-neutral-400">
+          关于本站
+        </p>
+        <div
+          class="mt-3 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between"
+        >
+          <div class="flex min-w-0 items-center gap-4">
+            <img
+              :src="siteLogo"
+              :alt="siteTitle"
+              class="size-14 shrink-0 object-contain sm:size-16"
+            />
+            <div class="min-w-0">
+              <h1
+                class="font-display truncate text-3xl font-semibold sm:text-4xl"
+              >
+                {{ siteTitle }}
+              </h1>
+              <p
+                v-if="slogan"
+                class="font-display mt-1 text-base text-neutral-500 dark:text-neutral-400"
+              >
+                {{ slogan }}
+              </p>
+            </div>
+          </div>
+
+          <div
+            v-if="socialLinks.length"
+            class="flex shrink-0 items-center gap-1"
           >
-            {{ slogan }}
-          </p>
+            <UTooltip
+              v-for="link in socialLinks"
+              :key="link.id"
+              :text="link.label"
+            >
+              <UButton
+                :to="link.url"
+                target="_blank"
+                :icon="link.icon"
+                color="neutral"
+                variant="ghost"
+                :aria-label="link.label"
+              />
+            </UTooltip>
+          </div>
         </div>
-      </div>
+      </header>
 
       <div
-        class="mt-12 border-t border-neutral-200 pt-8 dark:border-neutral-800"
+        class="grid gap-10 pt-10 md:grid-cols-[14rem_minmax(0,48rem)] lg:gap-16"
       >
-        <div class="flex items-start gap-4">
+        <aside>
           <img
             v-if="avatarUrl"
             :src="avatarUrl"
             :alt="author || siteTitle"
-            class="size-12 shrink-0 rounded-full object-cover"
+            class="size-20 rounded-full object-cover"
           />
-          <div class="min-w-0 space-y-5">
-            <p
-              v-if="description"
-              class="font-display text-lg leading-8 text-neutral-700 dark:text-neutral-300"
-            >
-              {{ description }}
-            </p>
-            <p
-              v-if="aboutText"
-              class="whitespace-pre-line text-sm leading-7 text-neutral-600 dark:text-neutral-400"
-            >
-              {{ aboutText }}
-            </p>
-          </div>
-        </div>
-      </div>
+          <span
+            v-else
+            class="flex size-20 items-center justify-center rounded-full bg-neutral-100 text-neutral-500 dark:bg-neutral-900 dark:text-neutral-400"
+          >
+            <Icon
+              name="lucide:user-round"
+              class="size-7"
+            />
+          </span>
+          <p class="font-display mt-4 text-lg font-semibold">
+            {{ author || siteTitle }}
+          </p>
+          <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+            摄影与影像记录
+          </p>
+        </aside>
 
-      <div
-        v-if="socialLinks.length"
-        class="mt-10 flex flex-wrap gap-2 border-t border-neutral-200 pt-6 dark:border-neutral-800"
-      >
-        <UButton
-          v-for="link in socialLinks"
-          :key="link.id"
-          :to="link.url"
-          target="_blank"
-          :icon="link.icon"
-          :label="link.label"
-          color="neutral"
-          variant="ghost"
-        />
+        <article class="min-w-0">
+          <p
+            v-if="description"
+            class="font-display text-xl leading-9 text-neutral-800 sm:text-2xl dark:text-neutral-200"
+          >
+            {{ description }}
+          </p>
+          <p
+            v-if="aboutText"
+            class="mt-7 whitespace-pre-line text-base leading-8 text-neutral-600 dark:text-neutral-400"
+          >
+            {{ aboutText }}
+          </p>
+          <p
+            v-else-if="!description"
+            class="text-base leading-8 text-neutral-500 dark:text-neutral-400"
+          >
+            这里记录值得被留下的光线、地点与日常片段。
+          </p>
+        </article>
       </div>
     </main>
   </div>

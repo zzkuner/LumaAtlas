@@ -54,7 +54,7 @@ const currentScheme = computed(() => colorSchemes[props.color])
     :is="clickable ? 'button' : 'div'"
     :type="clickable ? 'button' : undefined"
     :class="[
-      'flex min-h-28 w-full items-center gap-4 rounded-md border border-neutral-200 bg-white p-4 text-left dark:border-neutral-800 dark:bg-neutral-950',
+      'flex min-h-28 w-full items-center gap-4 rounded-md border border-neutral-200 bg-white p-4 text-left shadow-none dark:border-neutral-800 dark:bg-neutral-950',
       clickable
         ? 'cursor-pointer transition-colors hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 dark:hover:bg-neutral-900'
         : '',

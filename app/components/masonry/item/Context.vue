@@ -39,30 +39,43 @@ const introCopy = computed(() =>
 <template>
   <section
     v-if="showAuthorIntro || showStats"
-    class="w-full font-display"
+    class="w-full border-b border-neutral-200/80 font-display dark:border-neutral-800/80"
   >
     <div
-      class="mx-auto px-3 py-4 sm:px-5 lg:px-7"
+      class="mx-auto px-3 py-5 sm:px-5 sm:py-6 lg:px-7"
       :style="{ maxWidth }"
     >
       <div
-        class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+        class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
       >
         <div
           v-if="showAuthorIntro"
-          class="flex min-w-0 items-center gap-3"
+          class="flex min-w-0 items-center gap-4"
         >
           <img
             v-if="avatarUrl"
             :src="avatarUrl"
             :alt="introTitle"
-            class="size-9 shrink-0 rounded-full object-cover"
+            class="size-12 shrink-0 rounded-full object-cover sm:size-14"
           />
+          <span
+            v-else
+            class="flex size-12 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-neutral-500 sm:size-14 dark:bg-neutral-900 dark:text-neutral-400"
+          >
+            <Icon
+              name="lucide:user-round"
+              class="size-5"
+            />
+          </span>
           <div class="min-w-0">
-            <p class="truncate text-sm font-medium">{{ introTitle }}</p>
+            <p
+              class="truncate text-lg font-semibold text-neutral-950 sm:text-xl dark:text-white"
+            >
+              {{ introTitle }}
+            </p>
             <p
               v-if="introCopy"
-              class="mt-0.5 line-clamp-1 text-xs text-neutral-500"
+              class="mt-1 line-clamp-2 max-w-2xl text-sm leading-6 text-neutral-500 dark:text-neutral-400"
             >
               {{ introCopy }}
             </p>
@@ -71,7 +84,7 @@ const introCopy = computed(() =>
 
         <p
           v-if="showStats"
-          class="shrink-0 font-sans text-xs text-neutral-500"
+          class="shrink-0 border-t border-neutral-200 pt-3 font-sans text-sm text-neutral-500 sm:border-t-0 sm:pt-0 dark:border-neutral-800 dark:text-neutral-400"
         >
           <template v-if="stats?.total">
             {{

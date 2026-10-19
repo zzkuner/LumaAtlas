@@ -164,8 +164,14 @@ const yearOptions = computed(() => {
     </template>
 
     <template #body>
-      <div class="mx-auto flex w-full max-w-[1600px] flex-col gap-6">
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="mx-auto flex w-full max-w-7xl flex-col gap-6">
+        <DashboardPageIntro
+          :title="$t('dashboard.overview.title')"
+          description="查看照片、存储与后台任务的当前状态。"
+          icon="lucide:layout-dashboard"
+        />
+
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <DashboardIndicator
             :title="$t('dashboard.overview.indicator.totalPhotos')"
             icon="tabler:photo"
@@ -201,7 +207,10 @@ const yearOptions = computed(() => {
         </div>
 
         <!-- 运行信息 -->
-        <UCard>
+        <UCard
+          variant="outline"
+          class="rounded-md shadow-none"
+        >
           <template #header>
             <h2 class="text-lg font-semibold pb-1.5">
               {{ $t('dashboard.overview.section.runtimeInfo.title') }}
@@ -264,7 +273,10 @@ const yearOptions = computed(() => {
         <div class="grid grid-cols-1 lg:grid-cols-5 gap-4">
           <!-- 左侧 -->
           <div class="lg:col-span-3">
-            <UCard>
+            <UCard
+              variant="outline"
+              class="rounded-md shadow-none"
+            >
               <div class="heatmap-container">
                 <ClientOnly>
                   <CalendarHeatmap
@@ -346,7 +358,10 @@ const yearOptions = computed(() => {
           <!-- 右侧：系统资源监控 -->
           <div class="lg:col-span-2 w-full space-y-4">
             <!-- 内存使用 -->
-            <UCard>
+            <UCard
+              variant="outline"
+              class="rounded-md shadow-none"
+            >
               <template #header>
                 <h3 class="font-semibold pb-1.5">
                   {{ $t('dashboard.overview.section.memory.title') }}
@@ -399,7 +414,10 @@ const yearOptions = computed(() => {
             </UCard>
 
             <!-- 队列详情 -->
-            <UCard>
+            <UCard
+              variant="outline"
+              class="rounded-md shadow-none"
+            >
               <template #header>
                 <h3 class="font-semibold pb-1.5">
                   {{ $t('dashboard.overview.section.queue.title') }}

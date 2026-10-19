@@ -423,18 +423,11 @@ const onStorageDelete = async (storageId: number) => {
 
     <template #body>
       <div class="mx-auto w-full max-w-5xl space-y-6">
-        <section
-          class="space-y-2 border-b border-neutral-200 pb-4 dark:border-neutral-800"
-        >
-          <h2
-            class="text-xl font-semibold text-neutral-900 dark:text-neutral-100"
-          >
-            {{ $t('title.storageSettings') }}
-          </h2>
-          <p class="text-sm text-neutral-600 dark:text-neutral-400">
-            管理默认存储方案与可用存储提供者。此页面的设置仅影响后续上传文件。
-          </p>
-        </section>
+        <DashboardPageIntro
+          :title="$t('title.storageSettings')"
+          description="管理默认存储方案与可用存储提供者。此页面的设置仅影响后续上传文件。"
+          icon="lucide:database"
+        />
 
         <section
           class="rounded-md border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950"

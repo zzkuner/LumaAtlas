@@ -149,18 +149,11 @@ const runMaintenance = async () => {
 
     <template #body>
       <div class="mx-auto w-full max-w-5xl space-y-6">
-        <section
-          class="space-y-2 border-b border-neutral-200 pb-4 dark:border-neutral-800"
-        >
-          <h2
-            class="text-xl font-semibold text-neutral-900 dark:text-neutral-100"
-          >
-            {{ $t('title.systemSettings') }}
-          </h2>
-          <p class="text-sm text-neutral-600 dark:text-neutral-400">
-            配置系统级行为参数。这里的修改会影响全局上传和服务行为。
-          </p>
-        </section>
+        <DashboardPageIntro
+          :title="$t('title.systemSettings')"
+          description="配置系统级行为参数。这里的修改会影响全局上传和服务行为。"
+          icon="lucide:cpu"
+        />
 
         <template v-if="systemLoading && systemFieldSections.length === 0">
           <section

@@ -1,95 +1,76 @@
 <script lang="ts" setup>
-import { motion } from 'motion-v'
-
 const route = useRoute()
 const router = useRouter()
 const dayjs = useDayjs()
 
-const albumId = computed(() => {
-  const id = route.params.albumId as string
-  return parseInt(id, 10)
-})
-
+const albumId = computed(() =>
+  Number.parseInt(route.params.albumId as string, 10),
+)
 const {
-  data: album,
+  data: albumData,
   error,
   pending,
-} = await useFetch(() => `/api/albums/${albumId.value}`, {
-  watch: [albumId],
-})
+} = await useFetch(() => `/api/albums/${albumId.value}`, { watch: [albumId] })
 
 if (error.value) {
-  throw createError({
-    statusCode: 404,
-    statusMessage: 'Album not found',
-  })
+  throw createError({ statusCode: 404, statusMessage: 'Album not found' })
 }
 
-const albumData = computed(() => album.value)
+useHead({ title: () => albumData.value?.title || $t('title.albums') })
 
-const albumStats = computed(() => {
-  if (!albumData.value) return null
-
-  const photos = albumData.value.photos || []
-  const totalPhotos = photos.length
-  const photosWithDates = photos.filter((p: any) => p.dateTaken).length
-  const photosWithExif = photos.filter((p: any) => p.exif).length
-
-  const allDates = photos
-    .map((p: any) => p?.dateTaken)
-    .filter((date: any): date is string => Boolean(date))
-    .map((date: string) => dayjs(date))
-    .sort((a, b) => (a.isBefore(b) ? -1 : 1))
-
-  const dateRange =
-    allDates.length > 0
-      ? {
-          start: allDates[0],
-          end: allDates[allDates.length - 1],
-        }
-      : null
-
-  return {
-    total: totalPhotos,
-    withDates: photosWithDates,
-    withExif: photosWithExif,
-    dateRange,
-  }
-})
-
-// 计算日期范围文本
-const dateRangeText = computed(() => {
-  const range = albumStats.value?.dateRange
-  if (!range || !range.start || !range.end) return null
-
-  if (range.start.isSame(range.end, 'day')) {
-    return range.start.format('ll')
-  } else if (range.start.isSame(range.end, 'month')) {
-    return range.start.format('MMM YYYY')
-  } else if (range.start.isSame(range.end, 'year')) {
-    return `${range.start.format('MMM')} - ${range.end.format('MMM YYYY')}`
-  } else {
-    return `${range.start.format('ll')} - ${range.end.format('ll')}`
-  }
-})
-
-// 用于 MasonryWall 的照片数据
-const masonryItems = computed(() => {
+const contentMaxWidth = computed(() => {
+  const width = String(getSetting('app:appearance.home.contentWidth') || 'wide')
   return (
-    albumData.value?.photos?.map((photo: any, index: number) => ({
-      id: photo.id,
-      photo,
-      originalIndex: index,
-    })) ?? []
+    {
+      contained: '1280px',
+      wide: '1600px',
+      full: '1920px',
+    }[width] || '1600px'
   )
 })
 
-const isMobile = useMediaQuery('(max-width: 768px)')
-const columnWidth = computed(() => (isMobile.value ? 280 : 280))
-const maxColumns = computed(() => (isMobile.value ? 2 : 8))
-const minColumns = computed(() => (isMobile.value ? 2 : 2))
+const albumStats = computed(() => {
+  const photos = albumData.value?.photos || []
+  const dates = photos
+    .map((photo) => photo.dateTaken)
+    .filter((date): date is string => Boolean(date))
+    .map((date) => dayjs(date))
+    .sort((a, b) => (a.isBefore(b) ? -1 : 1))
 
-const MASONRY_GAP = 4
+  return {
+    total: photos.length,
+    start: dates[0],
+    end: dates[dates.length - 1],
+  }
+})
+
+const dateRangeText = computed(() => {
+  const { start, end } = albumStats.value
+  if (!start || !end) return ''
+  if (start.isSame(end, 'day')) return start.format('ll')
+  if (start.isSame(end, 'month')) return start.format('MMM YYYY')
+  if (start.isSame(end, 'year')) {
+    return `${start.format('MMM')} - ${end.format('MMM YYYY')}`
+  }
+  return `${start.format('ll')} - ${end.format('ll')}`
+})
+
+const masonryItems = computed(
+  () =>
+    albumData.value?.photos?.map((photo, index) => ({
+      id: photo.id,
+      photo,
+      originalIndex: index,
+    })) || [],
+)
+
+const isMobile = useMediaQuery('(max-width: 768px)')
+const columnWidth = computed(() => (isMobile.value ? 220 : 320))
+const maxColumns = computed(() => (isMobile.value ? 2 : 6))
+const masonryGap = computed(() => {
+  const value = Number(getSetting('app:appearance.home.galleryGap') ?? 12)
+  return Math.min(24, Math.max(4, Number.isFinite(value) ? value : 12))
+})
 
 const masonryKeyMapper = (
   _item: unknown,
@@ -99,216 +80,112 @@ const masonryKeyMapper = (
 ) => masonryItems.value[index]?.originalIndex ?? index
 
 const handleOpenViewer = (index: number) => {
-  const photos = albumData.value?.photos
-  if (photos && photos[index]) {
-    const { openViewer } = useViewerState()
-    const albumRoute = `/albums/${albumId.value}`
-    openViewer(0, albumRoute)
-    router.push(`/${photos[index].id}`)
-  }
+  const photo = albumData.value?.photos?.[index]
+  if (!photo) return
+
+  useViewerState().openViewer(index, `/albums/${albumId.value}`)
+  router.push(`/${photo.id}`)
 }
 
-const coverPhoto = computed(() => {
-  const album = albumData.value
-  if (!album?.photos) return null
-
-  // coverPhotoId first
-  if (album.coverPhotoId) {
-    const cover = album.photos.find((p: any) => p.id === album.coverPhotoId)
-    if (cover) return cover
-  }
-
-  // otherwise first photo
-  return album.photos[0] || null
-})
-
-const scrollToTop = () => {
-  window.scrollTo({
-    top: 0,
-    behavior: 'smooth',
-  })
-}
-
-const showFloatingActions = ref(false)
-
+const showBackToTop = ref(false)
 const handleScroll = () => {
-  const scrollTop = window.pageYOffset || document.documentElement.scrollTop
-  showFloatingActions.value = scrollTop > 500
+  showBackToTop.value = window.scrollY > 500
 }
+const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' })
 
-const goBackToAlbums = () => {
-  router.push('/albums')
-}
-
-onMounted(() => {
-  window.addEventListener('scroll', handleScroll, { passive: true })
-})
-
-onUnmounted(() => {
-  window.removeEventListener('scroll', handleScroll)
-})
-
-onBeforeMount(() => {
-  useHead({
-    title: albumData.value ? albumData.value.title : 'Album Not Found',
-  })
-})
+onMounted(() =>
+  window.addEventListener('scroll', handleScroll, { passive: true }),
+)
+onUnmounted(() => window.removeEventListener('scroll', handleScroll))
 </script>
 
 <template>
-  <div class="relative w-full">
-    <div
-      v-if="pending"
-      class="flex flex-col items-center justify-center min-h-[50vh] gap-4"
+  <div
+    class="min-h-svh bg-white text-neutral-950 dark:bg-neutral-950 dark:text-white"
+  >
+    <MasonryItemHeader :show-gallery-controls="false" />
+
+    <main
+      class="mx-auto w-full px-3 pb-20 pt-6 sm:px-5 sm:pt-9 lg:px-7"
+      :style="{ maxWidth: contentMaxWidth }"
     >
-      <UIcon
-        name="tabler:loader"
-        class="animate-spin size-8 text-primary-600"
-      />
-      <p class="text-sm text-neutral-600 dark:text-neutral-400">
-        {{ $t('ui.loading') }}
-      </p>
-    </div>
-
-    <template v-else-if="albumData">
-      <!-- Backdrop layer -->
       <div
-        v-if="coverPhoto"
-        class="absolute inset-0 h-2/3 sm:h-[500px] overflow-hidden -z-10"
+        v-if="pending"
+        class="flex min-h-[55svh] items-center justify-center"
       >
-        <ThumbImage
-          :src="coverPhoto.thumbnailUrl || ''"
-          :thumbhash="coverPhoto.thumbnailHash"
-          :alt="albumData.title"
-          class="w-full h-full object-cover opacity-40 dark:opacity-20 scale-110 saturate-150"
-        />
-        <div
-          class="absolute -inset-1 bg-gradient-to-b from-transparent via-white/50 to-white dark:via-neutral-900/50 dark:to-neutral-900 backdrop-blur-xl sm:backdrop-blur-2xl"
+        <Icon
+          name="lucide:loader-circle"
+          class="size-7 animate-spin text-neutral-400"
         />
       </div>
 
-      <!-- Back Button -->
-      <div class="relative container mx-auto px-4 sm:px-6 lg:px-8 pt-4 z-10">
+      <template v-else-if="albumData">
         <UButton
-          variant="ghost"
+          to="/albums"
+          icon="lucide:arrow-left"
           color="neutral"
-          icon="tabler:arrow-left"
-          size="sm"
-          @click="goBackToAlbums"
+          variant="ghost"
+          label="返回相册"
+          class="-ml-2"
         />
-      </div>
 
-      <!-- Album Information -->
-      <div class="relative container mx-auto px-4 sm:px-6 lg:px-8 py-8 z-10">
-        <AnimatePresence>
-          <motion.div
-            class="flex flex-col gap-6"
-            :initial="{ opacity: 0, y: 10 }"
-            :animate="{ opacity: 1, y: 0 }"
-            :transition="{ duration: 0.4 }"
-          >
-            <!-- title -->
-            <div>
-              <h1
-                class="text-3xl sm:text-4xl font-bold text-neutral-900 dark:text-white tracking-tight"
-              >
-                {{ albumData.title }}
-              </h1>
-            </div>
-
-            <!-- metadata -->
-            <div class="flex flex-col gap-4">
-              <!-- description -->
-              <p
-                class="text-base text-neutral-600 dark:text-neutral-300 leading-relaxed max-w-2xl"
-              >
-                {{ albumData.description || $t('album.noDescription') }}
-              </p>
-
-              <!-- metadata row -->
-              <div class="flex flex-wrap items-center gap-4 text-sm">
-                <!-- Photos -->
-                <div class="flex items-center gap-1">
-                  <Icon
-                    name="tabler:photo"
-                    class="size-4 -mt-0.5 text-neutral-400 dark:text-neutral-500"
-                  />
-                  <span class="text-neutral-700 dark:text-neutral-200">
-                    <span class="text-neutral-900 dark:text-white">
-                      {{ albumStats?.total || 0 }}
-                    </span>
-                    <span class="text-neutral-500 dark:text-neutral-400 ml-1">
-                      {{ $t('album.metadata.photos') }}
-                    </span>
-                  </span>
-                </div>
-
-                <!-- Date Range -->
-                <div
-                  v-if="dateRangeText"
-                  class="flex items-center gap-1"
-                >
-                  <Icon
-                    name="tabler:calendar"
-                    class="size-4 -mt-0.5 text-neutral-400 dark:text-neutral-500"
-                  />
-                  <span class="text-neutral-700 dark:text-neutral-200">
-                    {{ dateRangeText }}
-                  </span>
-                </div>
-
-                <!-- Created -->
-                <div
-                  class="flex items-center gap-1"
-                  :title="`Created: ${$dayjs(albumData.createdAt).format('YYYY-MM-DD HH:mm:ss')}`"
-                >
-                  <Icon
-                    name="tabler:clock-plus"
-                    class="size-4 -mt-0.5 text-neutral-400 dark:text-neutral-500"
-                  />
-                  <span class="text-neutral-700 dark:text-neutral-200">
-                    {{ $t('album.metadata.created') }}
-                    {{ $dayjs(albumData.createdAt).fromNow() }}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        </AnimatePresence>
-      </div>
-
-      <!-- Photos Waterfall or Empty State -->
-      <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <motion.div
-          :initial="{ opacity: 0 }"
-          :animate="{ opacity: 1 }"
-          :transition="{ delay: 0.2, duration: 0.4 }"
+        <header
+          class="mt-5 flex flex-col gap-5 border-b border-neutral-200 pb-8 sm:flex-row sm:items-end sm:justify-between dark:border-neutral-800"
         >
+          <div class="min-w-0">
+            <h1 class="font-display text-3xl font-semibold sm:text-4xl">
+              {{ albumData.title }}
+            </h1>
+            <p
+              v-if="albumData.description"
+              class="mt-3 max-w-2xl text-sm leading-6 text-neutral-500 dark:text-neutral-400"
+            >
+              {{ albumData.description }}
+            </p>
+          </div>
           <div
-            v-if="albumStats?.total === 0"
-            class="flex flex-col items-center justify-center gap-6 px-4"
+            class="flex shrink-0 flex-wrap items-center gap-x-5 gap-y-2 text-sm text-neutral-500 dark:text-neutral-400"
           >
-            <div class="flex flex-col items-center gap-4">
+            <span class="inline-flex items-center gap-1.5">
               <Icon
-                name="tabler:library-photo"
-                class="size-20 text-neutral-300 dark:text-neutral-600"
+                name="lucide:image"
+                class="size-4"
               />
-              <div class="text-center">
-                <p
-                  class="text-xl font-normal text-neutral-800 dark:text-neutral-200 mb-2"
-                >
-                  {{ $t('album.emptyAlbumTitle') }}
-                </p>
-              </div>
-            </div>
+              {{ albumStats.total }} 张
+            </span>
+            <span
+              v-if="dateRangeText"
+              class="inline-flex items-center gap-1.5"
+            >
+              <Icon
+                name="lucide:calendar-days"
+                class="size-4"
+              />
+              {{ dateRangeText }}
+            </span>
+          </div>
+        </header>
+
+        <section class="pt-8">
+          <div
+            v-if="albumStats.total === 0"
+            class="flex min-h-[44svh] flex-col items-center justify-center text-center"
+          >
+            <Icon
+              name="lucide:images"
+              class="size-7 text-neutral-400"
+            />
+            <p class="font-display mt-4 text-lg font-semibold">
+              {{ $t('album.emptyAlbumTitle') }}
+            </p>
           </div>
 
           <MasonryWall
             v-else
             :items="masonryItems"
             :column-width="columnWidth"
-            :gap="MASONRY_GAP"
-            :min-columns="minColumns"
+            :gap="masonryGap"
+            :min-columns="2"
             :max-columns="maxColumns"
             :ssr-columns="2"
             :key-mapper="masonryKeyMapper"
@@ -321,62 +198,49 @@ onBeforeMount(() => {
                 :index="item.originalIndex"
                 :has-animated="false"
                 :first-screen-items="50"
+                presentation="masonry"
                 @open-viewer="handleOpenViewer($event)"
               />
             </template>
           </MasonryWall>
-        </motion.div>
-      </div>
-    </template>
+        </section>
+      </template>
 
-    <template v-else>
-      <div class="flex flex-col items-center justify-center min-h-[50vh] gap-6">
-        <div class="flex flex-col items-center gap-4">
-          <Icon
-            name="tabler:alert-circle"
-            class="size-20 text-red-400"
-          />
-          <div class="text-center">
-            <p
-              class="text-2xl font-semibold text-neutral-800 dark:text-neutral-200 mb-2"
-            >
-              {{ $t('album.failedToLoadTitle') }}
-            </p>
-            <p
-              class="text-base text-neutral-600 dark:text-neutral-400 max-w-md"
-            >
-              {{ $t('album.failedToLoadDescription') }}
-            </p>
-          </div>
-        </div>
-        <UButton @click="goBackToAlbums">
+      <div
+        v-else
+        class="flex min-h-[55svh] flex-col items-center justify-center text-center"
+      >
+        <Icon
+          name="lucide:circle-alert"
+          class="size-8 text-neutral-400"
+        />
+        <p class="font-display mt-4 text-xl font-semibold">
+          {{ $t('album.failedToLoadTitle') }}
+        </p>
+        <UButton
+          class="mt-5"
+          to="/albums"
+          color="neutral"
+          variant="outline"
+        >
           {{ $t('album.backToAlbums') }}
         </UButton>
       </div>
-    </template>
+    </main>
 
-    <!-- Back to Top Button -->
-    <motion.div
-      v-if="showFloatingActions"
-      class="fixed bottom-6 right-6 z-50"
-      :initial="{ opacity: 0, scale: 0.8 }"
-      :animate="{ opacity: 1, scale: 1 }"
-      :exit="{ opacity: 0, scale: 0.8 }"
-      :transition="{ duration: 0.2 }"
+    <UTooltip
+      v-if="showBackToTop"
+      :text="$t('ui.action.backtotop.tooltip') || '回到顶部'"
     >
-      <UTooltip :text="$t('ui.action.backtotop.tooltip') || '回到顶部'">
-        <UButton
-          variant="soft"
-          color="neutral"
-          class="cursor-pointer bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm flex justify-center items-center rounded-full shadow-lg hover:bg-white dark:hover:bg-neutral-800 transition-all duration-300 border border-neutral-200/50 dark:border-neutral-700/50"
-          icon="tabler:arrow-up"
-          size="lg"
-          :aria-label="$t('ui.action.backtotop.ariaLabel') || '回到顶部'"
-          @click="scrollToTop"
-        />
-      </UTooltip>
-    </motion.div>
+      <UButton
+        class="fixed bottom-6 right-6 z-50 rounded-full border border-neutral-200 bg-white/90 shadow-sm backdrop-blur dark:border-neutral-800 dark:bg-neutral-900/90"
+        icon="lucide:arrow-up"
+        color="neutral"
+        variant="ghost"
+        size="lg"
+        :aria-label="$t('ui.action.backtotop.ariaLabel') || '回到顶部'"
+        @click="scrollToTop"
+      />
+    </UTooltip>
   </div>
 </template>
-
-<style scoped></style>

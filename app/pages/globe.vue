@@ -547,10 +547,7 @@ onBeforeUnmount(() => {
   <div
     class="flex h-svh w-full flex-col overflow-hidden bg-white dark:bg-neutral-950"
   >
-    <MasonryItemHeader
-      :show-gallery-controls="false"
-      :show-context="false"
-    />
+    <MasonryItemHeader :show-gallery-controls="false" />
 
     <div class="relative min-h-0 flex-1 overflow-hidden">
       <div class="absolute top-4 right-4 z-10 flex flex-col items-end">
@@ -573,7 +570,7 @@ onBeforeUnmount(() => {
               :animate="{ opacity: 1, y: 0, scale: 1 }"
               :exit="{ opacity: 0, y: -8, scale: 0.96 }"
               :transition="{ duration: 0.2, ease: 'easeOut' }"
-              class="absolute right-0 top-full mt-2 z-40 w-64 origin-top-right overflow-hidden rounded-xl border border-neutral-100 bg-white/30 text-neutral-700 shadow-md shadow-neutral-300/20 backdrop-blur-md dark:border-white/10 dark:bg-neutral-700/30 dark:text-white/80 dark:shadow-black/20"
+              class="absolute right-0 top-full z-40 mt-2 w-72 origin-top-right overflow-hidden rounded-md border border-neutral-200 bg-white/95 text-neutral-700 shadow-lg backdrop-blur dark:border-neutral-800 dark:bg-neutral-950/95 dark:text-neutral-200"
             >
               <div
                 class="px-3 py-2 border-b border-neutral-100/80 dark:border-white/10"
@@ -596,19 +593,19 @@ onBeforeUnmount(() => {
                   :key="mode.value"
                   type="button"
                   :class="[
-                    'w-full px-2.5 py-2 rounded-lg text-left transition-colors border flex items-center gap-2.5',
+                    'flex w-full items-center gap-2.5 rounded-md border px-2.5 py-2 text-left transition-colors',
                     analysisMode === mode.value
-                      ? 'bg-primary/90 text-white border-primary/70 shadow-sm'
-                      : 'bg-white/15 text-neutral-700 dark:text-white/80 border-neutral-200/70 dark:border-white/10 hover:bg-white/30 dark:hover:bg-black/20',
+                      ? 'border-neutral-900 bg-neutral-900 text-white dark:border-white dark:bg-white dark:text-neutral-950'
+                      : 'border-transparent text-neutral-700 hover:border-neutral-200 hover:bg-neutral-50 dark:text-neutral-300 dark:hover:border-neutral-800 dark:hover:bg-neutral-900',
                   ]"
                   @click="analysisMode = mode.value"
                 >
                   <span
                     :class="[
-                      'size-7 rounded-md flex items-center justify-center shrink-0 border',
+                      'flex size-7 shrink-0 items-center justify-center rounded-md border',
                       analysisMode === mode.value
-                        ? 'bg-white/20 border-white/30'
-                        : 'bg-white/30 dark:bg-black/20 border-neutral-200/60 dark:border-white/10',
+                        ? 'border-white/30 bg-white/10 dark:border-neutral-900/20 dark:bg-neutral-900/10'
+                        : 'border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950',
                     ]"
                   >
                     <Icon
@@ -631,7 +628,7 @@ onBeforeUnmount(() => {
 
               <div
                 v-if="analysisLegend"
-                class="mx-2.5 mb-2.5 rounded-lg border border-neutral-200/70 dark:border-white/10 bg-white/25 dark:bg-black/20 p-2"
+                class="mx-2.5 mb-2.5 rounded-md border border-neutral-200 bg-neutral-50 p-2 dark:border-neutral-800 dark:bg-neutral-900"
               >
                 <div
                   class="text-[10px] font-semibold text-neutral-600 dark:text-white/70 px-1 mb-1"
@@ -701,7 +698,7 @@ onBeforeUnmount(() => {
         class="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 w-[min(92vw,54rem)] max-sm:left-3 max-sm:right-3 max-sm:translate-x-0 max-sm:w-auto max-sm:pl-16"
       >
         <div
-          class="rounded-xl border border-neutral-100 bg-white/30 text-neutral-700 shadow-md shadow-neutral-300/20 backdrop-blur-md dark:border-white/10 dark:bg-neutral-700/30 dark:text-white/80 dark:shadow-black/20 px-3 py-2"
+          class="rounded-md border border-neutral-200 bg-white/95 px-3 py-2 text-neutral-700 shadow-lg backdrop-blur dark:border-neutral-800 dark:bg-neutral-950/95 dark:text-neutral-200"
         >
           <div class="flex items-center gap-2">
             <UTooltip

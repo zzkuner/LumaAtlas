@@ -139,7 +139,7 @@ const isToggleField = computed(() => props.field.ui.type === 'toggle')
 <template>
   <div
     v-if="isToggleField"
-    class="rounded-md border border-neutral-200 bg-neutral-50/50 px-4 py-3 dark:border-neutral-800 dark:bg-neutral-900/40"
+    class="border-b border-neutral-200 py-4 last:border-b-0 dark:border-neutral-800"
   >
     <div class="flex items-start justify-between gap-6">
       <div class="space-y-1">

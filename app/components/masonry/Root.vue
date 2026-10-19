@@ -586,13 +586,10 @@ watch(currentPhotoIndex, (newIndex) => {
   >
     <MasonryItemHeader
       v-if="showHeader && moduleVisible('header')"
-      :stats="photoStats"
-      :date-range-text
       :max-width="galleryMaxWidth"
       :view-mode="viewMode"
       :layout-mode="galleryLayout"
       :column-count="galleryColumns"
-      :show-context="false"
       :style="{ order: moduleOrder('header') }"
       @update:view-mode="setViewMode"
       @update:layout-mode="setGalleryLayout"

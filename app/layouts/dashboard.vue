@@ -11,86 +11,93 @@ const appTitle = computed(() => {
   return value ? String(value) : $t('title.dashboard')
 })
 
-const navItems = computed<NavigationMenuItem[][]>(() => [
-  [
-    {
-      label: $t('title.dashboard'),
-      icon: 'lucide:layout-dashboard',
-      to: '/dashboard',
-    },
-    {
-      label: $t('title.photos'),
-      icon: 'lucide:image-cog',
-      to: '/dashboard/photos',
-    },
-    {
-      label: $t('title.storageImport'),
-      icon: 'lucide:folder-sync',
-      to: '/dashboard/import',
-    },
-    {
-      label: $t('title.albums'),
-      icon: 'lucide:images',
-      to: '/dashboard/albums',
-    },
-    {
-      label: $t('title.queue'),
-      icon: 'lucide:list-checks',
-      to: '/dashboard/queue',
-    },
-    {
-      label: $t('title.logs'),
-      icon: 'lucide:file-text',
-      to: '/dashboard/logs',
-    },
-    {
-      label: $t('title.backup'),
-      icon: 'lucide:archive-restore',
-      to: '/dashboard/backup',
-    },
-    {
-      label: $t('title.siteAdministration'),
-      icon: 'lucide:settings',
-      defaultOpen: route.path.startsWith('/dashboard/settings'),
-      children: [
-        {
-          label: $t('title.generalSettings'),
-          icon: 'lucide:sliders-horizontal',
-          to: '/dashboard/settings/general',
-        },
-        {
-          label: $t('title.publishingSettings'),
-          icon: 'lucide:rss',
-          to: '/dashboard/settings/publishing',
-        },
-        {
-          label: $t('title.storageSettings'),
-          icon: 'lucide:database',
-          to: '/dashboard/settings/storage',
-        },
-        {
-          label: $t('title.privacySettings'),
-          icon: 'lucide:shield-check',
-          to: '/dashboard/settings/privacy',
-        },
-        {
-          label: '安全与登录',
-          icon: 'lucide:fingerprint',
-          to: '/dashboard/settings/security',
-        },
-        {
-          label: $t('title.mapAndLocation'),
-          icon: 'lucide:map-pin',
-          to: '/dashboard/settings/map',
-        },
-        {
-          label: $t('title.systemSettings'),
-          icon: 'lucide:cpu',
-          to: '/dashboard/settings/system',
-        },
-      ],
-    },
-  ],
+const overviewNav = computed<NavigationMenuItem[]>(() => [
+  {
+    label: $t('title.dashboard'),
+    icon: 'lucide:layout-dashboard',
+    to: '/dashboard',
+  },
+])
+
+const contentNav = computed<NavigationMenuItem[]>(() => [
+  {
+    label: $t('title.photos'),
+    icon: 'lucide:image',
+    to: '/dashboard/photos',
+  },
+  {
+    label: $t('title.albums'),
+    icon: 'lucide:images',
+    to: '/dashboard/albums',
+  },
+  {
+    label: $t('title.storageImport'),
+    icon: 'lucide:folder-input',
+    to: '/dashboard/import',
+  },
+])
+
+const operationsNav = computed<NavigationMenuItem[]>(() => [
+  {
+    label: $t('title.queue'),
+    icon: 'lucide:list-checks',
+    to: '/dashboard/queue',
+  },
+  {
+    label: $t('title.logs'),
+    icon: 'lucide:file-clock',
+    to: '/dashboard/logs',
+  },
+  {
+    label: $t('title.backup'),
+    icon: 'lucide:archive-restore',
+    to: '/dashboard/backup',
+  },
+])
+
+const settingsNav = computed<NavigationMenuItem[]>(() => [
+  {
+    label: $t('title.siteAdministration'),
+    icon: 'lucide:sliders-horizontal',
+    defaultOpen: route.path.startsWith('/dashboard/settings'),
+    children: [
+      {
+        label: $t('title.generalSettings'),
+        icon: 'lucide:sliders-horizontal',
+        to: '/dashboard/settings/general',
+      },
+      {
+        label: $t('title.publishingSettings'),
+        icon: 'lucide:rss',
+        to: '/dashboard/settings/publishing',
+      },
+      {
+        label: $t('title.storageSettings'),
+        icon: 'lucide:database',
+        to: '/dashboard/settings/storage',
+      },
+      {
+        label: $t('title.privacySettings'),
+        icon: 'lucide:shield-check',
+        to: '/dashboard/settings/privacy',
+      },
+      {
+        label: '安全与登录',
+        icon: 'lucide:fingerprint',
+        to: '/dashboard/settings/security',
+      },
+      {
+        label: $t('title.mapAndLocation'),
+        icon: 'lucide:map-pin',
+        to: '/dashboard/settings/map',
+      },
+      {
+        label: $t('title.systemSettings'),
+        icon: 'lucide:cpu',
+        to: '/dashboard/settings/system',
+      },
+    ],
+  },
 ])
 
 useHead({
@@ -130,22 +137,21 @@ const userMenuItems = computed(() => [
   <!-- TODO: unified error page -->
   <div
     v-if="!loggedIn || !user?.isAdmin"
-    class="h-svh flex flex-col gap-4 items-center justify-center px-4"
+    class="flex h-svh flex-col items-center justify-center gap-4 bg-neutral-50 px-4 dark:bg-neutral-950"
   >
     <Icon
       name="lucide:triangle-alert"
       class="size-12 text-primary"
     />
-    <p class="text-gray-500 text-center">
-      {{
-        !user?.isAdmin
-          ? 'Please login to view dashboard'
-          : 'Sorry, you do not have access to this page.'
-      }}
+    <p class="text-center text-neutral-500">
+      {{ !user?.isAdmin ? '请登录后进入管理后台' : '当前账号没有后台管理权限' }}
     </p>
-    <UButton @click="handleLogin">Sign In</UButton>
+    <UButton @click="handleLogin">登录</UButton>
   </div>
-  <UDashboardGroup v-else>
+  <UDashboardGroup
+    v-else
+    class="lumaatlas-dashboard bg-neutral-50 dark:bg-neutral-950"
+  >
     <UDashboardSidebar
       id="cframe-dashboard-sidebar"
       resizable
@@ -153,7 +159,12 @@ const userMenuItems = computed(() => [
       mode="drawer"
       :min-size="8"
       :max-size="12"
-      :ui="{ footer: 'border-t border-default' }"
+      class="bg-white dark:bg-neutral-950"
+      :ui="{
+        header: 'h-16 border-b border-neutral-200 dark:border-neutral-800',
+        body: 'py-4',
+        footer: 'border-t border-neutral-200 dark:border-neutral-800',
+      }"
       :toggle="{
         color: 'neutral',
         variant: 'ghost',
@@ -180,10 +191,11 @@ const userMenuItems = computed(() => [
           <div class="flex flex-col overflow-hidden">
             <NuxtLink
               to="/"
-              class="text-lg font-medium line-clamp-1"
+              class="line-clamp-1 font-display text-lg font-semibold"
             >
               {{ appTitle }}
             </NuxtLink>
+            <span class="text-xs text-neutral-500">管理后台</span>
           </div>
         </div>
         <span
@@ -198,11 +210,67 @@ const userMenuItems = computed(() => [
       </template>
 
       <template #default="{ collapsed }">
-        <UNavigationMenu
-          :collapsed="collapsed"
-          :items="navItems[0]"
-          orientation="vertical"
-        />
+        <div class="space-y-5">
+          <UNavigationMenu
+            :collapsed="collapsed"
+            :items="overviewNav"
+            orientation="vertical"
+          />
+
+          <div>
+            <p
+              v-if="!collapsed"
+              class="mb-1.5 px-2 text-xs font-medium text-neutral-400"
+            >
+              内容
+            </p>
+            <div
+              v-else
+              class="mx-2 mb-3 border-t border-neutral-200 dark:border-neutral-800"
+            />
+            <UNavigationMenu
+              :collapsed="collapsed"
+              :items="contentNav"
+              orientation="vertical"
+            />
+          </div>
+
+          <div>
+            <p
+              v-if="!collapsed"
+              class="mb-1.5 px-2 text-xs font-medium text-neutral-400"
+            >
+              运行
+            </p>
+            <div
+              v-else
+              class="mx-2 mb-3 border-t border-neutral-200 dark:border-neutral-800"
+            />
+            <UNavigationMenu
+              :collapsed="collapsed"
+              :items="operationsNav"
+              orientation="vertical"
+            />
+          </div>
+
+          <div>
+            <p
+              v-if="!collapsed"
+              class="mb-1.5 px-2 text-xs font-medium text-neutral-400"
+            >
+              系统
+            </p>
+            <div
+              v-else
+              class="mx-2 mb-3 border-t border-neutral-200 dark:border-neutral-800"
+            />
+            <UNavigationMenu
+              :collapsed="collapsed"
+              :items="settingsNav"
+              orientation="vertical"
+            />
+          </div>
+        </div>
       </template>
 
       <template #footer="{ collapsed }">
@@ -232,4 +300,16 @@ const userMenuItems = computed(() => [
   </UDashboardGroup>
 </template>
 
-<style scoped></style>
+<style>
+.lumaatlas-dashboard [data-slot='header'] {
+  flex-shrink: 0;
+}
+
+.lumaatlas-dashboard [data-slot='body'] {
+  scrollbar-gutter: stable;
+}
+
+.lumaatlas-dashboard [data-slot='base'] {
+  letter-spacing: 0;
+}
+</style>

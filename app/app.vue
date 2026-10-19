@@ -121,27 +121,32 @@ provide(
 </script>
 
 <template>
-  <UApp :style="publicThemeStyle">
-    <NuxtLoadingIndicator />
-    <PhotosProvider
-      :photos="photos"
-      :refresh="refresh"
-      :status="status"
+  <UApp>
+    <div
+      class="contents"
+      :style="publicThemeStyle"
     >
-      <NuxtLayout>
-        <NuxtPage />
-      </NuxtLayout>
-      <ClientOnly>
-        <PhotoViewer
-          :photos="photos"
-          :current-index="currentPhotoIndex"
-          :is-open="isViewerOpen"
-          @close="handleClose"
-          @index-change="handleIndexChange"
-        />
-        <DiscoveryCommandPalette />
-      </ClientOnly>
-    </PhotosProvider>
+      <NuxtLoadingIndicator />
+      <PhotosProvider
+        :photos="photos"
+        :refresh="refresh"
+        :status="status"
+      >
+        <NuxtLayout>
+          <NuxtPage />
+        </NuxtLayout>
+        <ClientOnly>
+          <PhotoViewer
+            :photos="photos"
+            :current-index="currentPhotoIndex"
+            :is-open="isViewerOpen"
+            @close="handleClose"
+            @index-change="handleIndexChange"
+          />
+          <DiscoveryCommandPalette />
+        </ClientOnly>
+      </PhotosProvider>
+    </div>
   </UApp>
 </template>
 

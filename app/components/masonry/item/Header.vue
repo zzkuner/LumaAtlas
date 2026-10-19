@@ -5,7 +5,7 @@ type HomeViewMode = 'all' | DiscoveryMode
 type GalleryLayout = 'big' | 'masonry' | 'grid'
 type GalleryColumns = number | 'auto'
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     stats?: {
       total: number
@@ -21,7 +21,6 @@ withDefaults(
   }>(),
   {
     dateRangeText: '',
-    maxWidth: '1600px',
     viewMode: 'all',
     layoutMode: 'masonry',
     columnCount: 'auto',
@@ -29,6 +28,21 @@ withDefaults(
     showContext: true,
   },
 )
+
+const resolvedMaxWidth = computed(() => {
+  if (props.maxWidth) return props.maxWidth
+
+  const contentWidth = String(
+    getSetting('app:appearance.home.contentWidth') || 'wide',
+  )
+  return (
+    {
+      contained: '1280px',
+      wide: '1600px',
+      full: '1920px',
+    }[contentWidth] || '1600px'
+  )
+})
 
 const emit = defineEmits<{
   'update:viewMode': [value: HomeViewMode]
@@ -139,7 +153,7 @@ const introCopy = computed(() =>
   >
     <div
       class="mx-auto px-3 py-3 sm:px-5 lg:px-7"
-      :style="{ maxWidth }"
+      :style="{ maxWidth: resolvedMaxWidth }"
     >
       <div class="flex min-h-10 items-center justify-between gap-3">
         <NuxtLink

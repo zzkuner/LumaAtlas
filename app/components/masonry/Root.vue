@@ -119,28 +119,7 @@ const moduleOrder = (id: string) => {
   return index < 0 ? 99 : index
 }
 
-const accentColor = computed(() => {
-  const value = String(
-    getSetting('app:appearance.home.accentColor') || '#171717',
-  )
-  return /^#[0-9a-f]{6}$/i.test(value) ? value : '#171717'
-})
-
-const cornerRadius = computed(() => {
-  const value = Number(getSetting('app:appearance.home.cornerRadius') ?? 2)
-  return Math.max(0, Math.min(16, Number.isFinite(value) ? value : 2))
-})
-
-const headingFont = computed(() => {
-  const value = getSetting('app:appearance.home.headingFont')
-  if (value === 'serif') {
-    return 'Georgia, Cambria, "Times New Roman", serif'
-  }
-  if (value === 'wenkai') {
-    return 'var(--font-display)'
-  }
-  return 'var(--font-sans)'
-})
+const themeStyle = usePublicThemeStyle()
 
 const surfaceStyle = computed(() =>
   String(getSetting('app:appearance.home.surfaceStyle') || 'clean'),
@@ -154,12 +133,6 @@ const surfaceClass = computed(
       contrast: 'bg-white dark:bg-black',
     })[surfaceStyle.value] || 'bg-white dark:bg-neutral-950',
 )
-
-const themeStyle = computed(() => ({
-  '--la-accent': accentColor.value,
-  '--la-radius': `${cornerRadius.value}px`,
-  '--la-heading-font': headingFont.value,
-}))
 
 const configuredLayout = computed<GalleryLayout>(() => {
   const value = String(getSetting('app:appearance.home.layout') || 'masonry')

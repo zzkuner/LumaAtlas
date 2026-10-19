@@ -26,6 +26,7 @@ await settingsStore.initSettings()
 
 const appTitle = useSettingRef('app:title')
 const rssEnabled = useSettingRef('publishing:rss.enabled')
+const publicThemeStyle = usePublicThemeStyle()
 
 colorMode.preference = useSettingRef('app:appearance.theme').value as string
 
@@ -120,7 +121,7 @@ provide(
 </script>
 
 <template>
-  <UApp>
+  <UApp :style="publicThemeStyle">
     <NuxtLoadingIndicator />
     <PhotosProvider
       :photos="photos"

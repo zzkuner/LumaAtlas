@@ -7,6 +7,9 @@ import type {
 
 type HomeViewMode = 'all' | DiscoveryMode
 type GalleryLayout = 'big' | 'masonry' | 'grid'
+type GalleryColumns = number | 'auto'
+
+const GALLERY_PREFERENCES_KEY = 'lumaatlas:gallery-preferences'
 
 interface Props {
   photos: Photo[]
@@ -28,6 +31,8 @@ const route = useRoute()
 const { status: photosStatus } = usePhotos()
 const { filteredPhotos, hasActiveFilters, clearAllFilters } = usePhotoFilters()
 const { sortedPhotos } = usePhotoSort()
+const siteTitle = computed(() => String(getSetting('app:title') || 'LumaAtlas'))
+const siteLogo = computed(() => String(getSetting('app:logoUrl') || ''))
 
 const allowedViewModes: HomeViewMode[] = [
   'all',
@@ -164,9 +169,14 @@ const configuredLayout = computed<GalleryLayout>(() => {
     : 'masonry'
 })
 const visitorLayout = ref<GalleryLayout | null>(null)
+const visitorColumns = ref<GalleryColumns | null>(null)
 const galleryLayout = computed(
   () => visitorLayout.value || configuredLayout.value,
 )
+const galleryColumns = computed<GalleryColumns>(() => {
+  if (props.columns !== 'auto') return props.columns
+  return visitorColumns.value ?? 'auto'
+})
 const imageRatio = computed(() => {
   const value = String(
     getSetting('app:appearance.home.imageRatio') || 'natural',
@@ -193,7 +203,7 @@ const masonryGap = computed(() => {
   return Math.min(24, Math.max(4, Number.isFinite(value) ? value : 12))
 })
 const columnWidth = computed(() => {
-  if (props.columns === 'auto') {
+  if (galleryColumns.value === 'auto') {
     const widths = {
       compact: isMobile.value ? 180 : 260,
       comfortable: isMobile.value ? 220 : 320,
@@ -207,8 +217,10 @@ const columnWidth = computed(() => {
 })
 
 const maxColumns = computed(() => {
-  if (props.columns !== 'auto') {
-    return props.columns
+  if (galleryColumns.value !== 'auto') {
+    return isMobile.value
+      ? Math.min(2, galleryColumns.value)
+      : galleryColumns.value
   }
   if (isMobile.value) return 2
 
@@ -217,8 +229,10 @@ const maxColumns = computed(() => {
 })
 
 const minColumns = computed(() => {
-  if (props.columns !== 'auto') {
-    return props.columns
+  if (galleryColumns.value !== 'auto') {
+    return isMobile.value
+      ? Math.min(2, galleryColumns.value)
+      : galleryColumns.value
   }
   return 2
 })
@@ -475,6 +489,23 @@ const setViewMode = (value: HomeViewMode) => {
 
 const setGalleryLayout = (value: GalleryLayout) => {
   visitorLayout.value = value
+  saveGalleryPreferences()
+}
+
+const setGalleryColumns = (value: GalleryColumns) => {
+  visitorColumns.value = value
+  saveGalleryPreferences()
+}
+
+const saveGalleryPreferences = () => {
+  if (!import.meta.client) return
+  localStorage.setItem(
+    GALLERY_PREFERENCES_KEY,
+    JSON.stringify({
+      layout: visitorLayout.value,
+      columns: visitorColumns.value,
+    }),
+  )
 }
 
 const resetEmptyView = () => {
@@ -491,6 +522,32 @@ const scrollToTop = () => {
 
 onMounted(() => {
   window.addEventListener('scroll', handleScroll, { passive: true })
+
+  const savedPreferences = localStorage.getItem(GALLERY_PREFERENCES_KEY)
+  if (savedPreferences) {
+    try {
+      const preferences = JSON.parse(savedPreferences) as {
+        layout?: GalleryLayout
+        columns?: GalleryColumns
+      }
+      if (
+        preferences.layout &&
+        ['big', 'masonry', 'grid'].includes(preferences.layout)
+      ) {
+        visitorLayout.value = preferences.layout
+      }
+      if (
+        preferences.columns === 'auto' ||
+        (typeof preferences.columns === 'number' &&
+          preferences.columns >= 2 &&
+          preferences.columns <= 8)
+      ) {
+        visitorColumns.value = preferences.columns
+      }
+    } catch {
+      localStorage.removeItem(GALLERY_PREFERENCES_KEY)
+    }
+  }
 
   const savedLocation = localStorage.getItem('lumaatlas:discovery-location')
   if (savedLocation) {
@@ -571,10 +628,12 @@ watch(currentPhotoIndex, (newIndex) => {
       :max-width="galleryMaxWidth"
       :view-mode="viewMode"
       :layout-mode="galleryLayout"
+      :column-count="galleryColumns"
       :show-context="false"
       :style="{ order: moduleOrder('header') }"
       @update:view-mode="setViewMode"
       @update:layout-mode="setGalleryLayout"
+      @update:column-count="setGalleryColumns"
     />
 
     <MasonryItemContext
@@ -608,7 +667,7 @@ watch(currentPhotoIndex, (newIndex) => {
           variant="soft"
           color="neutral"
           class="cursor-pointer bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm flex justify-center items-center rounded-full shadow-lg hover:bg-white dark:hover:bg-neutral-800 transition-all duration-300 border border-neutral-200/50 dark:border-neutral-700/50"
-          icon="tabler:arrow-up"
+          icon="lucide:arrow-up"
           size="lg"
           :aria-label="$t('ui.action.backtotop.ariaLabel') || '回到顶部'"
           @click="scrollToTop"
@@ -659,15 +718,28 @@ watch(currentPhotoIndex, (newIndex) => {
           class="flex min-h-[48svh] flex-col items-center justify-center text-center"
           aria-live="polite"
         >
+          <img
+            v-if="siteLogo"
+            :src="siteLogo"
+            :alt="siteTitle"
+            class="size-16 object-contain"
+          />
           <span
-            class="flex size-10 items-center justify-center border border-neutral-200 dark:border-neutral-800"
+            v-else
+            class="flex size-16 items-center justify-center border border-neutral-200 dark:border-neutral-800"
           >
             <Icon
               name="lucide:aperture"
-              class="size-5 animate-pulse text-neutral-400"
+              class="size-8 animate-pulse text-neutral-400"
             />
           </span>
-          <p class="font-display mt-3 text-sm text-neutral-500">
+          <p
+            class="mt-4 text-2xl font-semibold text-neutral-800 dark:text-neutral-100"
+            style="font-family: var(--la-heading-font)"
+          >
+            {{ siteTitle }}
+          </p>
+          <p class="mt-2 text-base text-neutral-500">
             {{ $t('discovery.loading') }}
           </p>
         </section>

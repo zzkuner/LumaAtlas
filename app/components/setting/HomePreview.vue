@@ -239,7 +239,11 @@ const itemRatio = (naturalRatio: number) => {
                 class="size-2.5"
               />
             </span>
-            <span class="truncate text-[10px] font-semibold">{{ title }}</span>
+            <span
+              class="truncate text-xs font-semibold"
+              :style="{ fontFamily: headingFont }"
+              >{{ title }}</span
+            >
           </div>
           <div class="flex items-center gap-2 text-[8px] text-neutral-500">
             <span>Home</span>

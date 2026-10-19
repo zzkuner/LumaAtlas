@@ -52,9 +52,9 @@ const sourceOptions = [
 ]
 
 const layoutOptions = [
-  { value: 'big', label: '大图', icon: 'lucide:rectangle-vertical' },
-  { value: 'masonry', label: '瀑布流', icon: 'lucide:layout-dashboard' },
-  { value: 'grid', label: '方格', icon: 'lucide:grid-3x3' },
+  { value: 'big', label: '大图', icon: 'lucide:gallery-vertical-end' },
+  { value: 'masonry', label: '瀑布流', icon: 'lucide:panels-top-left' },
+  { value: 'grid', label: '方格', icon: 'lucide:grid-2x2' },
 ]
 
 const isLayoutSelected = (value: string) => {
@@ -155,7 +155,7 @@ const gridImageRatio = computed(() => {
       <section class="py-8">
         <h5 class="text-sm font-semibold">照片布局</h5>
         <p class="mt-1 text-sm text-neutral-500">
-          大图为纵向浏览；方格列数和图片间距会同步到公开首页。
+          这里设置首次访问的默认值；访客可在首页按当前浏览器覆盖布局和列数。
         </p>
         <div class="mt-4 grid grid-cols-3 gap-2">
           <UButton

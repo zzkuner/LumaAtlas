@@ -3,6 +3,7 @@ import type { DiscoveryMode } from '~/composables/usePhotoDiscovery'
 
 type HomeViewMode = 'all' | DiscoveryMode
 type GalleryLayout = 'big' | 'masonry' | 'grid'
+type GalleryColumns = number | 'auto'
 
 withDefaults(
   defineProps<{
@@ -14,6 +15,7 @@ withDefaults(
     maxWidth?: string
     viewMode?: HomeViewMode
     layoutMode?: GalleryLayout
+    columnCount?: GalleryColumns
     showGalleryControls?: boolean
     showContext?: boolean
   }>(),
@@ -22,6 +24,7 @@ withDefaults(
     maxWidth: '1600px',
     viewMode: 'all',
     layoutMode: 'masonry',
+    columnCount: 'auto',
     showGalleryControls: true,
     showContext: true,
   },
@@ -30,6 +33,7 @@ withDefaults(
 const emit = defineEmits<{
   'update:viewMode': [value: HomeViewMode]
   'update:layoutMode': [value: GalleryLayout]
+  'update:columnCount': [value: GalleryColumns]
 }>()
 
 const colorMode = useColorMode()
@@ -84,9 +88,17 @@ const layoutItems: Array<{
   label: string
   icon: string
 }> = [
-  { value: 'big', label: '大图', icon: 'lucide:rectangle-vertical' },
-  { value: 'masonry', label: '瀑布流', icon: 'lucide:layout-dashboard' },
-  { value: 'grid', label: '方格', icon: 'lucide:grid-3x3' },
+  { value: 'big', label: '大图', icon: 'lucide:gallery-vertical-end' },
+  { value: 'masonry', label: '瀑布流', icon: 'lucide:panels-top-left' },
+  { value: 'grid', label: '方格', icon: 'lucide:grid-2x2' },
+]
+
+const columnItems: Array<{ value: GalleryColumns; label: string }> = [
+  { value: 'auto', label: '自动' },
+  ...Array.from({ length: 7 }, (_, index) => ({
+    value: index + 2,
+    label: String(index + 2),
+  })),
 ]
 
 const isDark = computed({
@@ -122,7 +134,8 @@ const introCopy = computed(() =>
 
 <template>
   <header
-    class="sticky top-0 z-40 w-full border-b border-neutral-200/80 bg-white/90 font-display backdrop-blur-xl dark:border-neutral-800/80 dark:bg-neutral-950/90"
+    class="sticky top-0 z-40 w-full border-b border-neutral-200/80 bg-white/90 backdrop-blur-xl dark:border-neutral-800/80 dark:bg-neutral-950/90"
+    style="font-family: var(--la-heading-font)"
   >
     <div
       class="mx-auto px-3 py-3 sm:px-5 lg:px-7"
@@ -137,23 +150,25 @@ const introCopy = computed(() =>
             v-if="siteLogo"
             :src="siteLogo"
             :alt="siteTitle"
-            class="size-8 shrink-0 object-contain"
+            class="size-10 shrink-0 object-contain"
           />
           <span
             v-else
-            class="flex size-8 shrink-0 items-center justify-center border"
+            class="flex size-10 shrink-0 items-center justify-center border"
             :style="{ borderColor: 'var(--la-accent)' }"
           >
             <Icon
               name="lucide:aperture"
-              class="size-4"
+              class="size-5"
             />
           </span>
-          <span class="truncate text-lg font-semibold">{{ siteTitle }}</span>
+          <span class="truncate text-xl font-semibold sm:text-2xl">{{
+            siteTitle
+          }}</span>
         </NuxtLink>
 
         <nav
-          class="hidden items-center gap-7 text-sm text-neutral-500 md:flex dark:text-neutral-400"
+          class="hidden items-center gap-7 text-base text-neutral-500 md:flex dark:text-neutral-400"
           aria-label="Primary navigation"
         >
           <NuxtLink
@@ -170,7 +185,7 @@ const introCopy = computed(() =>
         <div class="flex shrink-0 items-center gap-0.5 font-sans">
           <div
             v-if="showGalleryControls"
-            class="hidden items-center border-r border-neutral-200 pr-1 sm:flex dark:border-neutral-800"
+            class="hidden items-center gap-0.5 rounded-md bg-neutral-100 p-1 sm:flex dark:bg-neutral-900"
           >
             <UTooltip
               v-for="item in layoutItems"
@@ -187,6 +202,38 @@ const introCopy = computed(() =>
                 @click="emit('update:layoutMode', item.value)"
               />
             </UTooltip>
+
+            <UPopover v-if="layoutMode !== 'big'">
+              <UTooltip text="显示列数">
+                <UButton
+                  icon="lucide:columns-3"
+                  size="sm"
+                  color="neutral"
+                  :variant="columnCount === 'auto' ? 'ghost' : 'soft'"
+                  aria-label="显示列数"
+                />
+              </UTooltip>
+              <template #content>
+                <div class="w-64 p-3 font-sans">
+                  <div class="flex items-center justify-between gap-3">
+                    <span class="text-sm font-medium">显示列数</span>
+                    <span class="text-xs text-neutral-500">仅当前浏览器</span>
+                  </div>
+                  <div class="mt-3 grid grid-cols-4 gap-1">
+                    <UButton
+                      v-for="item in columnItems"
+                      :key="item.value"
+                      :label="item.label"
+                      size="sm"
+                      color="neutral"
+                      :variant="columnCount === item.value ? 'soft' : 'ghost'"
+                      class="justify-center"
+                      @click="emit('update:columnCount', item.value)"
+                    />
+                  </div>
+                </div>
+              </template>
+            </UPopover>
           </div>
 
           <UPopover v-if="showGalleryControls">
@@ -198,7 +245,7 @@ const introCopy = computed(() =>
                 :show="totalSelectedFilters > 0"
               >
                 <UButton
-                  icon="lucide:list-filter"
+                  icon="lucide:funnel"
                   size="sm"
                   :color="hasActiveFilters ? 'info' : 'neutral'"
                   variant="ghost"
@@ -265,7 +312,7 @@ const introCopy = computed(() =>
       </div>
 
       <nav
-        class="scrollbar-hidden mt-3 flex gap-5 overflow-x-auto border-t border-neutral-200 pt-3 text-sm text-neutral-500 md:hidden dark:border-neutral-800 dark:text-neutral-400"
+        class="scrollbar-hidden mt-3 flex gap-5 overflow-x-auto border-t border-neutral-200 pt-3 text-base text-neutral-500 md:hidden dark:border-neutral-800 dark:text-neutral-400"
         aria-label="Primary navigation"
       >
         <NuxtLink
@@ -284,7 +331,7 @@ const introCopy = computed(() =>
         class="mt-3 flex items-center justify-between gap-3 border-t border-neutral-200 pt-3 dark:border-neutral-800"
       >
         <div
-          class="scrollbar-hidden flex min-w-0 gap-5 overflow-x-auto text-sm text-neutral-500 dark:text-neutral-400"
+          class="scrollbar-hidden flex min-w-0 gap-5 overflow-x-auto text-base text-neutral-500 dark:text-neutral-400"
         >
           <button
             v-for="item in viewItems"
@@ -302,7 +349,9 @@ const introCopy = computed(() =>
           </button>
         </div>
 
-        <div class="flex shrink-0 items-center sm:hidden font-sans">
+        <div
+          class="flex shrink-0 items-center rounded-md bg-neutral-100 p-0.5 font-sans sm:hidden dark:bg-neutral-900"
+        >
           <UTooltip
             v-for="item in layoutItems"
             :key="item.value"
@@ -317,6 +366,36 @@ const introCopy = computed(() =>
               @click="emit('update:layoutMode', item.value)"
             />
           </UTooltip>
+
+          <UPopover v-if="layoutMode !== 'big'">
+            <UButton
+              icon="lucide:columns-3"
+              size="xs"
+              color="neutral"
+              :variant="columnCount === 'auto' ? 'ghost' : 'soft'"
+              aria-label="显示列数"
+            />
+            <template #content>
+              <div class="w-64 p-3 font-sans">
+                <div class="flex items-center justify-between gap-3">
+                  <span class="text-sm font-medium">显示列数</span>
+                  <span class="text-xs text-neutral-500">仅当前浏览器</span>
+                </div>
+                <div class="mt-3 grid grid-cols-4 gap-1">
+                  <UButton
+                    v-for="item in columnItems"
+                    :key="item.value"
+                    :label="item.label"
+                    size="sm"
+                    color="neutral"
+                    :variant="columnCount === item.value ? 'soft' : 'ghost'"
+                    class="justify-center"
+                    @click="emit('update:columnCount', item.value)"
+                  />
+                </div>
+              </div>
+            </template>
+          </UPopover>
         </div>
       </div>
 

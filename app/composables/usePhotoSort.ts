@@ -18,7 +18,7 @@ const globalSortState = ref<SortState>({
     {
       key: 'dateTaken-desc',
       labelI18n: 'ui.action.sort.options.dateTakenDesc',
-      icon: 'tabler:sort-descending',
+      icon: 'lucide:arrow-down-wide-narrow',
       value: (photo: Photo) =>
         photo.dateTaken ? new Date(photo.dateTaken).getTime() : 0,
       order: 'desc',
@@ -26,7 +26,7 @@ const globalSortState = ref<SortState>({
     {
       key: 'dateTaken-asc',
       labelI18n: 'ui.action.sort.options.dateTakenAsc',
-      icon: 'tabler:sort-ascending',
+      icon: 'lucide:arrow-up-narrow-wide',
       value: (photo: Photo) =>
         photo.dateTaken ? new Date(photo.dateTaken).getTime() : 0,
       order: 'asc',
@@ -34,28 +34,28 @@ const globalSortState = ref<SortState>({
     {
       key: 'fileSize-asc',
       labelI18n: 'ui.action.sort.options.fileSizeAsc',
-      icon: 'tabler:sort-ascending-small-big',
+      icon: 'lucide:arrow-up-narrow-wide',
       value: (photo: Photo) => photo.fileSize || 0,
       order: 'asc',
     },
     {
       key: 'fileSize-desc',
       labelI18n: 'ui.action.sort.options.fileSizeDesc',
-      icon: 'tabler:sort-descending-small-big',
+      icon: 'lucide:arrow-down-wide-narrow',
       value: (photo: Photo) => photo.fileSize || 0,
       order: 'desc',
     },
     {
       key: 'title-asc',
       labelI18n: 'ui.action.sort.options.titleAsc',
-      icon: 'tabler:sort-ascending-letters',
+      icon: 'lucide:arrow-down-a-z',
       value: (photo: Photo) => (photo.title || photo.id).toLowerCase(),
       order: 'asc',
     },
     {
       key: 'title-desc',
       labelI18n: 'ui.action.sort.options.titleDesc',
-      icon: 'tabler:sort-descending-letters',
+      icon: 'lucide:arrow-up-z-a',
       value: (photo: Photo) => (photo.title || photo.id).toLowerCase(),
       order: 'desc',
     },
@@ -138,7 +138,7 @@ export function usePhotoSort() {
 
   // 获取当前排序的显示图标
   const currentSortIcon = computed(
-    () => currentSortOption.value?.icon || 'tabler:sort-descending',
+    () => currentSortOption.value?.icon || 'lucide:arrow-down-wide-narrow',
   )
 
   // 检查是否为时间排序
@@ -166,7 +166,7 @@ export function usePhotoSort() {
       globalSortState.value.availableSorts.push({
         key: 'shuffle',
         labelI18n: 'ui.action.sort.options.shuffle',
-        icon: 'tabler:dice-3',
+        icon: 'lucide:shuffle',
         value: () => Math.random(),
         order: 'asc',
       })

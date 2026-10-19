@@ -41,6 +41,8 @@ const elemRef = useTemplateRef('elemRef')
 const isElemVisible = ref(false)
 const isLoaded = ref(false)
 const isError = ref(false)
+const siteTitle = computed(() => String(getSetting('app:title') || 'LumaAtlas'))
+const siteLogo = computed(() => String(getSetting('app:logoUrl') || ''))
 
 const srcset = computed(() => {
   const uniqueSources = new Map<number, PhotoThumbnailVariant>()
@@ -103,13 +105,26 @@ const onError = () => {
   >
     <div
       v-if="!isLoaded && !isError"
-      class="absolute inset-0 flex items-center justify-center bg-neutral-100 dark:bg-neutral-900"
+      class="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-neutral-100 px-3 dark:bg-neutral-900"
       :class="thumbhashClass"
     >
-      <Icon
-        name="lucide:aperture"
-        class="size-4 animate-pulse text-neutral-300 dark:text-neutral-700"
+      <img
+        v-if="siteLogo"
+        :src="siteLogo"
+        :alt="siteTitle"
+        class="size-10 object-contain opacity-60"
       />
+      <Icon
+        v-else
+        name="lucide:aperture"
+        class="size-8 animate-pulse text-neutral-300 dark:text-neutral-700"
+      />
+      <span
+        class="max-w-full truncate text-base font-semibold text-neutral-400 dark:text-neutral-600"
+        style="font-family: var(--la-heading-font)"
+      >
+        {{ siteTitle }}
+      </span>
     </div>
 
     <img
@@ -133,10 +148,10 @@ const onError = () => {
 
     <div
       v-if="isError"
-      class="absolute inset-0 flex justify-center items-center bg-neutral-200 dark:bg-neutral-800"
+      class="absolute inset-0 flex flex-col items-center justify-center bg-neutral-200 dark:bg-neutral-800"
     >
       <Icon
-        name="tabler:photo-off"
+        name="lucide:image-off"
         class="size-6 text-neutral-400"
       />
       <p class="mt-2 text-sm text-neutral-500 dark:text-neutral-400">

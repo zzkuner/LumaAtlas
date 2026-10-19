@@ -15,12 +15,12 @@ const navItems = computed<NavigationMenuItem[][]>(() => [
   [
     {
       label: $t('title.dashboard'),
-      icon: 'tabler:dashboard',
+      icon: 'lucide:layout-dashboard',
       to: '/dashboard',
     },
     {
       label: $t('title.photos'),
-      icon: 'tabler:photo-cog',
+      icon: 'lucide:image-cog',
       to: '/dashboard/photos',
     },
     {
@@ -30,17 +30,17 @@ const navItems = computed<NavigationMenuItem[][]>(() => [
     },
     {
       label: $t('title.albums'),
-      icon: 'tabler:album',
+      icon: 'lucide:images',
       to: '/dashboard/albums',
     },
     {
       label: $t('title.queue'),
-      icon: 'tabler:list-check',
+      icon: 'lucide:list-checks',
       to: '/dashboard/queue',
     },
     {
       label: $t('title.logs'),
-      icon: 'tabler:file-text',
+      icon: 'lucide:file-text',
       to: '/dashboard/logs',
     },
     {
@@ -50,12 +50,12 @@ const navItems = computed<NavigationMenuItem[][]>(() => [
     },
     {
       label: $t('title.siteAdministration'),
-      icon: 'tabler:settings',
+      icon: 'lucide:settings',
       defaultOpen: route.path.startsWith('/dashboard/settings'),
       children: [
         {
           label: $t('title.generalSettings'),
-          icon: 'tabler:settings-2',
+          icon: 'lucide:sliders-horizontal',
           to: '/dashboard/settings/general',
         },
         {
@@ -65,12 +65,12 @@ const navItems = computed<NavigationMenuItem[][]>(() => [
         },
         {
           label: $t('title.storageSettings'),
-          icon: 'tabler:database',
+          icon: 'lucide:database',
           to: '/dashboard/settings/storage',
         },
         {
           label: $t('title.privacySettings'),
-          icon: 'tabler:shield-lock',
+          icon: 'lucide:shield-check',
           to: '/dashboard/settings/privacy',
         },
         {
@@ -80,12 +80,12 @@ const navItems = computed<NavigationMenuItem[][]>(() => [
         },
         {
           label: $t('title.mapAndLocation'),
-          icon: 'tabler:map-pin',
+          icon: 'lucide:map-pin',
           to: '/dashboard/settings/map',
         },
         {
           label: $t('title.systemSettings'),
-          icon: 'tabler:cpu',
+          icon: 'lucide:cpu',
           to: '/dashboard/settings/system',
         },
       ],
@@ -133,7 +133,7 @@ const userMenuItems = computed(() => [
     class="h-svh flex flex-col gap-4 items-center justify-center px-4"
   >
     <Icon
-      name="tabler:alert-triangle"
+      name="lucide:triangle-alert"
       class="size-12 text-primary"
     />
     <p class="text-gray-500 text-center">

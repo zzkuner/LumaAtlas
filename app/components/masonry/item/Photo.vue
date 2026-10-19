@@ -673,7 +673,7 @@ onUnmounted(() => {
 
       <!-- Photo info overlay (bottom) -->
       <motion.div
-        v-if="showPhotoInfo && !isFeed"
+        v-if="!isFeed && (contentTitle || photo.description || showPhotoInfo)"
         v-show="shouldShowInfoOverlay"
         class="absolute bottom-0 left-0 right-0 bg-linear-to-t from-black/60 to-transparent p-3"
         :initial="{ y: '100%', opacity: 0 }"
@@ -689,10 +689,10 @@ onUnmounted(() => {
         <div class="text-white flex flex-col gap-1">
           <div class="flex flex-col">
             <p
-              v-if="photo.title"
+              v-if="contentTitle"
               class="text-base font-medium text-ellipsis line-clamp-1"
             >
-              {{ photo.title }}
+              {{ contentTitle }}
             </p>
             <p
               v-if="photo.description"
@@ -701,7 +701,7 @@ onUnmounted(() => {
               {{ photo.description }}
             </p>
             <p
-              v-if="photo.dateTaken || photo.city"
+              v-if="showPhotoInfo && (photo.dateTaken || photo.city)"
               class="text-xs font-medium opacity-80"
             >
               <span v-if="photo.dateTaken">
@@ -713,7 +713,7 @@ onUnmounted(() => {
             </p>
           </div>
           <div
-            v-if="photo.tags?.length"
+            v-if="showPhotoInfo && photo.tags?.length"
             class="mt-1 flex items-center gap-1"
           >
             <UBadge
@@ -726,13 +726,16 @@ onUnmounted(() => {
               {{ tag }}
             </UBadge>
           </div>
-          <div>
+          <div v-if="showPhotoInfo">
             <!-- Camera info from EXIF if available -->
             <div
               v-if="photo.exif && (photo.exif.Make || photo.exif.Model)"
               class="text-sm opacity-70 mt-1 flex items-center gap-1"
             >
-              <Icon name="tabler:camera" />
+              <Icon
+                name="lucide:camera"
+                class="size-4"
+              />
               <span class="text-xs font-medium text-ellipsis line-clamp-1">
                 {{ formatCameraInfo(photo.exif.Make, photo.exif.Model) }}
               </span>
@@ -752,8 +755,8 @@ onUnmounted(() => {
                 class="flex items-center gap-0.5"
               >
                 <Icon
-                  name="streamline:image-accessories-lenses-photos-camera-shutter-picture-photography-pictures-photo-lens"
-                  class="-mt-0.5"
+                  name="lucide:focus"
+                  class="-mt-0.5 size-4"
                 />
                 <span class="text-xs font-medium">
                   {{ photo.exif.FocalLengthIn35mmFormat }}
@@ -764,8 +767,8 @@ onUnmounted(() => {
                 class="flex items-center gap-0.5"
               >
                 <Icon
-                  name="tabler:aperture"
-                  class="-mt-0.5"
+                  name="lucide:aperture"
+                  class="-mt-0.5 size-4"
                 />
                 <span class="text-xs font-medium">
                   f/{{ photo.exif.FNumber }}
@@ -776,8 +779,8 @@ onUnmounted(() => {
                 class="flex items-center gap-0.5"
               >
                 <Icon
-                  name="material-symbols:shutter-speed"
-                  class="-mt-0.5"
+                  name="lucide:gauge"
+                  class="-mt-0.5 size-4"
                 />
                 <span class="text-xs font-medium">
                   {{ formatExposureTime(photo.exif.ExposureTime) }}
@@ -787,10 +790,11 @@ onUnmounted(() => {
                 v-if="photo.exif.ISO"
                 class="flex items-center gap-0.5"
               >
-                <Icon
-                  name="carbon:iso-outline"
-                  class="-mt-0.5"
-                />
+                <span
+                  class="inline-flex h-4 min-w-5 items-center justify-center border border-current px-0.5 text-[9px] font-semibold leading-none"
+                >
+                  ISO
+                </span>
                 <span class="text-xs font-medium">{{ photo.exif.ISO }}</span>
               </div>
             </div>
@@ -827,7 +831,7 @@ onUnmounted(() => {
             class="inline-flex items-center gap-1"
           >
             <Icon
-              name="lucide:telescope"
+              name="lucide:focus"
               class="size-4"
             />
             {{ formattedFocalLength }}
@@ -847,7 +851,7 @@ onUnmounted(() => {
             class="inline-flex items-center gap-1"
           >
             <Icon
-              name="lucide:timer"
+              name="lucide:gauge"
               class="size-4"
             />
             {{ formatExposureTime(photo.exif.ExposureTime) }}
@@ -856,10 +860,11 @@ onUnmounted(() => {
             v-if="photo.exif?.ISO"
             class="inline-flex items-center gap-1"
           >
-            <Icon
-              name="carbon:iso-outline"
-              class="size-5"
-            />
+            <span
+              class="inline-flex h-4 min-w-5 items-center justify-center border border-current px-0.5 text-[9px] font-semibold leading-none"
+            >
+              ISO
+            </span>
             {{ photo.exif.ISO }}
           </span>
         </div>

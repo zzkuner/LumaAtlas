@@ -238,16 +238,6 @@ const minColumns = computed(() => {
 })
 
 const galleryMaxWidth = computed(() => {
-  if (galleryLayout.value === 'big') {
-    return (
-      {
-        contained: '880px',
-        wide: '1080px',
-        full: '1280px',
-      }[contentWidth.value] ?? '1080px'
-    )
-  }
-
   return (
     {
       contained: '1280px',

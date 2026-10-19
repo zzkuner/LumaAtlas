@@ -44,21 +44,30 @@ const mapStyle = computed(() => {
   if (provider.value === 'mapbox') {
     return mapConfig.value['mapbox.style'] || `mapbox://styles/mapbox/standard`
   } else {
+    const configuredStyle = String(
+      mapConfig.value['maplibre.style'] || '',
+    ).trim()
+    if (configuredStyle) {
+      return configuredStyle
+    }
+
+    const maptilerToken = String(mapConfig.value['maplibre.token'] || '').trim()
+    if (!maptilerToken) {
+      return 'https://tiles.openfreemap.org/styles/liberty'
+    }
+
     const styleConfig =
       colorMode.value === 'dark' ? ChronoFrameDarkStyle : ChronoFrameLightStyle
-    return (
-      mapConfig.value['maplibre.style'] ||
-      ({
-        ...styleConfig,
-        sources: {
-          openmaptiles: {
-            ...styleConfig.sources?.openmaptiles,
-            url: `https://api.maptiler.com/tiles/v3-openmaptiles/tiles.json?key=${mapConfig.value['maplibre.token']}`,
-          },
+    return {
+      ...styleConfig,
+      sources: {
+        openmaptiles: {
+          ...styleConfig.sources?.openmaptiles,
+          url: `https://api.maptiler.com/tiles/v3-openmaptiles/tiles.json?key=${maptilerToken}`,
         },
-        glyphs: `https://api.maptiler.com/fonts/{fontstack}/{range}.pbf?key=${mapConfig.value['maplibre.token']}`,
-      } as unknown as StyleSpecification)
-    )
+      },
+      glyphs: `https://api.maptiler.com/fonts/{fontstack}/{range}.pbf?key=${maptilerToken}`,
+    } as unknown as StyleSpecification
   }
 })
 </script>

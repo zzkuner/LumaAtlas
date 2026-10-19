@@ -672,19 +672,10 @@ onUnmounted(() => {
       </div>
 
       <!-- Photo info overlay (bottom) -->
-      <motion.div
+      <div
         v-if="!isFeed && (contentTitle || photo.description || showPhotoInfo)"
         v-show="shouldShowInfoOverlay"
-        class="absolute bottom-0 left-0 right-0 bg-linear-to-t from-black/60 to-transparent p-3"
-        :initial="{ y: '100%', opacity: 0 }"
-        :animate="{
-          y: shouldShowInfoOverlay && isHovering && !isMobile ? 0 : '100%',
-          opacity: shouldShowInfoOverlay && isHovering && !isMobile ? 1 : 0,
-        }"
-        :transition="{
-          duration: 0.3,
-          ease: [0.25, 0.1, 0.25, 1],
-        }"
+        class="pointer-events-none absolute inset-x-0 bottom-0 translate-y-3 bg-linear-to-t from-black/70 via-black/30 to-transparent p-3 opacity-0 transition-all duration-300 ease-out group-hover:translate-y-0 group-hover:opacity-100"
       >
         <div class="text-white flex flex-col gap-1">
           <div class="flex flex-col">
@@ -800,35 +791,24 @@ onUnmounted(() => {
             </div>
           </div>
         </div>
-      </motion.div>
+      </div>
     </div>
 
     <div
       v-if="showBigPhotoInfo && isFeed"
-      class="scrollbar-hidden mx-auto flex w-full max-w-6xl items-start gap-2 overflow-x-auto py-5 sm:justify-center sm:gap-3"
+      class="mx-auto grid w-full max-w-6xl grid-cols-2 items-start gap-x-2 gap-y-1 py-5 lg:grid-cols-[minmax(18rem,2fr)_minmax(10rem,1fr)_minmax(12rem,1.25fr)_minmax(9rem,1fr)_2.5rem] lg:gap-3"
     >
       <div
-        class="flex shrink-0 flex-col items-center justify-center gap-2 rounded-md px-3 py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-900"
-      >
-        <span class="text-xs text-neutral-400">评分</span>
-        <Rating
-          :model-value="Number(photo.exif?.Rating || 0)"
-          readonly
-          size="sm"
-        />
-      </div>
-
-      <div
         v-if="hasExposureParameters"
-        class="flex shrink-0 flex-col items-center justify-center gap-2 rounded-md px-3 py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-900"
+        class="col-span-2 flex min-w-0 flex-col items-center justify-center gap-2 rounded-md px-2 py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-900 lg:col-span-1 lg:px-3"
       >
         <span class="text-xs text-neutral-400">参数</span>
         <div
-          class="flex items-center gap-3 whitespace-nowrap text-sm text-neutral-700 dark:text-neutral-300"
+          class="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-sm text-neutral-700 dark:text-neutral-300"
         >
           <span
             v-if="formattedFocalLength"
-            class="inline-flex items-center gap-1"
+            class="inline-flex items-center gap-1 whitespace-nowrap"
           >
             <Icon
               name="lucide:focus"
@@ -838,7 +818,7 @@ onUnmounted(() => {
           </span>
           <span
             v-if="photo.exif?.FNumber"
-            class="inline-flex items-center gap-1"
+            class="inline-flex items-center gap-1 whitespace-nowrap"
           >
             <Icon
               name="lucide:aperture"
@@ -848,7 +828,7 @@ onUnmounted(() => {
           </span>
           <span
             v-if="photo.exif?.ExposureTime"
-            class="inline-flex items-center gap-1"
+            class="inline-flex items-center gap-1 whitespace-nowrap"
           >
             <Icon
               name="lucide:gauge"
@@ -858,7 +838,7 @@ onUnmounted(() => {
           </span>
           <span
             v-if="photo.exif?.ISO"
-            class="inline-flex items-center gap-1"
+            class="inline-flex items-center gap-1 whitespace-nowrap"
           >
             <span
               class="inline-flex h-4 min-w-5 items-center justify-center border border-current px-0.5 text-[9px] font-semibold leading-none"
@@ -872,22 +852,22 @@ onUnmounted(() => {
 
       <div
         v-if="photo.exif?.Model"
-        class="flex min-w-32 shrink-0 flex-col items-center justify-center gap-2 rounded-md px-3 py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-900"
+        class="flex min-w-0 flex-col items-center justify-center gap-2 rounded-md px-2 py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-900 lg:px-3"
       >
         <span class="text-xs text-neutral-400">相机</span>
         <span
-          class="max-w-48 truncate whitespace-nowrap text-sm uppercase text-neutral-700 dark:text-neutral-300"
+          class="text-center text-sm uppercase leading-5 text-neutral-700 break-words dark:text-neutral-300"
         >
           {{ formatCameraInfo(photo.exif.Make, photo.exif.Model) }}
         </span>
       </div>
 
       <div
-        class="flex min-w-36 shrink-0 flex-col items-center justify-center gap-2 rounded-md px-3 py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-900"
+        class="flex min-w-0 flex-col items-center justify-center gap-2 rounded-md px-2 py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-900 lg:px-3"
       >
         <span class="text-xs text-neutral-400">位置</span>
         <span
-          class="max-w-64 truncate whitespace-nowrap text-sm text-neutral-700 dark:text-neutral-300"
+          class="text-center text-sm leading-5 text-neutral-700 break-words dark:text-neutral-300"
         >
           {{ formattedLocation || '未记录位置' }}
         </span>
@@ -895,7 +875,7 @@ onUnmounted(() => {
 
       <div
         v-if="photo.dateTaken"
-        class="flex shrink-0 flex-col items-center justify-center gap-2 rounded-md px-3 py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-900"
+        class="flex min-w-0 flex-col items-center justify-center gap-2 rounded-md px-2 py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-900 lg:px-3"
       >
         <span class="text-xs text-neutral-400">时间</span>
         <span
@@ -905,7 +885,7 @@ onUnmounted(() => {
         </span>
       </div>
 
-      <div class="flex shrink-0 items-center px-1 py-2">
+      <div class="flex min-w-0 items-center justify-center px-1 py-2">
         <UTooltip text="查看详情">
           <UButton
             icon="lucide:ellipsis"

@@ -544,283 +544,292 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="w-full h-svh relative overflow-hidden">
-    <GlassButton
-      class="absolute top-4 left-4 z-10"
-      icon="tabler:home"
-      @click="$router.push('/')"
+  <div
+    class="flex h-svh w-full flex-col overflow-hidden bg-white dark:bg-neutral-950"
+  >
+    <MasonryItemHeader
+      :show-gallery-controls="false"
+      :show-context="false"
     />
 
-    <div class="absolute top-4 right-4 z-10 flex flex-col items-end">
-      <div class="relative">
-        <UTooltip
-          :text="$t('globe.analysis.annotation')"
-          :delay-duration="0"
-        >
-          <GlassButton
-            icon="tabler:adjustments"
-            :active="analysisMode !== 'none'"
-            @click="parameterAnnotationOpen = !parameterAnnotationOpen"
-          />
-        </UTooltip>
-
-        <AnimatePresence>
-          <motion.div
-            v-if="parameterAnnotationOpen"
-            :initial="{ opacity: 0, y: -8, scale: 0.96 }"
-            :animate="{ opacity: 1, y: 0, scale: 1 }"
-            :exit="{ opacity: 0, y: -8, scale: 0.96 }"
-            :transition="{ duration: 0.2, ease: 'easeOut' }"
-            class="absolute right-0 top-full mt-2 z-40 w-64 origin-top-right overflow-hidden rounded-xl border border-neutral-100 bg-white/30 text-neutral-700 shadow-md shadow-neutral-300/20 backdrop-blur-md dark:border-white/10 dark:bg-neutral-700/30 dark:text-white/80 dark:shadow-black/20"
-          >
-            <div
-              class="px-3 py-2 border-b border-neutral-100/80 dark:border-white/10"
-            >
-              <div class="flex items-center gap-2 text-sm font-semibold">
-                <Icon
-                  name="tabler:adjustments-horizontal"
-                  class="size-4 text-primary"
-                />
-                <span>{{ $t('globe.analysis.annotation') }}</span>
-              </div>
-              <p class="mt-1 text-[11px] text-neutral-600 dark:text-white/60">
-                {{ $t('globe.analysis.annotationDescription') }}
-              </p>
-            </div>
-
-            <div class="p-2.5 space-y-2">
-              <button
-                v-for="mode in analysisModeOptions"
-                :key="mode.value"
-                type="button"
-                :class="[
-                  'w-full px-2.5 py-2 rounded-lg text-left transition-colors border flex items-center gap-2.5',
-                  analysisMode === mode.value
-                    ? 'bg-primary/90 text-white border-primary/70 shadow-sm'
-                    : 'bg-white/15 text-neutral-700 dark:text-white/80 border-neutral-200/70 dark:border-white/10 hover:bg-white/30 dark:hover:bg-black/20',
-                ]"
-                @click="analysisMode = mode.value"
-              >
-                <span
-                  :class="[
-                    'size-7 rounded-md flex items-center justify-center shrink-0 border',
-                    analysisMode === mode.value
-                      ? 'bg-white/20 border-white/30'
-                      : 'bg-white/30 dark:bg-black/20 border-neutral-200/60 dark:border-white/10',
-                  ]"
-                >
-                  <Icon
-                    :name="mode.icon"
-                    class="size-4"
-                  />
-                </span>
-                <span class="min-w-0">
-                  <span class="block text-xs font-semibold leading-none">{{
-                    mode.label
-                  }}</span>
-                  <span
-                    class="block text-[10px] mt-1 text-neutral-500 dark:text-white/55"
-                  >
-                    {{ mode.description }}
-                  </span>
-                </span>
-              </button>
-            </div>
-
-            <div
-              v-if="analysisLegend"
-              class="mx-2.5 mb-2.5 rounded-lg border border-neutral-200/70 dark:border-white/10 bg-white/25 dark:bg-black/20 p-2"
-            >
-              <div
-                class="text-[10px] font-semibold text-neutral-600 dark:text-white/70 px-1 mb-1"
-              >
-                {{ analysisLegend.title }}
-              </div>
-              <div
-                v-for="item in analysisLegend.items"
-                :key="item.label"
-                class="flex items-center justify-between gap-2 text-[10px] text-neutral-700 dark:text-white/80 px-1 py-1 rounded-md hover:bg-white/40 dark:hover:bg-black/20"
-              >
-                <span class="inline-flex items-center gap-1.5 min-w-0">
-                  <span
-                    :class="[
-                      'size-2.5 rounded-full shrink-0 ring-1 ring-black/10 dark:ring-white/20',
-                      item.color,
-                    ]"
-                  />
-                  <span class="truncate">{{ item.label }}</span>
-                </span>
-                <span class="font-mono text-neutral-500 dark:text-white/55">{{
-                  item.range
-                }}</span>
-              </div>
-            </div>
-          </motion.div>
-        </AnimatePresence>
-      </div>
-
-      <div class="mt-2 relative">
-        <UTooltip
-          :text="$t('globe.timeline.toggle')"
-          :delay-duration="0"
-        >
-          <GlassButton
-            icon="tabler:timeline-event"
-            :active="isTimelineEnabled"
-            @click="toggleTimelineEnabled"
-          />
-        </UTooltip>
-      </div>
-    </div>
-
-    <div class="absolute bottom-4 left-4 z-10 flex flex-col">
-      <!-- Zoom in -->
-      <GlassButton
-        class="rounded-b-none border-b-0"
-        icon="tabler:plus"
-        @click="zoomIn"
-      />
-      <!-- Zoom out -->
-      <GlassButton
-        class="rounded-none"
-        icon="tabler:minus"
-        @click="zoomOut"
-      />
-      <!-- Reset map -->
-      <GlassButton
-        class="rounded-t-none border-t-0"
-        icon="tabler:scan-position"
-        @click="resetMap"
-      />
-    </div>
-
-    <div
-      v-if="isTimelineEnabled"
-      class="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 w-[min(92vw,54rem)] max-sm:left-3 max-sm:right-3 max-sm:translate-x-0 max-sm:w-auto max-sm:pl-16"
-    >
-      <div
-        class="rounded-xl border border-neutral-100 bg-white/30 text-neutral-700 shadow-md shadow-neutral-300/20 backdrop-blur-md dark:border-white/10 dark:bg-neutral-700/30 dark:text-white/80 dark:shadow-black/20 px-3 py-2"
-      >
-        <div class="flex items-center gap-2">
+    <div class="relative min-h-0 flex-1 overflow-hidden">
+      <div class="absolute top-4 right-4 z-10 flex flex-col items-end">
+        <div class="relative">
           <UTooltip
-            :text="$t('globe.timeline.playPause')"
+            :text="$t('globe.analysis.annotation')"
             :delay-duration="0"
           >
             <GlassButton
-              size="sm"
-              :icon="
-                isTimelinePlaying ? 'tabler:player-pause' : 'tabler:player-play'
-              "
-              :class="
-                !hasTimelineData || !isTimelineEnabled
-                  ? 'opacity-40 pointer-events-none'
-                  : ''
-              "
-              @click="toggleTimelinePlayback"
+              icon="tabler:adjustments"
+              :active="analysisMode !== 'none'"
+              @click="parameterAnnotationOpen = !parameterAnnotationOpen"
             />
           </UTooltip>
-          <div class="min-w-0 flex-1">
-            <div class="flex items-center justify-between gap-2 text-[11px]">
-              <span class="font-medium">{{ $t('globe.timeline.title') }}</span>
-              <span class="text-neutral-600 dark:text-white/60">
-                {{ filteredPhotosWithLocation.length }}/{{
-                  photosWithLocation.length
-                }}
-              </span>
-            </div>
-            <div
-              ref="timelineTrackRef"
-              :class="[
-                'mt-2 relative h-5 select-none touch-none',
-                hasTimelineData
-                  ? 'cursor-pointer'
-                  : 'cursor-not-allowed opacity-60',
-              ]"
-              @pointerdown="onTimelinePointerDown"
+
+          <AnimatePresence>
+            <motion.div
+              v-if="parameterAnnotationOpen"
+              :initial="{ opacity: 0, y: -8, scale: 0.96 }"
+              :animate="{ opacity: 1, y: 0, scale: 1 }"
+              :exit="{ opacity: 0, y: -8, scale: 0.96 }"
+              :transition="{ duration: 0.2, ease: 'easeOut' }"
+              class="absolute right-0 top-full mt-2 z-40 w-64 origin-top-right overflow-hidden rounded-xl border border-neutral-100 bg-white/30 text-neutral-700 shadow-md shadow-neutral-300/20 backdrop-blur-md dark:border-white/10 dark:bg-neutral-700/30 dark:text-white/80 dark:shadow-black/20"
             >
               <div
-                class="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-1 rounded-full bg-neutral-200/80 dark:bg-white/15"
-              />
+                class="px-3 py-2 border-b border-neutral-100/80 dark:border-white/10"
+              >
+                <div class="flex items-center gap-2 text-sm font-semibold">
+                  <Icon
+                    name="tabler:adjustments-horizontal"
+                    class="size-4 text-primary"
+                  />
+                  <span>{{ $t('globe.analysis.annotation') }}</span>
+                </div>
+                <p class="mt-1 text-[11px] text-neutral-600 dark:text-white/60">
+                  {{ $t('globe.analysis.annotationDescription') }}
+                </p>
+              </div>
+
+              <div class="p-2.5 space-y-2">
+                <button
+                  v-for="mode in analysisModeOptions"
+                  :key="mode.value"
+                  type="button"
+                  :class="[
+                    'w-full px-2.5 py-2 rounded-lg text-left transition-colors border flex items-center gap-2.5',
+                    analysisMode === mode.value
+                      ? 'bg-primary/90 text-white border-primary/70 shadow-sm'
+                      : 'bg-white/15 text-neutral-700 dark:text-white/80 border-neutral-200/70 dark:border-white/10 hover:bg-white/30 dark:hover:bg-black/20',
+                  ]"
+                  @click="analysisMode = mode.value"
+                >
+                  <span
+                    :class="[
+                      'size-7 rounded-md flex items-center justify-center shrink-0 border',
+                      analysisMode === mode.value
+                        ? 'bg-white/20 border-white/30'
+                        : 'bg-white/30 dark:bg-black/20 border-neutral-200/60 dark:border-white/10',
+                    ]"
+                  >
+                    <Icon
+                      :name="mode.icon"
+                      class="size-4"
+                    />
+                  </span>
+                  <span class="min-w-0">
+                    <span class="block text-xs font-semibold leading-none">{{
+                      mode.label
+                    }}</span>
+                    <span
+                      class="block text-[10px] mt-1 text-neutral-500 dark:text-white/55"
+                    >
+                      {{ mode.description }}
+                    </span>
+                  </span>
+                </button>
+              </div>
+
               <div
-                class="absolute left-0 top-1/2 -translate-y-1/2 h-1 rounded-full bg-linear-to-r from-neutral-200/85 via-white/95 to-neutral-200/85 dark:from-white/35 dark:via-white/90 dark:to-white/35 shadow-[0_0_10px_rgba(255,255,255,0.35)]"
-                :style="{ width: timelineProgressStyle }"
-              />
-              <div
-                class="absolute top-1/2 -translate-y-1/2 h-3 w-1.5 rounded-sm border border-white/90 bg-white shadow-[0_0_0_1px_rgba(255,255,255,0.45),0_0_10px_rgba(255,255,255,0.55)] dark:border-white/70 dark:bg-white/95 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.2),0_0_8px_rgba(255,255,255,0.45)]"
-                :style="{ left: `calc(${timelineProgressStyle} - 0.1875rem)` }"
-              />
-            </div>
-            <div
-              class="mt-1 flex items-center justify-between gap-2 text-[10px] text-neutral-500 dark:text-white/55 font-mono"
+                v-if="analysisLegend"
+                class="mx-2.5 mb-2.5 rounded-lg border border-neutral-200/70 dark:border-white/10 bg-white/25 dark:bg-black/20 p-2"
+              >
+                <div
+                  class="text-[10px] font-semibold text-neutral-600 dark:text-white/70 px-1 mb-1"
+                >
+                  {{ analysisLegend.title }}
+                </div>
+                <div
+                  v-for="item in analysisLegend.items"
+                  :key="item.label"
+                  class="flex items-center justify-between gap-2 text-[10px] text-neutral-700 dark:text-white/80 px-1 py-1 rounded-md hover:bg-white/40 dark:hover:bg-black/20"
+                >
+                  <span class="inline-flex items-center gap-1.5 min-w-0">
+                    <span
+                      :class="[
+                        'size-2.5 rounded-full shrink-0 ring-1 ring-black/10 dark:ring-white/20',
+                        item.color,
+                      ]"
+                    />
+                    <span class="truncate">{{ item.label }}</span>
+                  </span>
+                  <span class="font-mono text-neutral-500 dark:text-white/55">{{
+                    item.range
+                  }}</span>
+                </div>
+              </div>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        <div class="mt-2 relative">
+          <UTooltip
+            :text="$t('globe.timeline.toggle')"
+            :delay-duration="0"
+          >
+            <GlassButton
+              icon="tabler:timeline-event"
+              :active="isTimelineEnabled"
+              @click="toggleTimelineEnabled"
+            />
+          </UTooltip>
+        </div>
+      </div>
+
+      <div class="absolute bottom-4 left-4 z-10 flex flex-col">
+        <!-- Zoom in -->
+        <GlassButton
+          class="rounded-b-none border-b-0"
+          icon="tabler:plus"
+          @click="zoomIn"
+        />
+        <!-- Zoom out -->
+        <GlassButton
+          class="rounded-none"
+          icon="tabler:minus"
+          @click="zoomOut"
+        />
+        <!-- Reset map -->
+        <GlassButton
+          class="rounded-t-none border-t-0"
+          icon="tabler:scan-position"
+          @click="resetMap"
+        />
+      </div>
+
+      <div
+        v-if="isTimelineEnabled"
+        class="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 w-[min(92vw,54rem)] max-sm:left-3 max-sm:right-3 max-sm:translate-x-0 max-sm:w-auto max-sm:pl-16"
+      >
+        <div
+          class="rounded-xl border border-neutral-100 bg-white/30 text-neutral-700 shadow-md shadow-neutral-300/20 backdrop-blur-md dark:border-white/10 dark:bg-neutral-700/30 dark:text-white/80 dark:shadow-black/20 px-3 py-2"
+        >
+          <div class="flex items-center gap-2">
+            <UTooltip
+              :text="$t('globe.timeline.playPause')"
+              :delay-duration="0"
             >
-              <span>{{ timelineStartLabel }}</span>
-              <span class="text-neutral-700 dark:text-white/80">{{
-                timelineCurrentLabel
-              }}</span>
-              <span>{{ timelineEndLabel }}</span>
+              <GlassButton
+                size="sm"
+                :icon="
+                  isTimelinePlaying
+                    ? 'tabler:player-pause'
+                    : 'tabler:player-play'
+                "
+                :class="
+                  !hasTimelineData || !isTimelineEnabled
+                    ? 'opacity-40 pointer-events-none'
+                    : ''
+                "
+                @click="toggleTimelinePlayback"
+              />
+            </UTooltip>
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center justify-between gap-2 text-[11px]">
+                <span class="font-medium">{{
+                  $t('globe.timeline.title')
+                }}</span>
+                <span class="text-neutral-600 dark:text-white/60">
+                  {{ filteredPhotosWithLocation.length }}/{{
+                    photosWithLocation.length
+                  }}
+                </span>
+              </div>
+              <div
+                ref="timelineTrackRef"
+                :class="[
+                  'mt-2 relative h-5 select-none touch-none',
+                  hasTimelineData
+                    ? 'cursor-pointer'
+                    : 'cursor-not-allowed opacity-60',
+                ]"
+                @pointerdown="onTimelinePointerDown"
+              >
+                <div
+                  class="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-1 rounded-full bg-neutral-200/80 dark:bg-white/15"
+                />
+                <div
+                  class="absolute left-0 top-1/2 -translate-y-1/2 h-1 rounded-full bg-linear-to-r from-neutral-200/85 via-white/95 to-neutral-200/85 dark:from-white/35 dark:via-white/90 dark:to-white/35 shadow-[0_0_10px_rgba(255,255,255,0.35)]"
+                  :style="{ width: timelineProgressStyle }"
+                />
+                <div
+                  class="absolute top-1/2 -translate-y-1/2 h-3 w-1.5 rounded-sm border border-white/90 bg-white shadow-[0_0_0_1px_rgba(255,255,255,0.45),0_0_10px_rgba(255,255,255,0.55)] dark:border-white/70 dark:bg-white/95 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.2),0_0_8px_rgba(255,255,255,0.45)]"
+                  :style="{
+                    left: `calc(${timelineProgressStyle} - 0.1875rem)`,
+                  }"
+                />
+              </div>
+              <div
+                class="mt-1 flex items-center justify-between gap-2 text-[10px] text-neutral-500 dark:text-white/55 font-mono"
+              >
+                <span>{{ timelineStartLabel }}</span>
+                <span class="text-neutral-700 dark:text-white/80">{{
+                  timelineCurrentLabel
+                }}</span>
+                <span>{{ timelineEndLabel }}</span>
+              </div>
             </div>
           </div>
         </div>
       </div>
+
+      <motion.div
+        :initial="{ opacity: 0, scale: 1.08 }"
+        :animate="{ opacity: 1, scale: 1 }"
+        :transition="{ duration: 0.6, delay: 0.1 }"
+        class="w-full h-full"
+      >
+        <ClientOnly>
+          <!-- mapbox://styles/hoshinosuzumi/cmev0eujf01dw01pje3g9cmlg -->
+          <MapProvider
+            class="w-full h-full"
+            :map-id="generateRandomKey()"
+            :zoom="mapViewState.zoom"
+            :center="[mapViewState.longitude, mapViewState.latitude]"
+            :attribution-control="false"
+            :language="$i18n.locale"
+            @load="onMapLoaded"
+            @zoom="onMapZoom"
+          >
+            <!-- Cluster pins -->
+            <template v-if="!!mapInstance">
+              <MapClusterPin
+                v-for="clusterPoint in clusterGroups"
+                :key="`cluster-${clusterPoint.properties.marker?.id}`"
+                :cluster-point="clusterPoint"
+                :marker-id="generateRandomKey()"
+                @click="onMarkerPinClick"
+                @close="onMarkerPinClose"
+              />
+            </template>
+
+            <!-- Single photo pins -->
+            <template v-if="!!mapInstance">
+              <MapPhotoPin
+                v-for="clusterPoint in singleMarkers"
+                :key="`single-${clusterPoint.properties.marker?.id}`"
+                :cluster-point="clusterPoint"
+                :is-selected="
+                  clusterPoint.properties.marker?.id === currentClusterPointId
+                "
+                :analysis-mode="analysisMode"
+                :marker-id="generateRandomKey()"
+                @click="onMarkerPinClick"
+                @close="onMarkerPinClose"
+              />
+            </template>
+          </MapProvider>
+
+          <template #fallback>
+            <div class="w-full h-full flex items-center justify-center">
+              <Icon
+                name="tabler:map-pin-off"
+                class="size-10 text-gray-500 animate-pulse"
+              />
+            </div>
+          </template>
+        </ClientOnly>
+      </motion.div>
     </div>
-
-    <motion.div
-      :initial="{ opacity: 0, scale: 1.08 }"
-      :animate="{ opacity: 1, scale: 1 }"
-      :transition="{ duration: 0.6, delay: 0.1 }"
-      class="w-full h-full"
-    >
-      <ClientOnly>
-        <!-- mapbox://styles/hoshinosuzumi/cmev0eujf01dw01pje3g9cmlg -->
-        <MapProvider
-          class="w-full h-full"
-          :map-id="generateRandomKey()"
-          :zoom="mapViewState.zoom"
-          :center="[mapViewState.longitude, mapViewState.latitude]"
-          :attribution-control="false"
-          :language="$i18n.locale"
-          @load="onMapLoaded"
-          @zoom="onMapZoom"
-        >
-          <!-- Cluster pins -->
-          <template v-if="!!mapInstance">
-            <MapClusterPin
-              v-for="clusterPoint in clusterGroups"
-              :key="`cluster-${clusterPoint.properties.marker?.id}`"
-              :cluster-point="clusterPoint"
-              :marker-id="generateRandomKey()"
-              @click="onMarkerPinClick"
-              @close="onMarkerPinClose"
-            />
-          </template>
-
-          <!-- Single photo pins -->
-          <template v-if="!!mapInstance">
-            <MapPhotoPin
-              v-for="clusterPoint in singleMarkers"
-              :key="`single-${clusterPoint.properties.marker?.id}`"
-              :cluster-point="clusterPoint"
-              :is-selected="
-                clusterPoint.properties.marker?.id === currentClusterPointId
-              "
-              :analysis-mode="analysisMode"
-              :marker-id="generateRandomKey()"
-              @click="onMarkerPinClick"
-              @close="onMarkerPinClose"
-            />
-          </template>
-        </MapProvider>
-
-        <template #fallback>
-          <div class="w-full h-full flex items-center justify-center">
-            <Icon
-              name="tabler:map-pin-off"
-              class="size-10 text-gray-500 animate-pulse"
-            />
-          </div>
-        </template>
-      </ClientOnly>
-    </motion.div>
   </div>
 </template>
 

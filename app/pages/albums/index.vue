@@ -7,17 +7,9 @@ interface AlbumWithPhotos extends Album {
 const config = useRuntimeConfig()
 const { photos } = usePhotos()
 const { loggedIn } = useUserSession()
-const colorMode = useColorMode()
-const siteTitle = computed(() => String(getSetting('app:title') || 'LumaAtlas'))
 const siteSlogan = computed(() =>
   String(getSetting('app:slogan') || config.public.app.slogan || ''),
 )
-const showAboutNav = computed(
-  () => getSetting('app:appearance.home.showAboutNav') === true,
-)
-const toggleColorMode = () => {
-  colorMode.preference = colorMode.value === 'dark' ? 'light' : 'dark'
-}
 const { data: albums } = useAsyncData<AlbumWithPhotos[]>(
   'albums',
   () => $fetch('/api/albums'),
@@ -135,7 +127,7 @@ const hoveredAlbum = ref<number | null>(null)
 
 <template>
   <div
-    class="relative min-h-screen overflow-hidden bg-white dark:bg-neutral-950"
+    class="relative min-h-screen overflow-x-hidden bg-white dark:bg-neutral-950"
   >
     <!-- Animated waterfall area -->
     <div
@@ -191,70 +183,10 @@ const hoveredAlbum = ref<number | null>(null)
       />
     </div>
 
-    <header
-      class="relative z-10 border-b border-neutral-200/80 dark:border-neutral-800/80"
-    >
-      <div
-        class="mx-auto flex h-16 max-w-[1600px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8"
-      >
-        <NuxtLink
-          to="/"
-          class="inline-flex min-w-0 items-center gap-2.5 text-neutral-950 dark:text-white"
-          :aria-label="`${siteTitle} home`"
-        >
-          <span
-            class="flex size-7 shrink-0 items-center justify-center border border-neutral-900 dark:border-white"
-          >
-            <Icon
-              name="lucide:aperture"
-              class="size-4"
-            />
-          </span>
-          <span class="font-display truncate text-base font-semibold">
-            {{ siteTitle }}
-          </span>
-        </NuxtLink>
-
-        <nav class="hidden items-center gap-6 text-sm text-neutral-500 sm:flex">
-          <NuxtLink
-            to="/"
-            class="hover:text-neutral-950 dark:hover:text-white"
-            >{{ $t('title.home') }}</NuxtLink
-          >
-          <NuxtLink
-            to="/globe"
-            class="hover:text-neutral-950 dark:hover:text-white"
-            >{{ $t('title.globe') }}</NuxtLink
-          >
-          <span class="font-medium text-neutral-950 dark:text-white">
-            {{ $t('title.albums') }}
-          </span>
-          <NuxtLink
-            v-if="showAboutNav"
-            to="/about"
-            class="hover:text-neutral-950 dark:hover:text-white"
-            >{{ $t('title.about') }}</NuxtLink
-          >
-        </nav>
-
-        <div class="flex items-center gap-1">
-          <UButton
-            color="neutral"
-            variant="ghost"
-            icon="lucide:arrow-left"
-            :aria-label="$t('ui.action.home.tooltip')"
-            to="/"
-          />
-          <UButton
-            color="neutral"
-            variant="ghost"
-            :icon="colorMode.value === 'dark' ? 'lucide:sun' : 'lucide:moon'"
-            :aria-label="$t('ui.action.theme.tooltip')"
-            @click="toggleColorMode"
-          />
-        </div>
-      </div>
-    </header>
+    <MasonryItemHeader
+      :show-gallery-controls="false"
+      :show-context="false"
+    />
 
     <main
       class="relative z-10 mx-auto max-w-[1600px] px-4 pb-16 pt-10 sm:px-6 lg:px-8"

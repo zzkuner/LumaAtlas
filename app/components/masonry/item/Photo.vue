@@ -95,6 +95,22 @@ const formattedLocation = computed(() => {
   }
   return ''
 })
+const contentTitle = computed(() => {
+  const title = String(props.photo.title || '').trim()
+  if (!title || title === String(props.photo.id)) return ''
+  if (/^[a-f\d]{32}$/i.test(title) || /^\d{8,}$/.test(title)) return ''
+  if (/^(?:img|dsc|pxl|mvimg|wx_camera|screenshot)[-_ ]?\d+/i.test(title)) {
+    return ''
+  }
+  return title
+})
+const hasExposureParameters = computed(
+  () =>
+    !!formattedFocalLength.value ||
+    !!props.photo.exif?.FNumber ||
+    !!props.photo.exif?.ExposureTime ||
+    !!props.photo.exif?.ISO,
+)
 const thumbnailSizes = computed(() =>
   isFeed.value
     ? '(max-width: 1024px) 100vw, 960px'
@@ -627,11 +643,33 @@ onUnmounted(() => {
       <!-- Live Photo indicator -->
       <PhotoLivePhotoIndicator
         v-if="photo.isLivePhoto"
-        class="absolute top-2 left-2"
+        class="absolute left-2 top-2 z-20"
         :photo="photo"
         :is-video-playing="isVideoPlaying"
         :processing-state="processingState || null"
       />
+
+      <div
+        v-if="isFeed && (contentTitle || photo.description)"
+        class="pointer-events-none absolute inset-0 z-10 bg-linear-to-t from-black/80 via-black/10 via-45% to-transparent opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100"
+      >
+        <div
+          class="absolute inset-x-0 bottom-0 translate-y-5 px-5 py-6 text-white opacity-0 transition-all duration-500 ease-out group-hover:translate-y-0 group-hover:opacity-100 sm:px-7 sm:py-7"
+        >
+          <h3
+            v-if="contentTitle"
+            class="line-clamp-2 font-display text-lg font-semibold sm:text-xl"
+          >
+            {{ contentTitle }}
+          </h3>
+          <p
+            v-if="photo.description"
+            class="mt-2 line-clamp-3 max-w-2xl text-sm leading-6 text-white/85"
+          >
+            {{ photo.description }}
+          </p>
+        </div>
+      </div>
 
       <!-- Photo info overlay (bottom) -->
       <motion.div
@@ -763,98 +801,116 @@ onUnmounted(() => {
 
     <div
       v-if="showBigPhotoInfo && isFeed"
-      class="w-full border-b border-neutral-200 py-4 dark:border-neutral-800"
-      :style="bigFrameStyle"
+      class="scrollbar-hidden mx-auto flex w-full max-w-6xl items-start gap-2 overflow-x-auto py-5 sm:justify-center sm:gap-3"
     >
       <div
-        v-if="photo.description || photo.tags?.length"
-        class="mb-3 min-w-0"
+        class="flex shrink-0 flex-col items-center justify-center gap-2 rounded-md px-3 py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-900"
       >
-        <p
-          v-if="photo.description"
-          class="max-w-2xl text-sm leading-6 text-neutral-600 dark:text-neutral-400"
-        >
-          {{ photo.description }}
-        </p>
+        <span class="text-xs text-neutral-400">评分</span>
+        <Rating
+          :model-value="Number(photo.exif?.Rating || 0)"
+          readonly
+          size="sm"
+        />
+      </div>
+
+      <div
+        v-if="hasExposureParameters"
+        class="flex shrink-0 flex-col items-center justify-center gap-2 rounded-md px-3 py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-900"
+      >
+        <span class="text-xs text-neutral-400">参数</span>
         <div
-          v-if="photo.tags?.length"
-          class="mt-2 flex flex-wrap items-center gap-1.5"
+          class="flex items-center gap-3 whitespace-nowrap text-sm text-neutral-700 dark:text-neutral-300"
         >
           <span
-            v-for="tag in photo.tags.slice(0, 5)"
-            :key="tag"
-            class="text-xs text-neutral-500 dark:text-neutral-500"
+            v-if="formattedFocalLength"
+            class="inline-flex items-center gap-1"
           >
-            #{{ tag }}
+            <Icon
+              name="lucide:telescope"
+              class="size-4"
+            />
+            {{ formattedFocalLength }}
+          </span>
+          <span
+            v-if="photo.exif?.FNumber"
+            class="inline-flex items-center gap-1"
+          >
+            <Icon
+              name="lucide:aperture"
+              class="size-4"
+            />
+            f/{{ photo.exif.FNumber }}
+          </span>
+          <span
+            v-if="photo.exif?.ExposureTime"
+            class="inline-flex items-center gap-1"
+          >
+            <Icon
+              name="lucide:timer"
+              class="size-4"
+            />
+            {{ formatExposureTime(photo.exif.ExposureTime) }}
+          </span>
+          <span
+            v-if="photo.exif?.ISO"
+            class="inline-flex items-center gap-1"
+          >
+            <Icon
+              name="carbon:iso-outline"
+              class="size-5"
+            />
+            {{ photo.exif.ISO }}
           </span>
         </div>
       </div>
 
       <div
-        class="grid max-w-full grid-cols-2 gap-x-4 gap-y-3 text-xs text-neutral-500 sm:flex sm:items-start sm:gap-x-5 sm:overflow-x-auto sm:pb-1 dark:text-neutral-400"
+        v-if="photo.exif?.Model"
+        class="flex min-w-32 shrink-0 flex-col items-center justify-center gap-2 rounded-md px-3 py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-900"
       >
-        <div
-          v-if="photo.exif?.Rating"
-          class="min-w-0 sm:shrink-0"
+        <span class="text-xs text-neutral-400">相机</span>
+        <span
+          class="max-w-48 truncate whitespace-nowrap text-sm uppercase text-neutral-700 dark:text-neutral-300"
         >
-          <span class="mb-1 block text-[10px] text-neutral-400">评分</span>
-          <Rating
-            :model-value="photo.exif.Rating"
-            readonly
+          {{ formatCameraInfo(photo.exif.Make, photo.exif.Model) }}
+        </span>
+      </div>
+
+      <div
+        class="flex min-w-36 shrink-0 flex-col items-center justify-center gap-2 rounded-md px-3 py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-900"
+      >
+        <span class="text-xs text-neutral-400">位置</span>
+        <span
+          class="max-w-64 truncate whitespace-nowrap text-sm text-neutral-700 dark:text-neutral-300"
+        >
+          {{ formattedLocation || '未记录位置' }}
+        </span>
+      </div>
+
+      <div
+        v-if="photo.dateTaken"
+        class="flex shrink-0 flex-col items-center justify-center gap-2 rounded-md px-3 py-2 transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-900"
+      >
+        <span class="text-xs text-neutral-400">时间</span>
+        <span
+          class="whitespace-nowrap text-sm text-neutral-700 dark:text-neutral-300"
+        >
+          {{ $dayjs(photo.dateTaken).format('YYYY-MM-DD HH:mm') }}
+        </span>
+      </div>
+
+      <div class="flex shrink-0 items-center px-1 py-2">
+        <UTooltip text="查看详情">
+          <UButton
+            icon="lucide:ellipsis"
+            color="neutral"
+            variant="ghost"
             size="sm"
+            aria-label="查看详情"
+            @click.stop="emit('openViewer', index)"
           />
-        </div>
-        <div
-          v-if="formattedFocalLength"
-          class="min-w-0 sm:shrink-0"
-        >
-          <span class="mb-1 block text-[10px] text-neutral-400">焦段</span>
-          <span>{{ formattedFocalLength }}</span>
-        </div>
-        <div
-          v-if="photo.exif?.FNumber"
-          class="min-w-0 sm:shrink-0"
-        >
-          <span class="mb-1 block text-[10px] text-neutral-400">光圈</span>
-          <span>f/{{ photo.exif.FNumber }}</span>
-        </div>
-        <div
-          v-if="photo.exif?.ExposureTime"
-          class="min-w-0 sm:shrink-0"
-        >
-          <span class="mb-1 block text-[10px] text-neutral-400">快门</span>
-          <span>{{ formatExposureTime(photo.exif.ExposureTime) }}</span>
-        </div>
-        <div
-          v-if="photo.exif?.ISO"
-          class="min-w-0 sm:shrink-0"
-        >
-          <span class="mb-1 block text-[10px] text-neutral-400">感光度</span>
-          <span>ISO {{ photo.exif.ISO }}</span>
-        </div>
-        <div
-          v-if="photo.exif?.Model"
-          class="min-w-0 sm:max-w-52 sm:shrink-0"
-        >
-          <span class="mb-1 block text-[10px] text-neutral-400">设备</span>
-          <span class="block truncate">{{
-            formatCameraInfo(photo.exif.Make, photo.exif.Model)
-          }}</span>
-        </div>
-        <div
-          v-if="formattedLocation"
-          class="min-w-0 sm:max-w-64 sm:shrink-0"
-        >
-          <span class="mb-1 block text-[10px] text-neutral-400">地点</span>
-          <span class="block truncate">{{ formattedLocation }}</span>
-        </div>
-        <div
-          v-if="photo.dateTaken"
-          class="min-w-0 sm:shrink-0"
-        >
-          <span class="mb-1 block text-[10px] text-neutral-400">时间</span>
-          <span>{{ $dayjs(photo.dateTaken).format('YYYY-MM-DD HH:mm') }}</span>
-        </div>
+        </UTooltip>
       </div>
     </div>
   </div>

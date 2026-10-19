@@ -536,7 +536,7 @@ onUnmounted(() => {
     ref="photoRef"
     class="w-full cursor-pointer select-none transition-all duration-300"
     :class="{
-      'flex min-h-[calc(100svh-7rem)] flex-col justify-center py-6 sm:py-8':
+      'flex flex-col py-6 sm:min-h-[calc(100svh-7rem)] sm:justify-center sm:py-8':
         isBig,
     }"
     :style="{
@@ -772,7 +772,7 @@ onUnmounted(() => {
       >
         <p
           v-if="photo.title"
-          class="font-display text-sm font-medium text-neutral-950 dark:text-white"
+          class="break-words font-display text-sm font-medium text-neutral-950 dark:text-white"
         >
           {{ photo.title }}
         </p>

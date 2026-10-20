@@ -1,10 +1,7 @@
 import { and, eq, lt, or } from 'drizzle-orm'
 
 export default eventHandler(async (event) => {
-  const session = await requireUserSession(event)
-  if (!session.user.isAdmin) {
-    throw createError({ statusCode: 403, statusMessage: 'Admin required' })
-  }
+  await requireAdminSession(event)
 
   const db = useDB()
   const now = new Date()

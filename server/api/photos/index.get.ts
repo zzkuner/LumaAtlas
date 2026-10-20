@@ -1,7 +1,7 @@
 import { desc } from 'drizzle-orm'
 
 export default eventHandler(async (event) => {
-  await requireUserSession(event)
+  await requireAdminSession(event)
 
   return useDB()
     .select()

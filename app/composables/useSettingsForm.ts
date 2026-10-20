@@ -26,7 +26,10 @@ export function useSettingsForm(namespace: string) {
   /**
    * 从 API 获取字段描述和当前值
    */
-  const fetchFields = async () => {
+  const fetchFields = async (options?: {
+    preserveState?: boolean
+    refreshKeys?: ReadonlySet<string>
+  }) => {
     loading.value = true
     error.value = null
 
@@ -40,10 +43,7 @@ export function useSettingsForm(namespace: string) {
 
       fields.value = response.fields
 
-      // 使用 API 返回的值初始化状态
-      response.fields.forEach((field) => {
-        state[field.key] = field.value ?? field.defaultValue ?? null
-      })
+      applySettingsFieldsToState(state, response.fields, options)
     } catch (err) {
       const message = (err as Error).message
       error.value = message
@@ -85,8 +85,12 @@ export function useSettingsForm(namespace: string) {
       // 刷新全局设置状态，确保所有使用 getSetting() 的地方都能获取到最新值
       await refreshSettings()
 
-      // 重新加载字段以获取最新值
-      await fetchFields()
+      // Refresh submitted values and their baselines without discarding drafts
+      // from other sections that share the same settings namespace.
+      await fetchFields({
+        preserveState: true,
+        refreshKeys: new Set(Object.keys(data)),
+      })
 
       toast.add({
         title: '设置已保存',

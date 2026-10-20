@@ -38,7 +38,7 @@ const getDefaultFieldValue = (field: (typeof mapFields.value)[number]) =>
   field.value ?? field.defaultValue ?? null
 
 const isMapDirty = computed(() =>
-  visibleMapFields.value.some(
+  mapFields.value.some(
     (field) => !sameValue(mapState[field.key], getDefaultFieldValue(field)),
   ),
 )
@@ -53,8 +53,10 @@ const isLocationDirty = computed(() =>
   ),
 )
 
+useUnsavedChangesGuard(() => isMapDirty.value || isLocationDirty.value)
+
 const resetMapSettings = () => {
-  visibleMapFields.value.forEach((field) => {
+  mapFields.value.forEach((field) => {
     mapState[field.key] = getDefaultFieldValue(field)
   })
 }
@@ -67,7 +69,7 @@ const resetLocationSettings = () => {
 
 const handleMapSettingsSubmit = async () => {
   const mapData = Object.fromEntries(
-    visibleMapFields.value.map((f) => [f.key, mapState[f.key]]),
+    mapFields.value.map((f) => [f.key, mapState[f.key]]),
   )
   try {
     await submitMap(mapData)

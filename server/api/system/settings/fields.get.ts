@@ -22,13 +22,7 @@ export default eventHandler(async (event) => {
     }).parse,
   )
 
-  const session = await requireUserSession(event)
-  if (!session || !session.user.isAdmin) {
-    throw createError({
-      statusCode: 403,
-      statusMessage: 'Admin privileges required',
-    })
-  }
+  await requireAdminSession(event)
 
   try {
     // 获取该命名空间的所有设置

@@ -55,12 +55,13 @@ const highResRendered = ref(false)
 const hasError = ref(false)
 const currentSrc = ref<string | null>()
 
-const { loggedIn } = useUserSession()
+const { user } = useUserSession()
+const isAdmin = computed(() => Boolean(user.value?.isAdmin))
 const webglImageViewerDebug = useSettingRef('system:webglImageViewerDebug')
 const isDev = computed(() => import.meta.env.DEV)
 const showDebugInfo = computed(() => {
   if (webglImageViewerDebug.value === true) {
-    return !!loggedIn.value
+    return isAdmin.value
   }
 
   return isDev.value && import.meta.env.VITE_SHOW_DEBUG_INFO === 'true'

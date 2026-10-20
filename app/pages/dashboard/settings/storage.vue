@@ -161,6 +161,8 @@ const isStorageDefaultDirty = computed(() => {
   )
 })
 
+useUnsavedChangesGuard(isStorageDefaultDirty)
+
 const resetStorageDefault = () => {
   storageSettingsState.storageConfigId = currentStorageProvider.value
     ? (currentStorageProvider.value.value as number)

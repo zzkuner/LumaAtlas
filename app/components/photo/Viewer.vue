@@ -35,7 +35,8 @@ const emit = defineEmits<{
 }>()
 
 const toast = useToast()
-const { loggedIn } = useUserSession()
+const { user } = useUserSession()
+const isAdmin = computed(() => Boolean(user.value?.isAdmin))
 
 const containerRef = ref<HTMLDivElement>()
 const swiperRef = ref<SwiperType>()
@@ -123,7 +124,7 @@ const isMobile = useMediaQuery('(max-width: 768px)')
 const sharingEnabled = computed(
   () =>
     props.allowShare &&
-    (loggedIn.value || getSetting('publishing:sharing.enabled') !== false),
+    (isAdmin.value || getSetting('publishing:sharing.enabled') !== false),
 )
 
 // LivePhoto processing state

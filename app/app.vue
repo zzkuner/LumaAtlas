@@ -49,18 +49,12 @@ useHead(() => ({
         ],
 }))
 
-// 根据用户登录状态和当前路由决定使用哪个 API
-// 登录用户或后台管理页面显示所有照片，未登录用户在前端页面只显示可见照片
-const route = useRoute()
-const { loggedIn } = useUserSession()
-const apiEndpoint = computed(() => {
-  // 后台管理页面始终显示所有照片
-  if (route.path.startsWith('/dashboard')) {
-    return '/api/photos'
-  }
-  // 前端页面：登录用户显示所有照片，未登录用户只显示可见照片
-  return loggedIn.value ? '/api/photos' : '/api/photos/visible'
-})
+// Only administrators can load hidden photos. This keeps the data source in
+// sync with the controls exposed by the public and dashboard interfaces.
+const { user } = useUserSession()
+const apiEndpoint = computed(() =>
+  user.value?.isAdmin ? '/api/photos' : '/api/photos/visible',
+)
 const { data, refresh, status } = await useFetch(() => apiEndpoint.value, {
   watch: [apiEndpoint],
 })
@@ -68,12 +62,24 @@ const { data, refresh, status } = await useFetch(() => apiEndpoint.value, {
 const photos = computed(() => (data.value as Photo[]) || [])
 
 const { switchToIndex, closeViewer, clearReturnRoute } = useViewerState()
-const { currentPhotoIndex, isViewerOpen, returnRoute, isDirectAccess } =
-  storeToRefs(useViewerState())
+const {
+  currentPhotoIndex,
+  isViewerOpen,
+  returnRoute,
+  isDirectAccess,
+  sourcePhotoIds,
+} = storeToRefs(useViewerState())
+
+const viewerPhotos = computed(() => {
+  return resolvePhotoCollection(photos.value, sourcePhotoIds.value)
+})
 
 const handleIndexChange = (newIndex: number) => {
+  const photo = viewerPhotos.value[newIndex]
+  if (!photo) return
+
   switchToIndex(newIndex)
-  router.replace(`/${photos.value[newIndex]?.id}`)
+  router.replace(`/${photo.id}`)
 }
 
 const handleClose = () => {
@@ -137,7 +143,7 @@ provide(
         </NuxtLayout>
         <ClientOnly>
           <PhotoViewer
-            :photos="photos"
+            :photos="viewerPhotos"
             :current-index="currentPhotoIndex"
             :is-open="isViewerOpen"
             @close="handleClose"

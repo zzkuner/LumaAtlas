@@ -1,6 +1,10 @@
 <script setup lang="ts">
 definePageMeta({ layout: false })
 
+if (getSetting('app:appearance.home.showAboutNav') !== true) {
+  await navigateTo('/', { replace: true })
+}
+
 useHead({ title: () => $t('title.about') })
 
 const siteTitle = computed(() => String(getSetting('app:title') || 'LumaAtlas'))
@@ -68,7 +72,7 @@ const socialLinks = computed(() => {
             />
             <div class="min-w-0">
               <h1
-                class="font-display truncate text-3xl font-semibold sm:text-4xl"
+                class="font-brand truncate text-4xl font-semibold sm:text-5xl"
               >
                 {{ siteTitle }}
               </h1>

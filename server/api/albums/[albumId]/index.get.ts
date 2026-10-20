@@ -14,6 +14,7 @@ export default eventHandler(async (event) => {
 
   const db = useDB()
   const session = await getUserSession(event)
+  const isAdmin = Boolean(session.user?.isAdmin)
 
   const album = db
     .select()
@@ -31,7 +32,7 @@ export default eventHandler(async (event) => {
   // Private albums require an authenticated owner. Unlisted albums remain
   // reachable by their direct URL but never appear in the public album index.
   if (album.isHidden || album.visibility === 'private') {
-    if (!session.user) {
+    if (!isAdmin) {
       throw createError({
         statusCode: 404,
         statusMessage: 'Album not found',
@@ -51,7 +52,7 @@ export default eventHandler(async (event) => {
       eq(tables.photos.id, tables.albumPhotos.photoId),
     )
 
-  const photos = session.user
+  const photos = isAdmin
     ? photoQuery
         .where(eq(tables.albumPhotos.albumId, albumId))
         .orderBy(asc(tables.albumPhotos.position))

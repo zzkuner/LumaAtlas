@@ -2,6 +2,7 @@
 interface Props {
   settings: Record<string, unknown>
   title?: string
+  author?: string
   slogan?: string
   description?: string
   avatarUrl?: string
@@ -10,6 +11,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   title: 'LumaAtlas',
+  author: '',
   slogan: '',
   description: '',
   avatarUrl: '',
@@ -68,6 +70,147 @@ const gridImageRatio = computed(() => {
   const value = String(setting('appearance.home.imageRatio', 'square'))
   return value === 'landscape' ? 'landscape' : 'square'
 })
+
+type PublicPageId = 'globe' | 'albums' | 'about'
+type HomeModuleId = 'header' | 'author' | 'gallery' | 'footer'
+
+const normalizeOrder = <T extends string>(
+  value: unknown,
+  allowed: readonly T[],
+) => {
+  const requested = Array.isArray(value) ? value : []
+  return [...new Set([...requested, ...allowed])].filter(
+    (item): item is T =>
+      typeof item === 'string' && allowed.includes(item as T),
+  )
+}
+
+const moveItem = <T>(items: T[], index: number, direction: -1 | 1) => {
+  const target = index + direction
+  if (target < 0 || target >= items.length) return items
+  const next = [...items]
+  ;[next[index], next[target]] = [next[target]!, next[index]!]
+  return next
+}
+
+const publicPageMeta: Record<
+  PublicPageId,
+  { label: string; icon: string; settingKey: string }
+> = {
+  globe: {
+    label: '地图',
+    icon: 'lucide:map',
+    settingKey: 'appearance.home.showGlobeNav',
+  },
+  albums: {
+    label: '相册',
+    icon: 'lucide:images',
+    settingKey: 'appearance.home.showAlbumsNav',
+  },
+  about: {
+    label: '关于',
+    icon: 'lucide:user-round',
+    settingKey: 'appearance.home.showAboutNav',
+  },
+}
+const publicPageIds = Object.keys(publicPageMeta) as PublicPageId[]
+const navigationSettings = computed(() => {
+  const value = setting('appearance.home.navigation', {})
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {}
+})
+const orderedPublicPages = computed(() =>
+  normalizeOrder<PublicPageId>(navigationSettings.value.order, publicPageIds),
+)
+const isPublicPageEnabled = (id: PublicPageId) => {
+  const value = setting(
+    publicPageMeta[id].settingKey,
+    id === 'about' ? false : true,
+  )
+  return id === 'about' ? value === true : value !== false
+}
+const updateNavigationOrder = (order: PublicPageId[]) => {
+  update('appearance.home.navigation', {
+    ...navigationSettings.value,
+    order,
+  })
+}
+const movePublicPage = (index: number, direction: -1 | 1) => {
+  updateNavigationOrder(moveItem(orderedPublicPages.value, index, direction))
+}
+
+const homeModuleMeta: Record<
+  HomeModuleId,
+  { label: string; description: string; icon: string }
+> = {
+  header: {
+    label: '顶部导航',
+    description: '站点标识、页面入口和浏览工具',
+    icon: 'lucide:panel-top',
+  },
+  author: {
+    label: '作者信息',
+    description: '作者简介、站点标语和照片统计',
+    icon: 'lucide:user-round',
+  },
+  gallery: {
+    label: '照片内容',
+    description: '首页的大图、瀑布流或方格',
+    icon: 'lucide:images',
+  },
+  footer: {
+    label: '页脚信息',
+    description: '页脚文案和外部链接',
+    icon: 'lucide:panel-bottom',
+  },
+}
+const homeModuleIds = Object.keys(homeModuleMeta) as HomeModuleId[]
+const homeModuleSettings = computed(() => {
+  const value = setting('appearance.home.modules', {})
+  const config =
+    value && typeof value === 'object' && !Array.isArray(value)
+      ? (value as Record<string, unknown>)
+      : {}
+  const hidden = Array.isArray(config.hidden)
+    ? config.hidden.filter(
+        (item): item is HomeModuleId =>
+          typeof item === 'string' &&
+          homeModuleIds.includes(item as HomeModuleId),
+      )
+    : []
+  const order = normalizeOrder<HomeModuleId>(config.order, homeModuleIds)
+  if (!Array.isArray(config.order) || !config.order.includes('author')) {
+    order.splice(order.indexOf('author'), 1)
+    order.splice(Math.max(0, order.indexOf('header') + 1), 0, 'author')
+  }
+  return {
+    ...config,
+    order,
+    hidden,
+  }
+})
+const orderedHomeModules = computed(() => homeModuleSettings.value.order)
+const updateHomeModules = (next: {
+  order?: HomeModuleId[]
+  hidden?: HomeModuleId[]
+}) => {
+  update('appearance.home.modules', {
+    ...homeModuleSettings.value,
+    ...next,
+  })
+}
+const moveHomeModule = (index: number, direction: -1 | 1) => {
+  updateHomeModules({
+    order: moveItem(orderedHomeModules.value, index, direction),
+  })
+}
+const toggleHomeModule = (id: HomeModuleId, visible: boolean) => {
+  const hidden = new Set(homeModuleSettings.value.hidden)
+  if (visible) hidden.delete(id)
+  else hidden.add(id)
+  updateHomeModules({ hidden: [...hidden] })
+}
 </script>
 
 <template>
@@ -104,51 +247,98 @@ const gridImageRatio = computed(() => {
         <div
           class="mt-4 divide-y divide-neutral-200 border-y border-neutral-200 dark:divide-neutral-800 dark:border-neutral-800"
         >
-          <label class="flex min-h-14 items-center gap-3 py-2">
+          <div
+            v-for="(id, index) in orderedPublicPages"
+            :key="id"
+            class="flex min-h-14 items-center gap-3 py-2"
+          >
             <Icon
-              name="lucide:map"
+              :name="publicPageMeta[id].icon"
               class="size-4 text-neutral-500"
             />
-            <span class="flex-1 text-sm font-medium">地图</span>
+            <span class="flex-1 text-sm font-medium">
+              {{ publicPageMeta[id].label }}
+            </span>
+            <div class="flex items-center gap-0.5">
+              <UButton
+                icon="lucide:chevron-up"
+                color="neutral"
+                variant="ghost"
+                size="xs"
+                :disabled="index === 0"
+                :aria-label="`上移${publicPageMeta[id].label}`"
+                @click="movePublicPage(index, -1)"
+              />
+              <UButton
+                icon="lucide:chevron-down"
+                color="neutral"
+                variant="ghost"
+                size="xs"
+                :disabled="index === orderedPublicPages.length - 1"
+                :aria-label="`下移${publicPageMeta[id].label}`"
+                @click="movePublicPage(index, 1)"
+              />
+            </div>
             <USwitch
-              :model-value="
-                setting('appearance.home.showGlobeNav', true) !== false
-              "
+              :model-value="isPublicPageEnabled(id)"
+              :aria-label="`显示${publicPageMeta[id].label}页面`"
               @update:model-value="
-                update('appearance.home.showGlobeNav', $event)
+                update(publicPageMeta[id].settingKey, $event)
               "
             />
-          </label>
-          <label class="flex min-h-14 items-center gap-3 py-2">
+          </div>
+        </div>
+      </section>
+
+      <section class="py-8">
+        <h5 class="text-sm font-semibold">首页结构</h5>
+        <p class="mt-1 text-sm text-neutral-500">
+          调整首页模块顺序；关闭模块后，相关内容不会出现在公开首页。
+        </p>
+        <div
+          class="mt-4 divide-y divide-neutral-200 border-y border-neutral-200 dark:divide-neutral-800 dark:border-neutral-800"
+        >
+          <div
+            v-for="(id, index) in orderedHomeModules"
+            :key="id"
+            class="flex min-h-16 items-center gap-3 py-2"
+          >
             <Icon
-              name="lucide:images"
+              :name="homeModuleMeta[id].icon"
               class="size-4 text-neutral-500"
             />
-            <span class="flex-1 text-sm font-medium">相册</span>
+            <div class="min-w-0 flex-1">
+              <p class="text-sm font-medium">{{ homeModuleMeta[id].label }}</p>
+              <p class="truncate text-xs text-neutral-500">
+                {{ homeModuleMeta[id].description }}
+              </p>
+            </div>
+            <div class="flex items-center gap-0.5">
+              <UButton
+                icon="lucide:chevron-up"
+                color="neutral"
+                variant="ghost"
+                size="xs"
+                :disabled="index === 0"
+                :aria-label="`上移${homeModuleMeta[id].label}`"
+                @click="moveHomeModule(index, -1)"
+              />
+              <UButton
+                icon="lucide:chevron-down"
+                color="neutral"
+                variant="ghost"
+                size="xs"
+                :disabled="index === orderedHomeModules.length - 1"
+                :aria-label="`下移${homeModuleMeta[id].label}`"
+                @click="moveHomeModule(index, 1)"
+              />
+            </div>
             <USwitch
-              :model-value="
-                setting('appearance.home.showAlbumsNav', true) !== false
-              "
-              @update:model-value="
-                update('appearance.home.showAlbumsNav', $event)
-              "
+              :model-value="!homeModuleSettings.hidden.includes(id)"
+              :aria-label="`显示${homeModuleMeta[id].label}`"
+              @update:model-value="toggleHomeModule(id, $event)"
             />
-          </label>
-          <label class="flex min-h-14 items-center gap-3 py-2">
-            <Icon
-              name="lucide:user-round"
-              class="size-4 text-neutral-500"
-            />
-            <span class="flex-1 text-sm font-medium">关于</span>
-            <USwitch
-              :model-value="
-                setting('appearance.home.showAboutNav', false) === true
-              "
-              @update:model-value="
-                update('appearance.home.showAboutNav', $event)
-              "
-            />
-          </label>
+          </div>
         </div>
       </section>
 
@@ -505,6 +695,7 @@ const gridImageRatio = computed(() => {
       <SettingHomePreview
         :settings="settings"
         :title="title"
+        :author="author"
         :slogan="slogan"
         :description="description"
         :avatar-url="avatarUrl"

@@ -1,7 +1,8 @@
 <script setup lang="ts">
 const router = useRouter()
 const { photos } = usePhotos()
-const { loggedIn } = useUserSession()
+const { user } = useUserSession()
+const isAdmin = computed(() => Boolean(user.value?.isAdmin))
 const { isCommandPaletteOpen, closeCommandPalette } = useCommandPalette()
 
 const query = ref('')
@@ -35,7 +36,7 @@ const navigationItems = computed(() => [
   { label: $t('title.home'), icon: 'lucide:images', to: '/' },
   { label: $t('title.globe'), icon: 'lucide:map', to: '/globe' },
   { label: $t('title.albums'), icon: 'lucide:library', to: '/albums' },
-  ...(loggedIn.value
+  ...(isAdmin.value
     ? [
         {
           label: $t('title.dashboard'),

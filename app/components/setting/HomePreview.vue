@@ -2,6 +2,7 @@
 interface Props {
   settings: Record<string, unknown>
   title?: string
+  author?: string
   slogan?: string
   description?: string
   avatarUrl?: string
@@ -11,6 +12,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   title: 'LumaAtlas',
+  author: '',
   slogan: '',
   description: '',
   avatarUrl: '',
@@ -30,9 +32,6 @@ const imageRatio = computed(() =>
 )
 const contentWidth = computed(() =>
   String(setting('appearance.home.contentWidth', 'wide')),
-)
-const isEditorial = computed(
-  () => String(setting('appearance.home.style', 'minimal')) === 'editorial',
 )
 const accentColor = computed(() => {
   const value = String(setting('appearance.home.accentColor', '#171717'))
@@ -60,8 +59,17 @@ const surfaceStyle = computed(() =>
 const showSlogan = computed(
   () => setting('appearance.home.showSlogan', true) !== false,
 )
+const showAuthorIntro = computed(
+  () => setting('appearance.home.showAuthorIntro', true) !== false,
+)
 const showStats = computed(
   () => setting('appearance.home.showStats', true) !== false,
+)
+const showPhotoInfo = computed(
+  () => setting('appearance.home.showPhotoInfo', false) === true,
+)
+const showBigPhotoInfo = computed(
+  () => setting('appearance.home.showBigPhotoInfo', true) !== false,
 )
 const showGlobeNav = computed(
   () => setting('appearance.home.showGlobeNav', true) !== false,
@@ -80,12 +88,16 @@ const asRecord = (value: unknown): Record<string, unknown> =>
 
 const moduleSettings = computed(() => {
   const value = asRecord(setting('appearance.home.modules', {}))
-  const allowed = ['header', 'gallery', 'footer']
+  const allowed = ['header', 'author', 'gallery', 'footer']
   const source = Array.isArray(value.order) ? value.order : []
   const order = [...new Set([...source, ...allowed])].filter(
     (item): item is string =>
       typeof item === 'string' && allowed.includes(item),
   )
+  if (!source.includes('author')) {
+    order.splice(order.indexOf('author'), 1)
+    order.splice(Math.max(0, order.indexOf('header') + 1), 0, 'author')
+  }
   const hidden = Array.isArray(value.hidden)
     ? value.hidden.filter(
         (item): item is string =>
@@ -103,7 +115,13 @@ const moduleOrder = (id: string) => {
 const moduleVisible = (id: string) => !moduleSettings.value.hidden.includes(id)
 
 const navigationItems = computed(() => {
-  const order = ['globe', 'albums', 'about']
+  const navigation = asRecord(setting('appearance.home.navigation', {}))
+  const allowed = ['globe', 'albums', 'about']
+  const requested = Array.isArray(navigation.order) ? navigation.order : []
+  const order = [...new Set([...requested, ...allowed])].filter(
+    (item): item is string =>
+      typeof item === 'string' && allowed.includes(item),
+  )
   const labels: Record<string, string> = {
     globe: 'Map',
     albums: 'Albums',
@@ -221,6 +239,7 @@ const itemRatio = (naturalRatio: number) => {
         '--preview-accent': accentColor,
         '--preview-radius': `${cornerRadius}px`,
         '--preview-heading-font': headingFont,
+        '--preview-brand-font': 'var(--font-brand)',
       }"
     >
       <div
@@ -240,8 +259,8 @@ const itemRatio = (naturalRatio: number) => {
               />
             </span>
             <span
-              class="truncate text-xs font-semibold"
-              :style="{ fontFamily: headingFont }"
+              class="truncate text-sm font-semibold"
+              :style="{ fontFamily: 'var(--preview-brand-font)' }"
               >{{ title }}</span
             >
           </div>
@@ -254,45 +273,53 @@ const itemRatio = (naturalRatio: number) => {
             >
           </div>
         </div>
+      </div>
 
+      <div
+        v-if="moduleVisible('author') && (showAuthorIntro || showStats)"
+        class="flex items-end justify-between gap-3 border-b border-neutral-200 px-3 py-3 dark:border-neutral-800"
+        :style="{ order: moduleOrder('author') }"
+      >
         <div
-          class="mt-3 flex items-end justify-between gap-3 border-t border-neutral-100 pt-2 dark:border-neutral-900"
+          v-if="showAuthorIntro"
+          class="flex min-w-0 items-center gap-2"
         >
-          <div class="flex min-w-0 items-center gap-2">
-            <img
-              v-if="isEditorial && avatarUrl"
-              :src="avatarUrl"
-              :alt="title"
-              class="size-7 shrink-0 rounded-full object-cover"
-            />
-            <div class="min-w-0">
-              <p
-                class="truncate text-[10px] font-medium"
-                :style="{ fontFamily: headingFont }"
-              >
-                {{ isEditorial ? title : 'Gallery' }}
-              </p>
-              <p
-                v-if="showSlogan && slogan"
-                class="mt-0.5 truncate text-[8px] text-neutral-500"
-              >
-                {{ slogan }}
-              </p>
-              <p
-                v-if="isEditorial && description"
-                class="mt-1 line-clamp-2 text-[8px] leading-3 text-neutral-500"
-              >
-                {{ description }}
-              </p>
-            </div>
-          </div>
+          <img
+            v-if="avatarUrl"
+            :src="avatarUrl"
+            :alt="author || title"
+            class="size-7 shrink-0 rounded-full object-cover"
+          />
           <span
-            v-if="showStats"
-            class="shrink-0 text-[8px] text-neutral-400"
+            v-else
+            class="flex size-7 shrink-0 items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-900"
           >
-            {{ previewItems.length }} photos
+            <Icon
+              name="lucide:user-round"
+              class="size-3 text-neutral-500"
+            />
           </span>
+          <div class="min-w-0">
+            <p
+              class="truncate text-[10px] font-medium"
+              :style="{ fontFamily: headingFont }"
+            >
+              {{ author || title }}
+            </p>
+            <p
+              v-if="showSlogan && (slogan || description)"
+              class="mt-0.5 line-clamp-2 text-[8px] leading-3 text-neutral-500"
+            >
+              {{ slogan || description }}
+            </p>
+          </div>
         </div>
+        <span
+          v-if="showStats"
+          class="shrink-0 text-[8px] text-neutral-400"
+        >
+          {{ previewItems.length }} photos
+        </span>
       </div>
 
       <div
@@ -323,7 +350,7 @@ const itemRatio = (naturalRatio: number) => {
           <div
             v-for="item in previewItems"
             :key="item.id"
-            class="overflow-hidden"
+            class="group overflow-hidden"
             :class="layout === 'masonry' ? 'mb-1.5 break-inside-avoid' : ''"
           >
             <div
@@ -345,13 +372,39 @@ const itemRatio = (naturalRatio: number) => {
                 name="lucide:image"
                 class="absolute left-1/2 top-1/2 size-4 -translate-x-1/2 -translate-y-1/2 text-neutral-500/50"
               />
+              <div
+                v-if="showPhotoInfo && layout !== 'big' && item.title"
+                class="absolute inset-x-0 bottom-0 bg-black/55 px-2 py-1.5 text-[8px] text-white opacity-0 transition-opacity group-hover:opacity-100"
+              >
+                {{ item.title }}
+              </div>
             </div>
             <div
-              v-if="layout === 'big'"
-              class="flex items-center justify-between border-b border-neutral-200 py-1.5 text-[8px] dark:border-neutral-800"
+              v-if="layout === 'big' && showBigPhotoInfo"
+              class="flex items-center gap-2 overflow-hidden border-b border-neutral-200 py-1.5 text-[8px] dark:border-neutral-800"
             >
-              <span class="font-medium">{{ item.title }}</span>
-              <span class="text-neutral-400">2026 · Shanghai</span>
+              <span class="inline-flex shrink-0 items-center gap-0.5">
+                <Icon
+                  name="lucide:telescope"
+                  class="size-2.5"
+                />35 mm
+              </span>
+              <span class="inline-flex shrink-0 items-center gap-0.5">
+                <Icon
+                  name="lucide:aperture"
+                  class="size-2.5"
+                />ƒ/2.8
+              </span>
+              <span class="inline-flex shrink-0 items-center gap-0.5">
+                <Icon
+                  name="lucide:timer"
+                  class="size-2.5"
+                />1/250s
+              </span>
+              <span
+                class="ml-auto truncate border-l border-neutral-200 pl-2 text-neutral-400 dark:border-neutral-800"
+                >Shanghai</span
+              >
             </div>
           </div>
         </div>

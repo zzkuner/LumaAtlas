@@ -3,7 +3,7 @@ import z from 'zod'
 import { serializeAlbumShare } from '~~/server/services/album-share'
 
 export default eventHandler(async (event) => {
-  await requireUserSession(event)
+  await requireAdminSession(event)
 
   const { albumId } = await getValidatedRouterParams(
     event,

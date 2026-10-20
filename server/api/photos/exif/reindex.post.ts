@@ -19,7 +19,7 @@ const extractLocationUpdate = async (exifData: unknown) => {
 }
 
 export default eventHandler(async (event) => {
-  await requireUserSession(event)
+  await requireAdminSession(event)
 
   const body = await readBody(event)
   const { action, photoId } = body

@@ -28,13 +28,7 @@ export default eventHandler(async (event) => {
   }
 
   if (event.method === 'PUT') {
-    const session = await requireUserSession(event)
-    if (!session || !session.user.isAdmin) {
-      throw createError({
-        statusCode: 403,
-        statusMessage: 'Admin privileges required',
-      })
-    }
+    const session = await requireAdminSession(event)
 
     const { value } = await readValidatedBody(
       event,

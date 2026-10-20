@@ -1,4 +1,8 @@
 <script lang="ts" setup>
+if (getSetting('app:appearance.home.showAlbumsNav') === false) {
+  await navigateTo('/', { replace: true })
+}
+
 const route = useRoute()
 const router = useRouter()
 const dayjs = useDayjs()
@@ -83,7 +87,11 @@ const handleOpenViewer = (index: number) => {
   const photo = albumData.value?.photos?.[index]
   if (!photo) return
 
-  useViewerState().openViewer(index, `/albums/${albumId.value}`)
+  useViewerState().openViewer(
+    index,
+    `/albums/${albumId.value}`,
+    albumData.value?.photos?.map((albumPhoto) => albumPhoto.id) || [],
+  )
   router.push(`/${photo.id}`)
 }
 

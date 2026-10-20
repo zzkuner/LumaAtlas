@@ -3,7 +3,7 @@ import { scanStorageForImport } from '~~/server/services/import/storage-scanner'
 import type { StorageImportEnqueueResult } from '~~/shared/types/storage-import'
 
 export default defineEventHandler(async (event) => {
-  await requireUserSession(event)
+  await requireAdminSession(event)
 
   const { includeUnchanged, batchSize } = await readValidatedBody(
     event,

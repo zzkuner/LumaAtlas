@@ -255,7 +255,7 @@ export const DEFAULT_SETTINGS = [
     key: 'appearance.home.modules',
     type: 'json',
     defaultValue: {
-      order: ['header', 'gallery', 'footer'],
+      order: ['header', 'author', 'gallery', 'footer'],
       hidden: [],
     },
     label: 'Homepage modules',

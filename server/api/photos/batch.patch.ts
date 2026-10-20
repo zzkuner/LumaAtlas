@@ -60,7 +60,7 @@ const applyTagOperation = (
 }
 
 export default eventHandler(async (event) => {
-  await requireUserSession(event)
+  await requireAdminSession(event)
 
   const body = bodySchema.parse(await readBody(event))
   const photoIds = [...new Set(body.photoIds)]

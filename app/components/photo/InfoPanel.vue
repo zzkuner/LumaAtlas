@@ -40,7 +40,8 @@ const emit = defineEmits<{
   share: []
 }>()
 const toast = useToast()
-const { loggedIn } = useUserSession()
+const { user } = useUserSession()
+const isAdmin = computed(() => Boolean(user.value?.isAdmin))
 const { refresh } = usePhotos()
 const editorOpen = ref(false)
 const openEditor = () => {
@@ -49,7 +50,7 @@ const openEditor = () => {
 const downloadAllowed = computed(
   () =>
     props.allowDownload &&
-    (loggedIn.value ||
+    (isAdmin.value ||
       getSetting('publishing:download.originalEnabled') !== false),
 )
 
@@ -731,7 +732,7 @@ const handlePhotoSaved = async () => {
           />
         </UTooltip>
         <UTooltip
-          v-if="loggedIn"
+          v-if="isAdmin"
           :text="$t('photoDetail.actions.edit')"
         >
           <UButton
@@ -995,7 +996,7 @@ const handlePhotoSaved = async () => {
     </div>
 
     <PhotoInlineEditor
-      v-if="loggedIn"
+      v-if="isAdmin"
       v-model:open="editorOpen"
       :photo="currentPhoto"
       @saved="handlePhotoSaved"

@@ -26,7 +26,9 @@ const { photos } = usePhotos()
                 class="size-5 animate-spin text-neutral-500"
               />
             </span>
-            <span class="font-display text-sm text-neutral-500">LumaAtlas</span>
+            <span class="font-brand text-base font-semibold text-neutral-500"
+              >LumaAtlas</span
+            >
           </div>
         </template>
       </ClientOnly>

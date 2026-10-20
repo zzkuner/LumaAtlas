@@ -25,13 +25,7 @@ import { useDB, tables, eq } from '~~/server/utils/db'
  * }
  */
 export default eventHandler(async (event) => {
-  const session = await requireUserSession(event)
-  if (!session || !session.user.isAdmin) {
-    throw createError({
-      statusCode: 403,
-      statusMessage: 'Admin privileges required',
-    })
-  }
+  const session = await requireAdminSession(event)
 
   const body = await readValidatedBody(
     event,

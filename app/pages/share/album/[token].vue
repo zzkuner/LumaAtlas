@@ -186,7 +186,7 @@ const downloadCurrent = async () => {
                   class="size-4"
                 />
               </div>
-              <span class="font-display truncate text-base font-semibold"
+              <span class="font-brand truncate text-lg font-semibold"
                 >LumaAtlas</span
               >
             </div>

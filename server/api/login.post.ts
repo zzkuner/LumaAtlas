@@ -71,6 +71,11 @@ export default eventHandler(async (event) => {
     throw _invalidCredentialsError
   }
 
+  if (!user.isAdmin) {
+    recordFailure()
+    throw _invalidCredentialsError
+  }
+
   const factor = db
     .select()
     .from(tables.authFactors)

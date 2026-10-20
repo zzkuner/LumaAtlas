@@ -55,24 +55,104 @@ const showAboutNav = computed(
   () => getSetting('app:appearance.home.showAboutNav') === true,
 )
 
-const navItems = computed(() => [
-  { to: '/', label: $t('title.home'), visible: true },
-  { to: '/globe', label: $t('title.globe'), visible: showGlobeNav.value },
-  { to: '/albums', label: $t('title.albums'), visible: showAlbumsNav.value },
-  { to: '/about', label: $t('title.about'), visible: showAboutNav.value },
-])
+const navItems = computed(() => {
+  const navigation = getSetting('app:appearance.home.navigation')
+  const configuredOrder =
+    navigation && typeof navigation === 'object' && !Array.isArray(navigation)
+      ? (navigation as Record<string, unknown>).order
+      : []
+  const allowedOrder = ['globe', 'albums', 'about']
+  const order = [
+    ...new Set([
+      ...(Array.isArray(configuredOrder) ? configuredOrder : []),
+      ...allowedOrder,
+    ]),
+  ].filter(
+    (item): item is string =>
+      typeof item === 'string' && allowedOrder.includes(item),
+  )
+  const pages = {
+    globe: {
+      to: '/globe',
+      label: $t('title.globe'),
+      visible: showGlobeNav.value,
+    },
+    albums: {
+      to: '/albums',
+      label: $t('title.albums'),
+      visible: showAlbumsNav.value,
+    },
+    about: {
+      to: '/about',
+      label: $t('title.about'),
+      visible: showAboutNav.value,
+    },
+  }
+
+  return [
+    { to: '/', label: $t('title.home'), visible: true },
+    ...order.map((id) => pages[id as keyof typeof pages]),
+  ]
+})
 
 const viewItems: Array<{
   value: HomeViewMode
   label: string
+  description: string
+  icon: string
 }> = [
-  { value: 'all', label: $t('discovery.modes.all.label') },
-  { value: 'featured', label: $t('discovery.modes.featured.label') },
-  { value: 'recent', label: $t('discovery.modes.recent.label') },
-  { value: 'random', label: $t('discovery.modes.random.label') },
-  { value: 'nearby', label: $t('discovery.modes.nearby.label') },
-  { value: 'faraway', label: $t('discovery.modes.faraway.label') },
+  {
+    value: 'all',
+    label: $t('discovery.modes.all.label'),
+    description: $t('discovery.modes.all.description'),
+    icon: 'lucide:images',
+  },
+  {
+    value: 'featured',
+    label: $t('discovery.modes.featured.label'),
+    description: $t('discovery.modes.featured.description'),
+    icon: 'lucide:sparkles',
+  },
+  {
+    value: 'recent',
+    label: $t('discovery.modes.recent.label'),
+    description: $t('discovery.modes.recent.description'),
+    icon: 'lucide:clock-3',
+  },
+  {
+    value: 'random',
+    label: $t('discovery.modes.random.label'),
+    description: $t('discovery.modes.random.description'),
+    icon: 'lucide:dices',
+  },
+  {
+    value: 'nearby',
+    label: $t('discovery.modes.nearby.label'),
+    description: $t('discovery.modes.nearby.description'),
+    icon: 'lucide:navigation',
+  },
+  {
+    value: 'faraway',
+    label: $t('discovery.modes.faraway.label'),
+    description: $t('discovery.modes.faraway.description'),
+    icon: 'lucide:plane',
+  },
 ]
+
+const gallerySettingsOpen = ref(false)
+const currentViewItem = computed(
+  () =>
+    viewItems.find((item) => item.value === props.viewMode) || viewItems[0]!,
+)
+
+const selectViewMode = (value: HomeViewMode) => {
+  emit('update:viewMode', value)
+  gallerySettingsOpen.value = false
+}
+
+const selectLayoutMode = (value: GalleryLayout) => {
+  emit('update:layoutMode', value)
+}
 
 const layoutItems: Array<{
   value: GalleryLayout
@@ -148,9 +228,10 @@ const {
               class="size-5"
             />
           </span>
-          <span class="truncate text-xl font-semibold sm:text-2xl">{{
-            siteTitle
-          }}</span>
+          <span
+            class="font-brand truncate text-2xl font-semibold sm:text-3xl"
+            >{{ siteTitle }}</span
+          >
         </NuxtLink>
 
         <nav
@@ -221,6 +302,113 @@ const {
               </template>
             </UPopover>
           </div>
+
+          <UDrawer
+            v-if="showGalleryControls"
+            v-model:open="gallerySettingsOpen"
+            title="浏览与布局"
+            description="选择照片范围和当前浏览器的展示方式"
+            :ui="{
+              content: 'max-h-[88svh]',
+              body: 'p-0 sm:p-0',
+            }"
+          >
+            <UTooltip text="浏览与布局">
+              <UButton
+                :icon="currentViewItem.icon"
+                size="sm"
+                color="neutral"
+                :variant="viewMode === 'all' ? 'ghost' : 'soft'"
+                aria-label="浏览与布局"
+              >
+                <span class="hidden lg:inline">{{
+                  currentViewItem.label
+                }}</span>
+              </UButton>
+            </UTooltip>
+
+            <template #body>
+              <div
+                class="mx-auto w-full max-w-3xl overflow-y-auto px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:px-6"
+              >
+                <section>
+                  <p class="mb-3 text-sm font-medium text-neutral-500">
+                    浏览照片
+                  </p>
+                  <div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                    <button
+                      v-for="item in viewItems"
+                      :key="item.value"
+                      type="button"
+                      class="flex min-h-24 items-start gap-3 rounded-md border p-3 text-left transition-colors"
+                      :class="
+                        viewMode === item.value
+                          ? 'border-[var(--la-accent)] bg-neutral-100 text-neutral-950 dark:bg-neutral-900 dark:text-white'
+                          : 'border-neutral-200 text-neutral-600 hover:bg-neutral-50 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-900/60'
+                      "
+                      @click="selectViewMode(item.value)"
+                    >
+                      <Icon
+                        :name="item.icon"
+                        class="mt-0.5 size-5 shrink-0"
+                      />
+                      <span class="min-w-0">
+                        <span class="block text-base font-medium">{{
+                          item.label
+                        }}</span>
+                        <span
+                          class="mt-1 line-clamp-2 block text-xs leading-5 text-neutral-500 dark:text-neutral-400"
+                          >{{ item.description }}</span
+                        >
+                      </span>
+                    </button>
+                  </div>
+                </section>
+
+                <section
+                  class="mt-6 border-t border-neutral-200 pt-5 dark:border-neutral-800"
+                >
+                  <div class="mb-3 flex items-center justify-between gap-3">
+                    <p class="text-sm font-medium text-neutral-500">展示方式</p>
+                    <span class="text-xs text-neutral-400">仅当前浏览器</span>
+                  </div>
+                  <div class="grid grid-cols-3 gap-2">
+                    <UButton
+                      v-for="item in layoutItems"
+                      :key="item.value"
+                      :icon="item.icon"
+                      :label="item.label"
+                      color="neutral"
+                      :variant="layoutMode === item.value ? 'soft' : 'ghost'"
+                      class="justify-center"
+                      @click="selectLayoutMode(item.value)"
+                    />
+                  </div>
+                </section>
+
+                <section
+                  v-if="layoutMode !== 'big'"
+                  class="mt-5 border-t border-neutral-200 pt-5 dark:border-neutral-800"
+                >
+                  <p class="mb-3 text-sm font-medium text-neutral-500">
+                    显示列数
+                  </p>
+                  <div class="grid grid-cols-4 gap-2 sm:grid-cols-8">
+                    <UButton
+                      v-for="item in columnItems"
+                      :key="item.value"
+                      :label="item.label"
+                      size="sm"
+                      color="neutral"
+                      :variant="columnCount === item.value ? 'soft' : 'ghost'"
+                      class="justify-center"
+                      @click="emit('update:columnCount', item.value)"
+                    />
+                  </div>
+                </section>
+              </div>
+            </template>
+          </UDrawer>
 
           <UPopover v-if="showGalleryControls">
             <UTooltip :text="$t('ui.action.filter.tooltip')">
@@ -311,79 +499,6 @@ const {
           {{ item.label }}
         </NuxtLink>
       </nav>
-
-      <div
-        v-if="showGalleryControls"
-        class="mt-3 flex items-center justify-between gap-3 border-t border-neutral-200 pt-3 dark:border-neutral-800"
-      >
-        <div
-          class="scrollbar-hidden flex min-w-0 gap-5 overflow-x-auto text-base text-neutral-500 dark:text-neutral-400"
-        >
-          <button
-            v-for="item in viewItems"
-            :key="item.value"
-            type="button"
-            class="shrink-0 transition-colors hover:text-neutral-950 dark:hover:text-white"
-            :class="
-              viewMode === item.value
-                ? 'font-semibold text-neutral-950 dark:text-white'
-                : ''
-            "
-            @click="emit('update:viewMode', item.value)"
-          >
-            {{ item.label }}
-          </button>
-        </div>
-
-        <div
-          class="flex shrink-0 items-center rounded-md bg-neutral-100 p-0.5 font-sans sm:hidden dark:bg-neutral-900"
-        >
-          <UTooltip
-            v-for="item in layoutItems"
-            :key="item.value"
-            :text="item.label"
-          >
-            <UButton
-              :icon="item.icon"
-              size="xs"
-              color="neutral"
-              :variant="layoutMode === item.value ? 'soft' : 'ghost'"
-              :aria-label="item.label"
-              @click="emit('update:layoutMode', item.value)"
-            />
-          </UTooltip>
-
-          <UPopover v-if="layoutMode !== 'big'">
-            <UButton
-              icon="lucide:columns-3"
-              size="xs"
-              color="neutral"
-              :variant="columnCount === 'auto' ? 'ghost' : 'soft'"
-              aria-label="显示列数"
-            />
-            <template #content>
-              <div class="w-64 p-3 font-sans">
-                <div class="flex items-center justify-between gap-3">
-                  <span class="text-sm font-medium">显示列数</span>
-                  <span class="text-xs text-neutral-500">仅当前浏览器</span>
-                </div>
-                <div class="mt-3 grid grid-cols-4 gap-1">
-                  <UButton
-                    v-for="item in columnItems"
-                    :key="item.value"
-                    :label="item.label"
-                    size="sm"
-                    color="neutral"
-                    :variant="columnCount === item.value ? 'soft' : 'ghost'"
-                    class="justify-center"
-                    @click="emit('update:columnCount', item.value)"
-                  />
-                </div>
-              </div>
-            </template>
-          </UPopover>
-        </div>
-      </div>
     </div>
   </header>
 </template>

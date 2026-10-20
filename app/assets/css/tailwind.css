@@ -53,6 +53,9 @@
     'Microsoft YaHei UI', 'Microsoft YaHei', 'Noto Sans CJK SC', sans-serif;
   --font-display:
     'LXGW WenKai Lite', 'Noto Serif SC', 'Songti SC', 'STSong', serif;
+  --font-brand:
+    'Bodoni 72', 'Bodoni MT', Didot, 'Iowan Old Style', 'Palatino Linotype',
+    'Book Antiqua', Georgia, 'Noto Serif SC', 'Songti SC', serif;
 
   --text-xs: 0.8125rem;
   --text-xs--line-height: 1.125rem;

@@ -210,6 +210,11 @@ const typeOptions = [
 
 // 展开行状态
 const expanded = ref<Record<string, boolean>>({})
+const mobileExpanded = ref<Record<number, boolean>>({})
+
+const toggleMobileTask = (taskId: number) => {
+  mobileExpanded.value[taskId] = !mobileExpanded.value[taskId]
+}
 
 // 表格列定义
 const columns: TableColumn<any>[] = [
@@ -280,32 +285,66 @@ onBeforeUnmount(() => {
     <template #header>
       <UDashboardNavbar :title="$t('dashboard.queue.title')">
         <template #right>
-          <UButton
-            icon="tabler:refresh"
-            variant="soft"
-            :loading="isLoading"
-            @click="refreshData"
-          >
-            {{ $t('dashboard.queue.actions.refresh') }}
-          </UButton>
-          <UButton
-            icon="tabler:refresh"
-            color="warning"
-            variant="soft"
-            :loading="isLoading"
-            @click="retryAllFailedTasks"
-          >
-            {{ $t('dashboard.queue.actions.retryAll') }}
-          </UButton>
-          <UButton
-            icon="tabler:trash"
-            color="error"
-            variant="soft"
-            :loading="isLoading"
-            @click="clearNonActiveTasks"
-          >
-            {{ $t('dashboard.queue.actions.clearNonActive') }}
-          </UButton>
+          <div class="hidden items-center gap-2 sm:flex">
+            <UButton
+              icon="tabler:refresh"
+              variant="soft"
+              :loading="isLoading"
+              @click="refreshData"
+            >
+              {{ $t('dashboard.queue.actions.refresh') }}
+            </UButton>
+            <UButton
+              icon="tabler:refresh"
+              color="warning"
+              variant="soft"
+              :loading="isLoading"
+              @click="retryAllFailedTasks"
+            >
+              {{ $t('dashboard.queue.actions.retryAll') }}
+            </UButton>
+            <UButton
+              icon="tabler:trash"
+              color="error"
+              variant="soft"
+              :loading="isLoading"
+              @click="clearNonActiveTasks"
+            >
+              {{ $t('dashboard.queue.actions.clearNonActive') }}
+            </UButton>
+          </div>
+
+          <div class="flex items-center gap-1 sm:hidden">
+            <UButton
+              icon="tabler:refresh"
+              variant="ghost"
+              square
+              :loading="isLoading"
+              :aria-label="$t('dashboard.queue.actions.refresh')"
+              :title="$t('dashboard.queue.actions.refresh')"
+              @click="refreshData"
+            />
+            <UButton
+              icon="tabler:repeat"
+              color="warning"
+              variant="ghost"
+              square
+              :loading="isLoading"
+              :aria-label="$t('dashboard.queue.actions.retryAll')"
+              :title="$t('dashboard.queue.actions.retryAll')"
+              @click="retryAllFailedTasks"
+            />
+            <UButton
+              icon="tabler:trash"
+              color="error"
+              variant="ghost"
+              square
+              :loading="isLoading"
+              :aria-label="$t('dashboard.queue.actions.clearNonActive')"
+              :title="$t('dashboard.queue.actions.clearNonActive')"
+              @click="clearNonActiveTasks"
+            />
+          </div>
         </template>
       </UDashboardNavbar>
     </template>
@@ -313,7 +352,7 @@ onBeforeUnmount(() => {
     <template #body>
       <div class="flex flex-col gap-6">
         <!-- 状态指示器 -->
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
           <DashboardIndicator
             :title="$t('dashboard.queue.indicator.pending')"
             icon="tabler:clock"
@@ -343,16 +382,18 @@ onBeforeUnmount(() => {
         <!-- 筛选器和表格 -->
         <UCard>
           <template #header>
-            <div class="flex items-center justify-between pb-2">
-              <h2 class="text-lg font-semibold">队列任务列表</h2>
-              <div class="flex items-center gap-2">
+            <div
+              class="flex flex-col gap-3 pb-2 sm:flex-row sm:items-center sm:justify-between"
+            >
+              <h2 class="text-base font-semibold sm:text-lg">队列任务列表</h2>
+              <div class="grid w-full grid-cols-1 gap-2 sm:flex sm:w-auto">
                 <USelectMenu
                   v-model="statusFilter"
                   :items="statusOptions"
                   value-key="value"
                   size="sm"
                   variant="soft"
-                  class="w-32"
+                  class="w-full sm:w-36"
                   :search-input="false"
                 />
                 <USelectMenu
@@ -361,7 +402,7 @@ onBeforeUnmount(() => {
                   value-key="value"
                   size="sm"
                   variant="soft"
-                  class="w-32"
+                  class="w-full sm:w-44"
                   :search-input="false"
                 />
               </div>
@@ -369,7 +410,7 @@ onBeforeUnmount(() => {
           </template>
 
           <div class="space-y-4">
-            <!-- 任务表格 -->
+            <!-- 桌面端任务表格 -->
             <UTable
               v-model:expanded="expanded"
               :data="queueData?.data || []"
@@ -379,7 +420,7 @@ onBeforeUnmount(() => {
                 icon: 'tabler:inbox',
                 label: $t('dashboard.queue.messages.noTasks'),
               }"
-              class="w-full"
+              class="hidden w-full overflow-x-auto md:block"
             >
               <!-- 任务类型 -->
               <template #type-cell="{ row }">
@@ -448,7 +489,7 @@ onBeforeUnmount(() => {
                     {{ $t('dashboard.queue.buttons.retry') }}
                   </UButton>
                   <UButton
-                    v-if="row.original.status !== 'in-stage'"
+                    v-if="row.original.status === 'failed'"
                     icon="tabler:trash"
                     size="xs"
                     variant="soft"
@@ -536,16 +577,180 @@ onBeforeUnmount(() => {
                 </div>
               </template>
             </UTable>
+
+            <!-- 手机端任务卡片 -->
+            <div class="space-y-3 md:hidden">
+              <div
+                v-if="isLoading && !queueData?.data?.length"
+                class="flex min-h-32 items-center justify-center text-sm text-muted"
+              >
+                <UIcon
+                  name="tabler:loader-2"
+                  class="mr-2 size-5 animate-spin"
+                />
+                {{ $t('dashboard.queue.actions.refresh') }}
+              </div>
+
+              <div
+                v-else-if="!queueData?.data?.length"
+                class="flex min-h-32 flex-col items-center justify-center gap-2 text-sm text-muted"
+              >
+                <UIcon
+                  name="tabler:inbox"
+                  class="size-7"
+                />
+                {{ $t('dashboard.queue.messages.noTasks') }}
+              </div>
+
+              <article
+                v-for="task in queueData?.data || []"
+                :key="task.id"
+                class="rounded-md border border-default bg-default p-3"
+              >
+                <div class="flex min-w-0 items-start justify-between gap-3">
+                  <div class="flex min-w-0 flex-wrap items-center gap-2">
+                    <span class="font-mono text-xs text-muted"
+                      >#{{ task.id }}</span
+                    >
+                    <UBadge
+                      :label="$t(`dashboard.queue.types.${task.payload.type}`)"
+                      variant="soft"
+                      :color="
+                        task.payload.type === 'photo' ? 'info' : 'secondary'
+                      "
+                      size="sm"
+                    />
+                    <UBadge
+                      :label="$t(`dashboard.queue.status.${task.status}`)"
+                      variant="soft"
+                      :color="getStatusColor(task.status)"
+                      size="sm"
+                    />
+                  </div>
+
+                  <UButton
+                    :icon="
+                      mobileExpanded[task.id]
+                        ? 'tabler:chevron-up'
+                        : 'tabler:chevron-down'
+                    "
+                    color="neutral"
+                    variant="ghost"
+                    size="xs"
+                    square
+                    :aria-label="
+                      mobileExpanded[task.id] ? '收起任务' : '展开任务'
+                    "
+                    @click="toggleMobileTask(task.id)"
+                  />
+                </div>
+
+                <dl class="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-sm">
+                  <div class="min-w-0">
+                    <dt class="text-xs text-muted">
+                      {{ $t('dashboard.queue.table.attempts') }}
+                    </dt>
+                    <dd>{{ task.attempts }}/{{ task.maxAttempts }}</dd>
+                  </div>
+                  <div class="min-w-0">
+                    <dt class="text-xs text-muted">
+                      {{ $t('dashboard.queue.table.priority') }}
+                    </dt>
+                    <dd>{{ task.priority }}</dd>
+                  </div>
+                  <div class="min-w-0">
+                    <dt class="text-xs text-muted">
+                      {{ $t('dashboard.queue.table.stage') }}
+                    </dt>
+                    <dd class="truncate">
+                      {{
+                        task.statusStage
+                          ? $t(`dashboard.queue.stages.${task.statusStage}`)
+                          : '-'
+                      }}
+                    </dd>
+                  </div>
+                  <div class="min-w-0">
+                    <dt class="text-xs text-muted">
+                      {{ $t('dashboard.queue.table.createdAt') }}
+                    </dt>
+                    <dd class="whitespace-nowrap">
+                      {{ $dayjs(task.createdAt).format('MM-DD HH:mm:ss') }}
+                    </dd>
+                  </div>
+                </dl>
+
+                <div
+                  v-if="task.status === 'failed'"
+                  class="mt-3 flex flex-wrap gap-2 border-t border-default pt-3"
+                >
+                  <UButton
+                    icon="tabler:refresh"
+                    size="xs"
+                    variant="soft"
+                    color="warning"
+                    @click="retryTask(task.id)"
+                  >
+                    {{ $t('dashboard.queue.buttons.retry') }}
+                  </UButton>
+                  <UButton
+                    icon="tabler:trash"
+                    size="xs"
+                    variant="soft"
+                    color="error"
+                    @click="deleteTask(task.id)"
+                  >
+                    {{ $t('dashboard.queue.buttons.delete') }}
+                  </UButton>
+                </div>
+
+                <div
+                  v-if="mobileExpanded[task.id]"
+                  class="mt-3 space-y-3 border-t border-default pt-3"
+                >
+                  <div class="grid grid-cols-2 gap-3 text-sm">
+                    <div class="min-w-0">
+                      <p class="text-xs text-muted">PhotoId</p>
+                      <p class="truncate">
+                        {{
+                          'photoId' in task.payload
+                            ? task.payload.photoId || '-'
+                            : '-'
+                        }}
+                      </p>
+                    </div>
+                    <div class="min-w-0">
+                      <p class="text-xs text-muted">
+                        {{ $t('dashboard.queue.table.type') }}
+                      </p>
+                      <p class="break-words">{{ task.payload.type }}</p>
+                    </div>
+                  </div>
+
+                  <div v-if="task.status === 'failed' && task.errorMessage">
+                    <p class="mb-1 text-xs text-muted">
+                      {{ $t('dashboard.queue.table.errorMessage') }}
+                    </p>
+                    <p
+                      class="break-words rounded-md border border-error/20 bg-error/5 p-2 font-mono text-xs text-error"
+                    >
+                      {{ task.errorMessage }}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p class="mb-1 text-xs text-muted">Payload</p>
+                    <pre
+                      class="max-w-full overflow-x-auto rounded-md bg-elevated p-2 text-xs"
+                      >{{ JSON.stringify(task.payload, null, 2) }}</pre
+                    >
+                  </div>
+                </div>
+              </article>
+            </div>
           </div>
         </UCard>
       </div>
     </template>
   </UDashboardPanel>
 </template>
-
-<style scoped>
-/* 确保表格在小屏幕上正常显示 */
-:deep(.table-wrapper) {
-  overflow-x: auto;
-}
-</style>

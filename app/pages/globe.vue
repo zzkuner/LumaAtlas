@@ -2,6 +2,12 @@
 import { motion } from 'motion-v'
 import { clusterMarkers, photosToMarkers } from '~/utils/clustering'
 
+if (getSetting('app:appearance.home.showGlobeNav') === false) {
+  await navigateTo('/', { replace: true })
+}
+
+const GLOBE_MAP_ID = 'lumaatlas-public-map'
+
 useHead({
   title: $t('title.globe'),
 })
@@ -524,10 +530,6 @@ const resetMap = () => {
   })
 }
 
-const generateRandomKey = () => {
-  return Math.random().toString(36).substring(2, 15)
-}
-
 onBeforeRouteLeave(() => {
   stopTimelineDragging()
   stopTimelinePlayback()
@@ -779,7 +781,7 @@ onBeforeUnmount(() => {
           <!-- mapbox://styles/hoshinosuzumi/cmev0eujf01dw01pje3g9cmlg -->
           <MapProvider
             class="w-full h-full"
-            :map-id="generateRandomKey()"
+            :map-id="GLOBE_MAP_ID"
             :zoom="mapViewState.zoom"
             :center="[mapViewState.longitude, mapViewState.latitude]"
             :attribution-control="false"
@@ -793,7 +795,7 @@ onBeforeUnmount(() => {
                 v-for="clusterPoint in clusterGroups"
                 :key="`cluster-${clusterPoint.properties.marker?.id}`"
                 :cluster-point="clusterPoint"
-                :marker-id="generateRandomKey()"
+                :marker-id="`cluster-${clusterPoint.properties.marker?.id}`"
                 @click="onMarkerPinClick"
                 @close="onMarkerPinClose"
               />
@@ -809,7 +811,7 @@ onBeforeUnmount(() => {
                   clusterPoint.properties.marker?.id === currentClusterPointId
                 "
                 :analysis-mode="analysisMode"
-                :marker-id="generateRandomKey()"
+                :marker-id="`photo-${clusterPoint.properties.marker?.id}`"
                 @click="onMarkerPinClick"
                 @close="onMarkerPinClose"
               />

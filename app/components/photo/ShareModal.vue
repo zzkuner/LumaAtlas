@@ -12,10 +12,11 @@ const emit = defineEmits<{
 
 const toast = useToast()
 const { gtag } = useGtag()
-const { loggedIn } = useUserSession()
+const { user } = useUserSession()
+const isAdmin = computed(() => Boolean(user.value?.isAdmin))
 const originalDownloadEnabled = computed(
   () =>
-    loggedIn.value ||
+    isAdmin.value ||
     getSetting('publishing:download.originalEnabled') !== false,
 )
 

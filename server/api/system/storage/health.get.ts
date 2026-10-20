@@ -2,10 +2,7 @@ import { desc, isNotNull } from 'drizzle-orm'
 import { getGlobalStorageManager } from '~~/server/services/storage/events'
 
 export default eventHandler(async (event) => {
-  const session = await requireUserSession(event)
-  if (!session.user.isAdmin) {
-    throw createError({ statusCode: 403, statusMessage: 'Admin required' })
-  }
+  await requireAdminSession(event)
 
   const manager = getGlobalStorageManager()
   if (!manager) {

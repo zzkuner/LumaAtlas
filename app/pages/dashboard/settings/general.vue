@@ -54,6 +54,8 @@ const isAppearanceDirty = computed(() =>
   ),
 )
 
+useUnsavedChangesGuard(() => isAppDirty.value || isAppearanceDirty.value)
+
 const isAppearanceDefault = computed(() =>
   appearanceFields.value.every((field) =>
     sameValue(state[field.key], field.defaultValue ?? null),
@@ -290,6 +292,7 @@ const handleAppearanceSettingsSubmit = async () => {
                 class="mt-6"
                 :settings="state"
                 :title="String(state.title || 'LumaAtlas')"
+                :author="String(state.author || '')"
                 :slogan="String(state.slogan || '')"
                 :description="String(state.description || '')"
                 :avatar-url="String(state.avatarUrl || '')"

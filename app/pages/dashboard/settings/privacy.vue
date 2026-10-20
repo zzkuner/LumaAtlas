@@ -27,6 +27,8 @@ const isPrivacyDirty = computed(() =>
   ),
 )
 
+useUnsavedChangesGuard(isPrivacyDirty)
+
 const resetPrivacySettings = () => {
   privacyFields.value.forEach((field) => {
     privacyState[field.key] = field.value ?? field.defaultValue ?? null

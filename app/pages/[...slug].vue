@@ -8,15 +8,19 @@ definePageMeta({
 const route = useRoute()
 const router = useRouter()
 
-const { switchToIndex, closeViewer, openViewer } = useViewerState()
-const { isViewerOpen } = storeToRefs(useViewerState())
+const { switchToIndex, closeViewer, openViewer, clearReturnRoute } =
+  useViewerState()
+const { isViewerOpen, sourcePhotoIds } = storeToRefs(useViewerState())
 
 const { photos } = usePhotos()
+const viewerPhotos = computed(() => {
+  return resolvePhotoCollection(photos.value, sourcePhotoIds.value)
+})
 
 const slug = computed(() => (route.params.slug as string[]) || [])
 const photoId = computed(() => slug.value[0] || null)
 const currentPhoto = computed(() =>
-  photos.value.find((photo) => photo.id === photoId.value),
+  viewerPhotos.value.find((photo) => photo.id === photoId.value),
 )
 
 const requestUrl = useRequestURL()
@@ -54,7 +58,7 @@ watch(
 )
 
 watch(
-  [photoId, photos],
+  [photoId, viewerPhotos],
   ([currentPhotoId, currentPhotos]) => {
     if (currentPhotoId && currentPhotos.length > 0) {
       const foundIndex = currentPhotos.findIndex(
@@ -80,6 +84,11 @@ watch(
   },
   { immediate: true },
 )
+
+onBeforeUnmount(() => {
+  closeViewer()
+  clearReturnRoute()
+})
 </script>
 
 <template>

@@ -43,7 +43,7 @@ const runRateLimited = async <T>(request: () => Promise<T>): Promise<T> => {
 }
 
 export default eventHandler(async (event) => {
-  await requireUserSession(event)
+  await requireAdminSession(event)
 
   const query = await getValidatedQuery(
     event,

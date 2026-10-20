@@ -29,6 +29,8 @@ const isDirty = computed(() =>
   ),
 )
 
+useUnsavedChangesGuard(isDirty)
+
 const resetSettings = () => {
   fields.value.forEach((field) => {
     state[field.key] = field.value ?? field.defaultValue ?? null

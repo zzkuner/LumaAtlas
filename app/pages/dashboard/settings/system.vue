@@ -94,6 +94,10 @@ const isSectionDirty = (section: SystemSectionWithFields) =>
     (field) => !sameValue(systemState[field.key], getDefaultFieldValue(field)),
   )
 
+useUnsavedChangesGuard(() =>
+  systemFieldSections.value.some((section) => isSectionDirty(section)),
+)
+
 const resetSectionSettings = (section: SystemSectionWithFields) => {
   section.fields.forEach((field) => {
     systemState[field.key] = getDefaultFieldValue(field)

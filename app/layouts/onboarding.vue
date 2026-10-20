@@ -96,7 +96,7 @@ const currentStepIndex = computed(() => {
             class="size-14 object-contain"
           />
           <span
-            class="text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-linear-to-r from-white to-white/60"
+            class="font-brand bg-linear-to-r from-white to-white/60 bg-clip-text text-3xl font-semibold text-transparent"
           >
             LumaAtlas
           </span>
@@ -215,7 +215,7 @@ const currentStepIndex = computed(() => {
               alt="LumaAtlas Logo"
               class="size-8 object-contain"
             />
-            <span class="font-display font-bold">LumaAtlas</span>
+            <span class="font-brand text-lg font-semibold">LumaAtlas</span>
           </div>
           <div class="text-sm text-neutral-400">
             {{

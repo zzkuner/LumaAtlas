@@ -1,12 +1,17 @@
 <script lang="ts" setup>
 import type { Album } from '~~/server/utils/db'
 
+if (getSetting('app:appearance.home.showAlbumsNav') === false) {
+  await navigateTo('/', { replace: true })
+}
+
 interface AlbumWithPhotos extends Album {
   photoIds?: string[]
 }
 
 const { photos } = usePhotos()
-const { loggedIn } = useUserSession()
+const { user } = useUserSession()
+const isAdmin = computed(() => Boolean(user.value?.isAdmin))
 const siteSlogan = computed(() => String(getSetting('app:slogan') || ''))
 const contentMaxWidth = computed(() => {
   const width = String(getSetting('app:appearance.home.contentWidth') || 'wide')
@@ -19,14 +24,17 @@ const contentMaxWidth = computed(() => {
   )
 })
 
-const { data: albums } = useAsyncData<AlbumWithPhotos[]>(
-  'albums',
-  () => $fetch('/api/albums'),
-  { watch: [] },
-)
+const {
+  data: albums,
+  status: albumsStatus,
+  error: albumsError,
+  refresh: refreshAlbums,
+} = useAsyncData<AlbumWithPhotos[]>('albums', () => $fetch('/api/albums'), {
+  watch: [],
+})
 
 const visibleAlbums = computed(() => {
-  if (loggedIn.value) return albums.value || []
+  if (isAdmin.value) return albums.value || []
   return (albums.value || []).filter((album) => !album.isHidden)
 })
 
@@ -34,12 +42,22 @@ const photosById = computed(
   () => new Map(photos.value.map((photo) => [photo.id, photo])),
 )
 
-const getAlbumCover = (album: AlbumWithPhotos) => {
-  const coverId = album.coverPhotoId || album.photoIds?.[0]
-  return coverId ? photosById.value.get(coverId) || null : null
-}
+const albumCards = computed(() =>
+  visibleAlbums.value.map((album) => {
+    const candidateIds = [album.coverPhotoId, ...(album.photoIds || [])].filter(
+      (photoId): photoId is string => Boolean(photoId),
+    )
+    const cover = candidateIds
+      .map((photoId) => photosById.value.get(photoId))
+      .find((photo): photo is Photo => Boolean(photo))
 
-const getAlbumCount = (album: AlbumWithPhotos) => album.photoIds?.length || 0
+    return {
+      album,
+      cover: cover || null,
+      count: album.photoIds?.length || 0,
+    }
+  }),
+)
 </script>
 
 <template>
@@ -72,29 +90,61 @@ const getAlbumCount = (album: AlbumWithPhotos) => album.photoIds?.length || 0
           </p>
         </div>
         <p class="shrink-0 text-sm text-neutral-500 dark:text-neutral-400">
-          {{ visibleAlbums.length }} 个相册
+          {{ albumCards.length }} 个相册
         </p>
       </header>
 
       <div
-        v-if="visibleAlbums.length"
+        v-if="albumsStatus === 'idle' || albumsStatus === 'pending'"
+        class="flex min-h-[50svh] items-center justify-center"
+        aria-live="polite"
+      >
+        <Icon
+          name="lucide:loader-circle"
+          class="size-7 animate-spin text-neutral-400"
+        />
+      </div>
+
+      <div
+        v-else-if="albumsError"
+        class="flex min-h-[50svh] flex-col items-center justify-center text-center"
+      >
+        <Icon
+          name="lucide:circle-alert"
+          class="size-7 text-neutral-400"
+        />
+        <p class="font-display mt-4 text-lg font-semibold">相册加载失败</p>
+        <p class="mt-2 text-sm text-neutral-500">请检查网络后重新尝试。</p>
+        <UButton
+          class="mt-5"
+          color="neutral"
+          variant="outline"
+          icon="lucide:refresh-cw"
+          @click="refreshAlbums()"
+        >
+          重新加载
+        </UButton>
+      </div>
+
+      <div
+        v-else-if="albumCards.length"
         class="grid grid-cols-1 gap-x-5 gap-y-10 pt-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
       >
         <NuxtLink
-          v-for="album in visibleAlbums"
-          :key="album.id"
-          :to="`/albums/${album.id}`"
+          v-for="card in albumCards"
+          :key="card.album.id"
+          :to="`/albums/${card.album.id}`"
           class="group block min-w-0"
         >
           <div
             class="relative aspect-[4/3] overflow-hidden rounded-md bg-neutral-100 dark:bg-neutral-900"
           >
             <ThumbImage
-              v-if="getAlbumCover(album)?.thumbnailUrl"
+              v-if="card.cover?.thumbnailUrl"
               class="size-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.025]"
-              :src="getAlbumCover(album)!.thumbnailUrl!"
-              :thumbhash="getAlbumCover(album)?.thumbnailHash"
-              :alt="album.title"
+              :src="card.cover.thumbnailUrl"
+              :thumbhash="card.cover.thumbnailHash"
+              :alt="card.album.title"
             />
             <div
               v-else
@@ -107,7 +157,7 @@ const getAlbumCount = (album: AlbumWithPhotos) => album.photoIds?.length || 0
             </div>
 
             <span
-              v-if="album.isHidden && loggedIn"
+              v-if="card.album.isHidden && isAdmin"
               class="absolute left-3 top-3 inline-flex items-center gap-1 rounded-md bg-black/65 px-2 py-1 text-xs text-white backdrop-blur"
             >
               <Icon
@@ -123,19 +173,19 @@ const getAlbumCount = (album: AlbumWithPhotos) => album.photoIds?.length || 0
               <h2
                 class="font-display truncate text-lg font-semibold text-neutral-900 transition-colors group-hover:text-[var(--la-accent)] dark:text-neutral-100"
               >
-                {{ album.title }}
+                {{ card.album.title }}
               </h2>
               <p
-                v-if="album.description"
+                v-if="card.album.description"
                 class="mt-1 line-clamp-2 text-sm leading-6 text-neutral-500 dark:text-neutral-400"
               >
-                {{ album.description }}
+                {{ card.album.description }}
               </p>
             </div>
             <span
               class="mt-0.5 shrink-0 text-sm tabular-nums text-neutral-500 dark:text-neutral-400"
             >
-              {{ getAlbumCount(album) }} 张
+              {{ card.count }} 张
             </span>
           </div>
         </NuxtLink>

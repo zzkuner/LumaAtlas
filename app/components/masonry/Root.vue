@@ -95,12 +95,16 @@ const asRecord = (value: unknown): Record<string, unknown> =>
 
 const homeModules = computed(() => {
   const config = asRecord(getSetting('app:appearance.home.modules'))
-  const allowed = ['header', 'gallery', 'footer']
+  const allowed = ['header', 'author', 'gallery', 'footer']
   const requested = Array.isArray(config.order) ? config.order : []
   const order = [...new Set([...requested, ...allowed])].filter(
     (item): item is string =>
       typeof item === 'string' && allowed.includes(item),
   )
+  if (!requested.includes('author')) {
+    order.splice(order.indexOf('author'), 1)
+    order.splice(Math.max(0, order.indexOf('header') + 1), 0, 'author')
+  }
   const hidden = Array.isArray(config.hidden)
     ? config.hidden.filter(
         (item): item is string =>
@@ -541,7 +545,15 @@ onUnmounted(() => {
 })
 
 const handleOpenViewer = (index: number) => {
-  router.push(`/${displayPhotos.value[index]?.id}`)
+  const photo = displayPhotos.value[index]
+  if (!photo) return
+
+  useViewerState().openViewer(
+    index,
+    route.fullPath,
+    displayPhotos.value.map((item) => item.id),
+  )
+  router.push(`/${photo.id}`)
 }
 
 const scrollToPhoto = (photoIndex: number) => {
@@ -597,11 +609,11 @@ watch(currentPhotoIndex, (newIndex) => {
     />
 
     <MasonryItemContext
-      v-if="showHeader && moduleVisible('header')"
+      v-if="showHeader && moduleVisible('author')"
       :stats="photoStats"
       :date-range-text
       :max-width="galleryMaxWidth"
-      :style="{ order: moduleOrder('header') }"
+      :style="{ order: moduleOrder('author') }"
     />
 
     <DateRangeIndicator
@@ -694,8 +706,7 @@ watch(currentPhotoIndex, (newIndex) => {
             />
           </span>
           <p
-            class="mt-4 text-2xl font-semibold text-neutral-800 dark:text-neutral-100"
-            style="font-family: var(--la-heading-font)"
+            class="font-brand mt-4 text-3xl font-semibold text-neutral-800 dark:text-neutral-100"
           >
             {{ siteTitle }}
           </p>

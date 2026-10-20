@@ -3,10 +3,11 @@ import { and, eq } from 'drizzle-orm'
 export default eventHandler(async (event) => {
   const db = useDB()
   const session = await getUserSession(event)
+  const isAdmin = Boolean(session.user?.isAdmin)
 
   // 获取所有相册，按创建时间倒序
   const albumQuery = db.select().from(tables.albums)
-  const albums = session.user
+  const albums = isAdmin
     ? albumQuery.all()
     : albumQuery
         .where(
@@ -27,7 +28,7 @@ export default eventHandler(async (event) => {
         })
         .from(tables.albumPhotos)
 
-      const photoIds = session.user
+      const photoIds = isAdmin
         ? photoIdQuery
             .where(eq(tables.albumPhotos.albumId, album.id))
             .orderBy(tables.albumPhotos.position)

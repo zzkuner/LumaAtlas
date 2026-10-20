@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { scanStorageForImport } from '~~/server/services/import/storage-scanner'
 
 export default defineEventHandler(async (event) => {
-  await requireUserSession(event)
+  await requireAdminSession(event)
 
   const { includeUnchanged, previewLimit } = await readValidatedBody(
     event,

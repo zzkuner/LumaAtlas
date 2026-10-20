@@ -144,9 +144,34 @@ const userMenuItems = computed(() => [
       class="size-12 text-primary"
     />
     <p class="text-center text-neutral-500">
-      {{ !user?.isAdmin ? '请登录后进入管理后台' : '当前账号没有后台管理权限' }}
+      {{ !loggedIn ? '请登录后进入管理后台' : '当前账号没有后台管理权限' }}
     </p>
-    <UButton @click="handleLogin">登录</UButton>
+    <div class="flex items-center gap-2">
+      <UButton
+        v-if="!loggedIn"
+        @click="handleLogin"
+      >
+        登录
+      </UButton>
+      <template v-else>
+        <UButton
+          to="/"
+          color="neutral"
+          variant="outline"
+          icon="lucide:arrow-left"
+        >
+          返回首页
+        </UButton>
+        <UButton
+          color="neutral"
+          variant="ghost"
+          icon="lucide:log-out"
+          @click="handleLogout"
+        >
+          退出登录
+        </UButton>
+      </template>
+    </div>
   </div>
   <UDashboardGroup
     v-else
@@ -191,7 +216,7 @@ const userMenuItems = computed(() => [
           <div class="flex flex-col overflow-hidden">
             <NuxtLink
               to="/"
-              class="line-clamp-1 font-display text-lg font-semibold"
+              class="font-brand line-clamp-1 text-xl font-semibold"
             >
               {{ appTitle }}
             </NuxtLink>

@@ -78,8 +78,6 @@ const displayPhotos = computed(() => {
 
 const { currentPhotoIndex, isViewerOpen } = storeToRefs(useViewerState())
 
-const FIRST_SCREEN_ITEMS_COUNT = 50
-const hasAnimated = ref(false)
 const showFloatingActions = ref(false)
 const dateRange = ref<string>()
 const visiblePhotos = ref(new Set<number>())
@@ -762,8 +760,6 @@ watch(currentPhotoIndex, (newIndex) => {
               :key="item.photo.id"
               :photo="item.photo"
               :index="item.originalIndex"
-              :has-animated
-              :first-screen-items="FIRST_SCREEN_ITEMS_COUNT"
               presentation="masonry"
               image-ratio="natural"
               @visibility-change="handleVisibilityChange"
@@ -790,8 +786,6 @@ watch(currentPhotoIndex, (newIndex) => {
             :key="item.photo.id"
             :photo="item.photo"
             :index="item.originalIndex"
-            :has-animated
-            :first-screen-items="FIRST_SCREEN_ITEMS_COUNT"
             :presentation="galleryLayout"
             :image-ratio="galleryImageRatio"
             @visibility-change="handleVisibilityChange"

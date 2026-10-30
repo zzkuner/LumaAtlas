@@ -4,6 +4,8 @@ import { getSettingUIConfig } from '~~/server/services/settings/ui-config'
 import type { FieldDescriptor } from '~~/shared/types/settings'
 
 export default eventHandler(async (event) => {
+  await requireWizardAccess(event, { allowAnonymousWithoutUser: true })
+
   const query = await getValidatedQuery(
     event,
     z.object({

@@ -637,16 +637,6 @@ export class QueueManager {
             this.logger.warn(
               `[${taskId}:reverse-geocoding] missing coordinates for photo ${photoId}`,
             )
-            await db
-              .update(tables.photos)
-              .set({
-                latitude: null,
-                longitude: null,
-                country: null,
-                city: null,
-                locationName: null,
-              })
-              .where(eq(tables.photos.id, photoId))
             throw new Error(`Missing coordinates for photo ${photoId}`)
           }
 

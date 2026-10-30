@@ -1,4 +1,6 @@
 <script lang="ts" setup>
+import { MglMarker } from '@indoorequal/vue-maplibre-gl'
+
 withDefaults(
   defineProps<{
     markerId?: string
@@ -19,15 +21,12 @@ const provider = computed(() => mapConfig.value.provider || 'maplibre')
 </script>
 
 <template>
-  <MapboxDefaultMarker
+  <MapDirectMapboxMarker
     v-if="lnglat && provider === 'mapbox'"
-    :marker-id
     :lnglat
   >
-    <template #marker>
-      <slot name="marker" />
-    </template>
-  </MapboxDefaultMarker>
+    <slot name="marker" />
+  </MapDirectMapboxMarker>
   <MglMarker
     v-else-if="lnglat"
     :coordinates="lnglat"

@@ -120,13 +120,3 @@ onUnmounted(() => {
     </MapProvider>
   </div>
 </template>
-
-<style>
-.mapboxgl-ctrl-logo {
-  display: none !important;
-}
-
-.mapboxgl-ctrl-attrib {
-  display: none !important;
-}
-</style>

@@ -125,13 +125,17 @@ const maintenanceResult = ref<{
   completedAt: string
 } | null>(null)
 const toast = useToast()
+const fetchMaintenanceResult = $fetch as unknown as <T>(
+  url: string,
+  options: { method: 'POST' },
+) => Promise<T>
 
 const runMaintenance = async () => {
   maintenanceLoading.value = true
   try {
-    maintenanceResult.value = await $fetch('/api/system/maintenance/cleanup', {
-      method: 'POST',
-    })
+    maintenanceResult.value = await fetchMaintenanceResult<
+      NonNullable<typeof maintenanceResult.value>
+    >('/api/system/maintenance/cleanup', { method: 'POST' })
     toast.add({ title: '系统清理完成', color: 'success' })
   } catch (error) {
     toast.add({

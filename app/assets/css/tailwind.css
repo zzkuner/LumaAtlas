@@ -1,6 +1,8 @@
 @import 'tailwindcss';
 @import '@nuxt/ui';
 @import 'lxgw-wenkai-lite-webfont/lxgwwenkailite-regular.css';
+@import 'maplibre-gl/dist/maplibre-gl.css';
+@import 'mapbox-gl/dist/mapbox-gl.css';
 
 :root {
   /* New text-autospace property */

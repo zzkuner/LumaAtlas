@@ -1,6 +1,6 @@
-import path from 'node:path'
 import { createReadStream, promises as fs } from 'node:fs'
 import { getStorageManager } from '../../plugins/3.storage'
+import { resolveExistingStoragePath } from '../../services/storage/path-security'
 // lightweight: avoid TS type dep; fallback when not resolvable
 const guessContentType = (filePath: string): string => {
   const ext = (filePath.split('.').pop() || '').toLowerCase()
@@ -42,25 +42,20 @@ export default defineEventHandler(async (event) => {
   const relPathRaw = Array.isArray(p) ? p.join('/') : p
   // handle CJK characters in URL
   const decodedPath = decodeURIComponent(relPathRaw)
-  const relPath = decodedPath
+  const unsafeRelPath = decodedPath
     .replace(/\\/g, '/')
     .replace(/\/+/g, '/')
     .replace(/^\/+/, '')
 
-  // 阻止路径穿越
-  if (relPath.includes('..')) {
-    throw createError({ statusCode: 400, statusMessage: 'Invalid path' })
-  }
+  const relPath = await assertPhotoAssetAccess(event, unsafeRelPath)
 
   const basePath = (provider as any).config.basePath as string
-  const absolute = path.resolve(basePath, relPath)
-
-  // 再次确认目标仍在 basePath 内
-  if (!absolute.startsWith(path.resolve(basePath) + path.sep)) {
-    throw createError({ statusCode: 400, statusMessage: 'Invalid path' })
-  }
 
   try {
+    const { absFile: absolute } = await resolveExistingStoragePath(
+      basePath,
+      relPath,
+    )
     const stat = await fs.stat(absolute)
     if (!stat.isFile()) {
       throw createError({ statusCode: 404, statusMessage: 'Not Found' })
@@ -108,10 +103,10 @@ export default defineEventHandler(async (event) => {
         }
       }
     }
+
+    const stream = createReadStream(absolute)
+    return sendStream(event, stream)
   } catch {
     throw createError({ statusCode: 404, statusMessage: 'Not Found' })
   }
-
-  const stream = createReadStream(absolute)
-  return sendStream(event, stream)
 })

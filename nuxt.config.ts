@@ -17,8 +17,6 @@ export default defineNuxtConfig({
     '@vueuse/nuxt',
     'dayjs-nuxt',
     '@nuxtjs/i18n',
-    'nuxt-mapbox',
-    'nuxt-maplibre',
     'nuxt-gtag',
   ],
 
@@ -186,9 +184,7 @@ export default defineNuxtConfig({
             if (
               id.includes('/mapbox-gl/') ||
               id.includes('/maplibre-gl/') ||
-              id.includes('/@indoorequal/vue-maplibre-gl/') ||
-              id.includes('/nuxt-mapbox/') ||
-              id.includes('/nuxt-maplibre/')
+              id.includes('/@indoorequal/vue-maplibre-gl/')
             ) {
               return 'vendor-map'
             }

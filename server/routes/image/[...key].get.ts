@@ -1,10 +1,12 @@
 export default eventHandler(async (event) => {
   const { storageProvider } = useStorageProvider(event)
-  const key = getRouterParam(event, 'key')
+  const requestedKey = getRouterParam(event, 'key')
 
-  if (!key) {
+  if (!requestedKey) {
     throw createError({ statusCode: 400, statusMessage: 'Invalid key' })
   }
+
+  const key = await assertPhotoAssetAccess(event, requestedKey)
 
   const photo = await storageProvider.get(key)
   if (!photo) {

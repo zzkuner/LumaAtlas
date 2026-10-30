@@ -1,5 +1,6 @@
-import { and, asc, eq, getTableColumns } from 'drizzle-orm'
+import { and, asc, eq } from 'drizzle-orm'
 import z from 'zod'
+import { publicPhotoColumns } from '~~/server/utils/publicPhotoColumns'
 
 export default eventHandler(async (event) => {
   const { albumId } = await getValidatedRouterParams(
@@ -42,10 +43,7 @@ export default eventHandler(async (event) => {
 
   // 获取相册中的照片
   const photoQuery = db
-    // all fields from tables.photos
-    .select({
-      ...getTableColumns(tables.photos),
-    })
+    .select(publicPhotoColumns)
     .from(tables.photos)
     .innerJoin(
       tables.albumPhotos,

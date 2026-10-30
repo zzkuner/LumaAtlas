@@ -1,7 +1,11 @@
-import { and, asc, eq, getTableColumns, sql } from 'drizzle-orm'
+import { and, asc, eq, sql } from 'drizzle-orm'
 import { randomBytes } from 'node:crypto'
 import type { H3Event } from 'h3'
-import type { AlbumShare, Photo } from '~~/server/utils/db'
+import type { AlbumShare } from '~~/server/utils/db'
+import {
+  publicPhotoColumns,
+  type PublicPhoto,
+} from '~~/server/utils/publicPhotoColumns'
 
 export function createAlbumShareToken() {
   return randomBytes(18).toString('base64url')
@@ -40,7 +44,7 @@ export function assertAlbumShareAvailable(share: AlbumShare | undefined) {
   }
 }
 
-function sanitizePhoto(photo: Photo, share: AlbumShare): Photo {
+function sanitizePhoto(photo: PublicPhoto, share: AlbumShare): PublicPhoto {
   const result = { ...photo }
 
   if (!share.allowOriginalDownload) {
@@ -94,7 +98,7 @@ export function getSharedAlbumPayload(event: H3Event, share: AlbumShare) {
   }
 
   const photos = db
-    .select({ ...getTableColumns(tables.photos) })
+    .select(publicPhotoColumns)
     .from(tables.photos)
     .innerJoin(
       tables.albumPhotos,

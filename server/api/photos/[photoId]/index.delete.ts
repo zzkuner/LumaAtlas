@@ -6,7 +6,7 @@ export default eventHandler(async (event) => {
   const photoId = getRouterParam(event, 'photoId')
 
   if (!photoId) {
-    return createError({
+    throw createError({
       statusCode: 400,
       statusMessage: 'Photo ID is required',
     })
@@ -19,7 +19,7 @@ export default eventHandler(async (event) => {
     .get()
 
   if (!photo) {
-    return createError({
+    throw createError({
       statusCode: 404,
       statusMessage: 'Photo not found',
     })
@@ -30,7 +30,6 @@ export default eventHandler(async (event) => {
   if (photo.storageKey) {
     logger.image.info(`Deleting photo files for ${photoId} from storage`)
     try {
-      await storageProvider.delete(photo.storageKey)
       const lowerStorageKey = photo.storageKey.toLowerCase()
       const heicExtension = HEIC_EXTENSIONS.find((ext) =>
         lowerStorageKey.endsWith(ext),
@@ -46,11 +45,7 @@ export default eventHandler(async (event) => {
           logger.image.info(
             `Deleting converted JPEG for HEIC photo ${photoId}: ${jpegKey}`,
           )
-          try {
-            await storageProvider.delete(jpegKey)
-          } catch {
-            // ignore error when deleting converted JPEG
-          }
+          await storageProvider.delete(jpegKey)
         }
       }
       const thumbnailKeys = new Set([
@@ -63,12 +58,30 @@ export default eventHandler(async (event) => {
       if (photo.livePhotoVideoKey) {
         await storageProvider.delete(photo.livePhotoVideoKey)
       }
-    } catch {
-      // ignore error
+      // Delete the source last. If a derived asset fails, the database still
+      // points to a usable original and the operation can be retried safely.
+      await storageProvider.delete(photo.storageKey)
+    } catch (error) {
+      logger.image.error(`Failed to delete files for photo ${photoId}`, error)
+      throw createError({
+        statusCode: 502,
+        statusMessage: 'Failed to delete photo files from storage',
+      })
     }
   }
 
-  useDB().delete(tables.photos).where(eq(tables.photos.id, photoId)).run()
+  try {
+    useDB().delete(tables.photos).where(eq(tables.photos.id, photoId)).run()
+  } catch (error) {
+    logger.image.error(
+      `Failed to delete database row for photo ${photoId}`,
+      error,
+    )
+    throw createError({
+      statusCode: 500,
+      statusMessage: 'Photo files were deleted but the database update failed',
+    })
+  }
 
   logger.image.success(`Photo ${photoId} deleted`)
 

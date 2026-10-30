@@ -1,24 +1,15 @@
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
+import { randomUUID } from 'node:crypto'
 import type { StorageObject, StorageProvider } from '../interfaces'
 import type { LocalStorageConfig } from '~~/shared/types/storage'
 import { isSupportedImageKey } from '../image-formats'
-
-const ensureDir = async (dirPath: string) => {
-  await fs.mkdir(dirPath, { recursive: true })
-}
-
-const sanitizeKey = (key: string) =>
-  key.replace(/\\/g, '/').replace(/\/+/g, '/').replace(/^\/+/, '')
-
-const combinePrefixAndKey = (prefix: string | undefined, key: string) => {
-  const cleanPrefix = (prefix || '').replace(/\/+$/, '')
-  const cleanKey = key.replace(/^\/+/, '')
-  if (!cleanPrefix) return cleanKey
-  return cleanKey.startsWith(cleanPrefix + '/')
-    ? cleanKey
-    : `${cleanPrefix}/${cleanKey}`
-}
+import {
+  combineStoragePrefixAndKey,
+  prepareStorageDirectory,
+  prepareStorageWritePath,
+  resolveExistingStoragePath,
+} from '../path-security'
 
 export class LocalStorageProvider implements StorageProvider {
   config: LocalStorageConfig
@@ -29,19 +20,21 @@ export class LocalStorageProvider implements StorageProvider {
     this.logger = logger
   }
 
-  private resolveAbsoluteKey(key: string): { absFile: string; relKey: string } {
-    const relKey = sanitizeKey(combinePrefixAndKey(this.config.prefix, key))
-    const absFile = path.resolve(this.config.basePath, relKey)
-    return { absFile, relKey }
-  }
-
   async create(key: string, fileBuffer: Buffer): Promise<StorageObject> {
-    const { absFile, relKey } = this.resolveAbsoluteKey(key)
-    await ensureDir(path.dirname(absFile))
+    const { absFile, relKey } = await prepareStorageWritePath(
+      this.config.basePath,
+      key,
+      this.config.prefix,
+    )
     // 原子写入：写到临时文件再重命名
-    const tempFile = `${absFile}.tmp-${Date.now()}`
-    await fs.writeFile(tempFile, fileBuffer)
-    await fs.rename(tempFile, absFile)
+    const tempFile = `${absFile}.tmp-${randomUUID()}`
+    try {
+      await fs.writeFile(tempFile, fileBuffer, { flag: 'wx' })
+      await fs.rename(tempFile, absFile)
+    } catch (error) {
+      await fs.rm(tempFile, { force: true }).catch(() => undefined)
+      throw error
+    }
     const stat = await fs.stat(absFile)
     this.logger?.success?.(`Saved file: ${absFile}`)
     return {
@@ -52,8 +45,12 @@ export class LocalStorageProvider implements StorageProvider {
   }
 
   async delete(key: string): Promise<void> {
-    const { absFile } = this.resolveAbsoluteKey(key)
     try {
+      const { absFile } = await resolveExistingStoragePath(
+        this.config.basePath,
+        key,
+        this.config.prefix,
+      )
       await fs.unlink(absFile)
       this.logger?.success?.(`Deleted file: ${absFile}`)
     } catch (err) {
@@ -63,8 +60,12 @@ export class LocalStorageProvider implements StorageProvider {
   }
 
   async get(key: string): Promise<Buffer | null> {
-    const { absFile } = this.resolveAbsoluteKey(key)
     try {
+      const { absFile } = await resolveExistingStoragePath(
+        this.config.basePath,
+        key,
+        this.config.prefix,
+      )
       return await fs.readFile(absFile)
     } catch (err) {
       if ((err as NodeJS.ErrnoException).code === 'ENOENT') return null
@@ -73,22 +74,21 @@ export class LocalStorageProvider implements StorageProvider {
   }
 
   getPublicUrl(key: string): string {
-    const relKey = sanitizeKey(combinePrefixAndKey(this.config.prefix, key))
+    const relKey = combineStoragePrefixAndKey(this.config.prefix, key)
     const base = (this.config.baseUrl || '/storage').replace(/\/+$/, '')
     return `${base}/${relKey}`
   }
 
   async listAll(): Promise<StorageObject[]> {
     const results: StorageObject[] = []
-    const baseDir = this.config.prefix
-      ? path.resolve(this.config.basePath, this.config.prefix)
-      : this.config.basePath
+    const { absDirectory: baseDir, relKey: prefix } =
+      await prepareStorageDirectory(this.config.basePath, this.config.prefix)
 
     const walk = async (dir: string, relBase: string) => {
       const entries = await fs.readdir(dir, { withFileTypes: true })
       for (const entry of entries) {
         const abs = path.join(dir, entry.name)
-        const rel = sanitizeKey(path.join(relBase, entry.name))
+        const rel = path.posix.join(relBase.replace(/\\/g, '/'), entry.name)
         if (entry.isDirectory()) {
           await walk(abs, rel)
         } else if (entry.isFile()) {
@@ -98,8 +98,7 @@ export class LocalStorageProvider implements StorageProvider {
       }
     }
 
-    await ensureDir(baseDir)
-    await walk(baseDir, this.config.prefix || '')
+    await walk(baseDir, prefix)
     return results
   }
 
@@ -110,8 +109,12 @@ export class LocalStorageProvider implements StorageProvider {
 
   async getFileMeta(key: string): Promise<StorageObject | null> {
     // First try with combined prefix
-    const { absFile, relKey } = this.resolveAbsoluteKey(key)
     try {
+      const { absFile, relKey } = await resolveExistingStoragePath(
+        this.config.basePath,
+        key,
+        this.config.prefix,
+      )
       const stat = await fs.stat(absFile)
       if (!stat.isFile()) return null
       return { key: relKey, size: stat.size, lastModified: stat.mtime }
@@ -120,9 +123,9 @@ export class LocalStorageProvider implements StorageProvider {
     }
 
     // Fallback: try without adding prefix (in case key already contains it or was stored raw)
-    const rawRel = sanitizeKey(key)
-    const rawAbs = path.resolve(this.config.basePath, rawRel)
     try {
+      const { absFile: rawAbs, relKey: rawRel } =
+        await resolveExistingStoragePath(this.config.basePath, key)
       const stat = await fs.stat(rawAbs)
       if (!stat.isFile()) return null
       return { key: rawRel, size: stat.size, lastModified: stat.mtime }

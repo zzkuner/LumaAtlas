@@ -5,6 +5,10 @@ import { storageConfigSchema } from '~~/shared/types/storage'
 import { useDB, tables, eq } from '~~/server/utils/db'
 
 export default eventHandler(async (event) => {
+  const wizardAccess = await requireWizardAccess(event, {
+    allowAnonymousWithoutUser: true,
+  })
+
   const body = await readValidatedBody(
     event,
     z.object({
@@ -35,29 +39,9 @@ export default eventHandler(async (event) => {
 
   // 1. Handle Admin User
   let adminUser: typeof tables.users.$inferSelect | undefined
-  const existingUser = db.select().from(tables.users).limit(1).get()
+  const existingUser = wizardAccess.existingUser
   if (existingUser) {
-    if (existingUser.email === body.admin.email) {
-      await db
-        .update(tables.users)
-        .set({
-          password: await hashPassword(body.admin.password),
-          username: body.admin.username,
-          isAdmin: 1,
-        })
-        .where(eq(tables.users.id, existingUser.id))
-        .run()
-      adminUser = db
-        .select()
-        .from(tables.users)
-        .where(eq(tables.users.id, existingUser.id))
-        .get()
-    } else {
-      throw createError({
-        statusCode: 400,
-        message: 'User already exists',
-      })
-    }
+    adminUser = existingUser
   } else {
     await db
       .insert(tables.users)

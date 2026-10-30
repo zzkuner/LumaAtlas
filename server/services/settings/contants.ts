@@ -559,7 +559,7 @@ export const DEFAULT_SETTINGS = [
     defaultValue: '',
     label: 'settings.location.mapbox.token.label',
     description: 'settings.location.mapbox.token.description',
-    isPublic: true,
+    isSecret: true,
   },
   {
     namespace: 'location',

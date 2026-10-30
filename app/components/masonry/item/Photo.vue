@@ -22,7 +22,6 @@ const emit = defineEmits<{
 
 const { gtag } = useGtag()
 
-const isLoading = ref(true)
 const photoRef = ref<HTMLElement>()
 const videoRef = useDomRef()
 const isVisible = ref(false)
@@ -143,12 +142,7 @@ const shouldShowInfoOverlay = computed(() => {
 })
 
 // Methods
-const handleImageLoad = () => {
-  isLoading.value = false
-}
-
 const handleImageError = () => {
-  isLoading.value = false
   console.warn(`Failed to load image: ${props.photo.thumbnailUrl}`)
 }
 
@@ -472,23 +466,6 @@ onMounted(() => {
     }
   })
 
-  // Preload thumbnail image
-  if (props.photo.thumbnailUrl) {
-    const img = new Image()
-    img.onload = () => {
-      // Update loading state after preload completes
-      isLoading.value = false
-    }
-    img.onerror = () => {
-      // Even if preload fails, we should stop loading state
-      isLoading.value = false
-    }
-    img.src = props.photo.thumbnailUrl
-  } else {
-    // If no thumbnail URL, stop loading immediately
-    isLoading.value = false
-  }
-
   // Set up intersection observer for visibility tracking
   nextTick(() => {
     if (photoRef.value) {
@@ -550,7 +527,10 @@ onUnmounted(() => {
 <template>
   <div
     ref="photoRef"
-    class="w-full cursor-pointer select-none transition-all duration-300"
+    class="w-full cursor-pointer select-none transition-all duration-300 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+    role="button"
+    tabindex="0"
+    :aria-label="contentTitle ? `查看照片：${contentTitle}` : '查看照片详情'"
     :class="{
       'flex flex-col py-6 sm:min-h-[calc(100svh-7rem)] sm:justify-center sm:py-8':
         isBig,
@@ -559,6 +539,8 @@ onUnmounted(() => {
       transform: 'translateZ(0)',
     }"
     @click="handleClick"
+    @keydown.enter.prevent="handleClick"
+    @keydown.space.prevent="handleClick"
     @mouseenter="handleMouseEnter"
     @mouseleave="handleMouseLeave"
     @touchstart="handleTouchStart"
@@ -592,7 +574,6 @@ onUnmounted(() => {
               ? 'bg-neutral-100 dark:bg-neutral-900'
               : 'object-cover group-hover:scale-105'
           "
-          @load="handleImageLoad"
           @error="handleImageError"
         />
 
@@ -796,13 +777,13 @@ onUnmounted(() => {
 
     <div
       v-if="showBigPhotoInfo && isFeed"
-      class="scrollbar-hidden mx-auto w-full overflow-x-auto border-b border-neutral-200/80 py-4 dark:border-neutral-800/80"
+      class="mx-auto w-full border-b border-neutral-200/80 py-4 dark:border-neutral-800/80"
       :style="bigFrameStyle"
     >
-      <div class="flex min-w-max items-stretch px-1 sm:min-w-full sm:px-0">
+      <div class="grid grid-cols-2 gap-y-5 px-1 sm:grid-cols-4 sm:px-0">
         <div
           v-if="hasExposureParameters"
-          class="flex shrink-0 flex-col justify-center gap-2 px-3 sm:flex-1 sm:px-4"
+          class="col-span-2 flex min-w-0 flex-col justify-center gap-2 px-3 sm:col-span-1 sm:px-4"
         >
           <span class="text-xs text-neutral-400">拍摄参数</span>
           <span
@@ -853,22 +834,22 @@ onUnmounted(() => {
         </div>
         <div
           v-if="photo.exif?.Model"
-          class="flex shrink-0 flex-col justify-center gap-2 border-l border-neutral-200 px-3 sm:flex-1 sm:px-4 dark:border-neutral-800"
+          class="flex min-w-0 flex-col justify-center gap-2 px-3 sm:border-l sm:border-neutral-200 sm:px-4 sm:dark:border-neutral-800"
         >
           <span class="text-xs text-neutral-400">相机</span>
           <span
-            class="max-w-56 truncate whitespace-nowrap text-sm uppercase text-neutral-800 dark:text-neutral-200"
+            class="line-clamp-2 text-sm uppercase text-neutral-800 dark:text-neutral-200"
           >
             {{ formatCameraInfo(photo.exif.Make, photo.exif.Model) }}
           </span>
         </div>
 
         <div
-          class="flex shrink-0 flex-col justify-center gap-2 border-l border-neutral-200 px-3 sm:flex-1 sm:px-4 dark:border-neutral-800"
+          class="flex min-w-0 flex-col justify-center gap-2 px-3 sm:border-l sm:border-neutral-200 sm:px-4 sm:dark:border-neutral-800"
         >
           <span class="text-xs text-neutral-400">位置</span>
           <span
-            class="max-w-64 truncate whitespace-nowrap text-sm text-neutral-800 dark:text-neutral-200"
+            class="line-clamp-2 text-sm text-neutral-800 dark:text-neutral-200"
           >
             {{ formattedLocation || '未记录位置' }}
           </span>
@@ -876,18 +857,16 @@ onUnmounted(() => {
 
         <div
           v-if="photo.dateTaken"
-          class="flex shrink-0 flex-col justify-center gap-2 border-l border-neutral-200 px-3 sm:flex-1 sm:px-4 dark:border-neutral-800"
+          class="flex min-w-0 flex-col justify-center gap-2 px-3 sm:border-l sm:border-neutral-200 sm:px-4 sm:dark:border-neutral-800"
         >
           <span class="text-xs text-neutral-400">拍摄时间</span>
-          <span
-            class="whitespace-nowrap text-sm text-neutral-800 dark:text-neutral-200"
-          >
+          <span class="text-sm text-neutral-800 dark:text-neutral-200">
             {{ $dayjs(photo.dateTaken).format('YYYY-MM-DD HH:mm') }}
           </span>
         </div>
 
         <div
-          class="flex shrink-0 items-center justify-center border-l border-neutral-200 px-2 dark:border-neutral-800"
+          class="col-span-2 flex items-center justify-end px-2 sm:col-span-4"
         >
           <UTooltip text="查看详情">
             <UButton

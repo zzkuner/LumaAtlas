@@ -1,6 +1,8 @@
 import sharp from 'sharp'
 
 export default eventHandler(async (event) => {
+  await requireAdminSession(event)
+
   const { storageProvider } = useStorageProvider(event)
 
   let url = getRouterParam(event, 'thumbnailUrl')

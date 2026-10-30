@@ -21,6 +21,7 @@ export class MapboxGeocodingProvider implements GeocodingProvider {
   private accessToken: string
   private readonly baseUrl = 'https://api.mapbox.com'
   private lastRequestTime = 0
+  private rateLimitQueue: Promise<void> = Promise.resolve()
   private readonly rateLimitMs = 100 // Mapbox 默认速率限制为 1000/分钟，约60ms间隔
 
   constructor(accessToken: string) {
@@ -53,7 +54,9 @@ export class MapboxGeocodingProvider implements GeocodingProvider {
           }
           url.searchParams.set('language', mapboxLang)
 
-          logger.location.info(`Mapbox API URL: ${url.toString()}`)
+          logger.location.info(
+            `Mapbox reverse geocoding request: ${url.origin}${url.pathname}`,
+          )
 
           const response = await fetch(url.toString())
 
@@ -117,15 +120,17 @@ export class MapboxGeocodingProvider implements GeocodingProvider {
   }
 
   private async applyRateLimit(): Promise<void> {
-    const now = Date.now()
-    const timeSinceLastRequest = now - this.lastRequestTime
-
-    if (timeSinceLastRequest < this.rateLimitMs) {
-      const delay = this.rateLimitMs - timeSinceLastRequest
-      await new Promise((resolve) => setTimeout(resolve, delay))
-    }
-
-    this.lastRequestTime = Date.now()
+    const scheduled = this.rateLimitQueue.then(async () => {
+      const elapsed = Date.now() - this.lastRequestTime
+      if (elapsed < this.rateLimitMs) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, this.rateLimitMs - elapsed),
+        )
+      }
+      this.lastRequestTime = Date.now()
+    })
+    this.rateLimitQueue = scheduled.catch(() => undefined)
+    await scheduled
   }
 }
 
@@ -135,8 +140,10 @@ export class MapboxGeocodingProvider implements GeocodingProvider {
  */
 export class NominatimGeocodingProvider implements GeocodingProvider {
   private readonly baseUrl: string
-  private readonly userAgent = 'chronoframe/1.0'
+  private readonly userAgent =
+    'LumaAtlas/1.0 (+https://github.com/zzkuner/LumaAtlas)'
   private lastRequestTime = 0
+  private rateLimitQueue: Promise<void> = Promise.resolve()
   private readonly rateLimitMs = 1000 // Nominatim 要求至少1秒间隔
 
   constructor(baseUrl?: string) {
@@ -223,15 +230,17 @@ export class NominatimGeocodingProvider implements GeocodingProvider {
   }
 
   private async applyRateLimit(): Promise<void> {
-    const now = Date.now()
-    const timeSinceLastRequest = now - this.lastRequestTime
-
-    if (timeSinceLastRequest < this.rateLimitMs) {
-      const delay = this.rateLimitMs - timeSinceLastRequest
-      await new Promise((resolve) => setTimeout(resolve, delay))
-    }
-
-    this.lastRequestTime = Date.now()
+    const scheduled = this.rateLimitQueue.then(async () => {
+      const elapsed = Date.now() - this.lastRequestTime
+      if (elapsed < this.rateLimitMs) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, this.rateLimitMs - elapsed),
+        )
+      }
+      this.lastRequestTime = Date.now()
+    })
+    this.rateLimitQueue = scheduled.catch(() => undefined)
+    await scheduled
   }
 }
 
@@ -239,22 +248,38 @@ export class NominatimGeocodingProvider implements GeocodingProvider {
  * 创建地理编码提供者实例
  * @description 优先使用 Mapbox，如果没有配置则回退到 Nominatim
  */
+let cachedProvider:
+  | { cacheKey: string; provider: GeocodingProvider }
+  | undefined
+
 async function createGeocodingProvider(): Promise<GeocodingProvider> {
-  // const mapboxToken = useRuntimeConfig().mapbox?.accessToken
   const mapboxToken = await settingsManager.get<string>(
     'location',
     'mapbox.token',
   )
 
   if (mapboxToken) {
-    return new MapboxGeocodingProvider(mapboxToken)
+    const cacheKey = `mapbox:${mapboxToken}`
+    if (cachedProvider?.cacheKey !== cacheKey) {
+      cachedProvider = {
+        cacheKey,
+        provider: new MapboxGeocodingProvider(mapboxToken),
+      }
+    }
+    return cachedProvider.provider
   }
 
-  // 回退到 Nominatim 提供者
-  return new NominatimGeocodingProvider(
+  const baseUrl =
     (await settingsManager.get<string>('location', 'nominatim.baseUrl')) ||
-      undefined,
-  )
+    'https://nominatim.openstreetmap.org'
+  const cacheKey = `nominatim:${baseUrl}`
+  if (cachedProvider?.cacheKey !== cacheKey) {
+    cachedProvider = {
+      cacheKey,
+      provider: new NominatimGeocodingProvider(baseUrl),
+    }
+  }
+  return cachedProvider.provider
 }
 
 export async function extractLocationFromGPS(

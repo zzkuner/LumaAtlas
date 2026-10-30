@@ -9,6 +9,8 @@ interface AlbumWithPhotos extends Album {
   photoIds?: string[]
 }
 
+const fetchAlbums = $fetch as unknown as <T>(url: string) => Promise<T>
+
 const { photos } = usePhotos()
 const { user } = useUserSession()
 const isAdmin = computed(() => Boolean(user.value?.isAdmin))
@@ -29,9 +31,11 @@ const {
   status: albumsStatus,
   error: albumsError,
   refresh: refreshAlbums,
-} = useAsyncData<AlbumWithPhotos[]>('albums', () => $fetch('/api/albums'), {
-  watch: [],
-})
+} = useAsyncData<AlbumWithPhotos[]>(
+  'albums',
+  () => fetchAlbums<AlbumWithPhotos[]>('/api/albums'),
+  { watch: [] },
+)
 
 const visibleAlbums = computed(() => {
   if (isAdmin.value) return albums.value || []

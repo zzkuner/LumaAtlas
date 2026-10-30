@@ -5,12 +5,13 @@ const props = withDefaults(
   defineProps<{
     photo: Photo
     index: number
-    hasAnimated: boolean
+    hasAnimated?: boolean
     firstScreenItems?: number
     presentation?: 'masonry' | 'grid' | 'big' | 'feed'
     imageRatio?: 'natural' | 'square' | 'landscape'
   }>(),
   {
+    hasAnimated: false,
     firstScreenItems: 30,
     presentation: 'masonry',
     imageRatio: 'natural',

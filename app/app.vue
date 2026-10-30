@@ -4,6 +4,7 @@ import dayjsLocale_zhTW from 'dayjs/locale/zh-tw'
 import dayjsLocale_zhHK from 'dayjs/locale/zh-hk'
 
 const router = useRouter()
+const route = useRoute()
 const dayjs = useDayjs()
 const colorMode = useColorMode()
 const localeRef = ref('en')
@@ -22,13 +23,20 @@ try {
 
 // 初始化设置系统 - 一次性加载所有设置
 const settingsStore = useSettingsStore()
-await settingsStore.initSettings()
-
 const appTitle = useSettingRef('app:title')
 const rssEnabled = useSettingRef('publishing:rss.enabled')
+const appearanceTheme = useSettingRef('app:appearance.theme')
 const publicThemeStyle = usePublicThemeStyle()
 
-colorMode.preference = useSettingRef('app:appearance.theme').value as string
+const viewerState = useViewerState()
+const { switchToIndex, closeViewer, clearReturnRoute } = viewerState
+const {
+  currentPhotoIndex,
+  isViewerOpen,
+  returnRoute,
+  isDirectAccess,
+  sourcePhotoIds,
+} = storeToRefs(viewerState)
 
 useHead({
   titleTemplate: (title) =>
@@ -55,20 +63,29 @@ const { user } = useUserSession()
 const apiEndpoint = computed(() =>
   user.value?.isAdmin ? '/api/photos' : '/api/photos/visible',
 )
-const { data, refresh, status } = await useFetch(() => apiEndpoint.value, {
-  watch: [apiEndpoint],
-})
+const shouldLoadPhotoLibrary = computed(() =>
+  route.matched.some((record) => record.path.includes(':slug')),
+)
+const requestFetch = useRequestFetch()
+
+// Resolve every Pinia-backed composable before the first await. Vue's
+// injection context is not guaranteed to survive an async SSR boundary.
+await settingsStore.initSettings()
+colorMode.preference = appearanceTheme.value as string
+
+const { data, refresh, status } = await useAsyncData(
+  'global-photo-library',
+  () =>
+    shouldLoadPhotoLibrary.value
+      ? requestFetch<Photo[]>(apiEndpoint.value)
+      : Promise.resolve([] as Photo[]),
+  {
+    watch: [apiEndpoint, shouldLoadPhotoLibrary],
+    default: () => [] as Photo[],
+  },
+)
 
 const photos = computed(() => (data.value as Photo[]) || [])
-
-const { switchToIndex, closeViewer, clearReturnRoute } = useViewerState()
-const {
-  currentPhotoIndex,
-  isViewerOpen,
-  returnRoute,
-  isDirectAccess,
-  sourcePhotoIds,
-} = storeToRefs(useViewerState())
 
 const viewerPhotos = computed(() => {
   return resolvePhotoCollection(photos.value, sourcePhotoIds.value)

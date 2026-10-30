@@ -3,6 +3,8 @@ import { settingsManager } from '~~/server/services/settings/settingsManager'
 import { storageConfigSchema } from '~~/shared/types/storage'
 
 export default eventHandler(async (event) => {
+  await requireWizardAccess(event, { allowAnonymousWithoutUser: true })
+
   const body = await readValidatedBody(
     event,
     z.object({

@@ -784,7 +784,6 @@ onBeforeUnmount(() => {
             :map-id="GLOBE_MAP_ID"
             :zoom="mapViewState.zoom"
             :center="[mapViewState.longitude, mapViewState.latitude]"
-            :attribution-control="false"
             :language="$i18n.locale"
             @load="onMapLoaded"
             @zoom="onMapZoom"
@@ -831,13 +830,3 @@ onBeforeUnmount(() => {
     </div>
   </div>
 </template>
-
-<style>
-.mapboxgl-ctrl-logo {
-  display: none !important;
-}
-
-.mapboxgl-ctrl-attrib {
-  display: none !important;
-}
-</style>

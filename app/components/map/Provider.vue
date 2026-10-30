@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import type { AttributionControlOptions, StyleSpecification } from 'maplibre-gl'
+import { MglMap } from '@indoorequal/vue-maplibre-gl'
 import { twMerge } from 'tailwind-merge'
 import type { MapboxMap, MapInstance, MaplibreMap } from '~~/shared/types/map'
 
@@ -22,7 +23,7 @@ withDefaults(
     center: undefined,
     zoom: 2,
     interactive: true,
-    attributionControl: false,
+    attributionControl: () => ({ compact: true }),
     language: undefined,
   },
 )
@@ -89,30 +90,27 @@ const mapStyle = computed(() => {
       >
         <slot />
       </MglMap>
-      <MapboxMap
+      <MapDirectMapbox
         v-else
         class="w-full h-full"
-        :map-id="mapId || 'cframe-mapbox-map'"
-        :options="{
-          accessToken: mapConfig['mapbox.token'],
-          style: mapStyle,
-          center: center,
-          zoom: zoom,
-          interactive: interactive,
-          attributionControl: attributionControl,
-          language: language,
-          config: {
-            basemap: {
-              lightPreset: $colorMode.value === 'dark' ? 'night' : 'day',
-              colorThemes: 'faded',
-            },
+        :access-token="String(mapConfig['mapbox.token'] || '')"
+        :map-style="mapStyle"
+        :center
+        :zoom
+        :interactive
+        :attribution-control
+        :language
+        :config="{
+          basemap: {
+            lightPreset: $colorMode.value === 'dark' ? 'night' : 'day',
+            colorThemes: 'faded',
           },
         }"
         @load="emit('load', $event as MapboxMap)"
         @zoom="emit('zoom')"
       >
         <slot />
-      </MapboxMap>
+      </MapDirectMapbox>
     </ClientOnly>
   </div>
 </template>

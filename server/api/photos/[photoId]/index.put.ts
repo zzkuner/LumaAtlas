@@ -159,6 +159,8 @@ export default eventHandler(async (event) => {
   const tempDir = await mkdtemp(path.join(tempRoot, 'cframe-edit-'))
   const ext = path.extname(photo.storageKey) || '.jpg'
   const tempFile = path.join(tempDir, `edited${ext}`)
+  let storageWasReplaced = false
+  let databaseWasUpdated = false
 
   try {
     await writeFile(tempFile, originalBuffer)
@@ -176,6 +178,7 @@ export default eventHandler(async (event) => {
       photo.storageKey.replace(prefix || '', ''),
       updatedBuffer,
     )
+    storageWasReplaced = true
 
     const exifData = await extractExifData(updatedBuffer)
 
@@ -217,10 +220,11 @@ export default eventHandler(async (event) => {
       }
     }
 
-    await db
-      .update(tables.photos)
+    db.update(tables.photos)
       .set(updateData)
       .where(eq(tables.photos.id, photoId))
+      .run()
+    databaseWasUpdated = true
 
     const updatedPhoto = await db
       .select()
@@ -261,6 +265,23 @@ export default eventHandler(async (event) => {
       photo: updatedPhoto,
     }
   } catch (error) {
+    if (storageWasReplaced && !databaseWasUpdated) {
+      try {
+        const prefix =
+          storageProvider.config && 'prefix' in storageProvider.config
+            ? storageProvider.config.prefix
+            : ''
+        await storageProvider.create(
+          photo.storageKey.replace(prefix || '', ''),
+          originalBuffer,
+        )
+      } catch (rollbackError) {
+        logger.image.error(
+          `Failed to restore original file for photo ${photoId}`,
+          rollbackError,
+        )
+      }
+    }
     logger.image.error('Failed to update photo metadata', error)
     throw createError({
       statusCode: 500,

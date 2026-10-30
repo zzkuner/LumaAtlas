@@ -57,6 +57,10 @@ const recoveryCodes = ref<string[]>([])
 const totpLoading = ref(false)
 const passkeyLoading = ref(false)
 const passkeySupported = ref(false)
+const fetchTotpSetup = $fetch as unknown as <T>(
+  url: string,
+  options: { method: 'POST' },
+) => Promise<T>
 
 onMounted(() => {
   passkeySupported.value = 'PublicKeyCredential' in window
@@ -65,9 +69,10 @@ onMounted(() => {
 const startTotpSetup = async () => {
   totpLoading.value = true
   try {
-    totpSetup.value = await $fetch('/api/security/totp/setup', {
-      method: 'POST',
-    })
+    totpSetup.value = await fetchTotpSetup<NonNullable<typeof totpSetup.value>>(
+      '/api/security/totp/setup',
+      { method: 'POST' },
+    )
     setupCode.value = ''
     recoveryCodes.value = []
   } finally {

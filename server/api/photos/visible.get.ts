@@ -1,5 +1,6 @@
 import { count, desc, eq } from 'drizzle-orm'
 import { z } from 'zod'
+import { publicPhotoColumns } from '~~/server/utils/publicPhotoColumns'
 
 export default eventHandler(async (event) => {
   const db = useDB()
@@ -23,7 +24,7 @@ export default eventHandler(async (event) => {
   // Preserve the original array response unless pagination is requested.
   if (!query.page && !query.limit) {
     return db
-      .select()
+      .select(publicPhotoColumns)
       .from(tables.photos)
       .where(visibilityCondition)
       .orderBy(desc(tables.photos.dateTaken))
@@ -39,7 +40,7 @@ export default eventHandler(async (event) => {
       .where(visibilityCondition)
       .get()?.value || 0
   const items = db
-    .select()
+    .select(publicPhotoColumns)
     .from(tables.photos)
     .where(visibilityCondition)
     .orderBy(desc(tables.photos.dateTaken))

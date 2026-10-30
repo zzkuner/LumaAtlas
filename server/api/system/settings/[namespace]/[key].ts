@@ -4,6 +4,7 @@ import {
   settingNamespaces,
 } from '~~/server/services/settings/contants'
 import { settingsManager } from '~~/server/services/settings/settingsManager'
+import { isPublicSetting } from '~~/server/services/settings/access'
 import { useDB, tables, eq } from '~~/server/utils/db'
 
 export default eventHandler(async (event) => {
@@ -16,6 +17,14 @@ export default eventHandler(async (event) => {
   )
 
   if (event.method === 'GET') {
+    const session = await getUserSession(event)
+    if (!session.user?.isAdmin && !isPublicSetting(namespace, key)) {
+      throw createError({
+        statusCode: 404,
+        statusMessage: `Setting ${namespace}:${key} not found`,
+      })
+    }
+
     try {
       const value = await settingsManager.get(namespace, key)
       return { namespace, key, value }

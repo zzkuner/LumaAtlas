@@ -1,4 +1,5 @@
-import { useDB, tables, eq, or, and } from '~~/server/utils/db'
+import { isPublicSetting } from '~~/server/services/settings/access'
+import { useDB, tables } from '~~/server/utils/db'
 
 /**
  * 获取所有公开设置
@@ -8,25 +9,20 @@ import { useDB, tables, eq, or, and } from '~~/server/utils/db'
 export default eventHandler(async () => {
   const db = useDB()
 
-  // 查询所有公开设置
-  const allSettings = db
-    .select()
-    .from(tables.settings)
-    .where(
-      or(
-        eq(tables.settings.isPublic, true),
-        and(
-          eq(tables.settings.namespace, 'system'),
-          eq(tables.settings.key, 'firstLaunch'),
-        ),
-      ),
-    )
-    .all()
+  // The code-owned schema is authoritative. Database flags can be stale after
+  // an upgrade, so never use them alone to decide whether a value is public.
+  const allSettings = db.select().from(tables.settings).all()
 
   // 按命名空间分组
   const grouped: Record<string, Record<string, any>> = {}
 
   for (const setting of allSettings) {
+    const isFirstLaunch =
+      setting.namespace === 'system' && setting.key === 'firstLaunch'
+    if (!isFirstLaunch && !isPublicSetting(setting.namespace, setting.key)) {
+      continue
+    }
+
     const namespaceSettings = (grouped[setting.namespace] ??= {})
 
     // 解析值

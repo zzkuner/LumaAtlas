@@ -2,6 +2,8 @@ import { z } from 'zod'
 import { settingsManager } from '~~/server/services/settings/settingsManager'
 
 export default eventHandler(async (event) => {
+  await requireWizardAccess(event, { allowAnonymousWithoutUser: true })
+
   const body = await readValidatedBody(
     event,
     z.object({

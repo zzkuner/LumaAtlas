@@ -777,20 +777,21 @@ onUnmounted(() => {
 
     <div
       v-if="showBigPhotoInfo && isFeed"
-      class="mx-auto w-full border-b border-neutral-200/70 py-4 dark:border-neutral-800/70 sm:py-5"
-      :style="bigFrameStyle"
+      class="mx-auto w-full max-w-6xl border-b border-neutral-200/70 py-4 dark:border-neutral-800/70 sm:py-5"
     >
-      <div class="flex items-start gap-3 px-1 sm:px-0">
+      <div class="flex min-w-0 items-start gap-4 px-1 sm:px-2">
         <div
-          class="grid min-w-0 flex-1 grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2 lg:grid-cols-4"
+          class="grid min-w-0 flex-1 grid-cols-1 gap-x-10 gap-y-4 sm:grid-cols-2 xl:grid-cols-[minmax(17rem,1.35fr)_minmax(11rem,1fr)_minmax(12rem,1.15fr)_auto]"
         >
           <div
             v-if="hasExposureParameters"
             class="flex min-w-0 flex-col gap-1.5"
           >
-            <span class="text-[11px] text-neutral-400">参数</span>
+            <span class="text-[10px] leading-none text-neutral-400"
+              >拍摄参数</span
+            >
             <span
-              class="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-sm text-neutral-800 dark:text-neutral-200"
+              class="flex flex-wrap items-center gap-x-3 gap-y-1 font-sans text-[15px] leading-6 text-neutral-800 dark:text-neutral-200"
             >
               <span
                 v-if="formattedFocalLength"
@@ -823,9 +824,9 @@ onUnmounted(() => {
             v-if="photo.exif?.Make || photo.exif?.Model"
             class="flex min-w-0 flex-col gap-1.5"
           >
-            <span class="text-[11px] text-neutral-400">相机</span>
+            <span class="text-[10px] leading-none text-neutral-400">相机</span>
             <span
-              class="line-clamp-2 text-sm text-neutral-800 dark:text-neutral-200"
+              class="font-display break-words text-[15px] leading-6 text-neutral-800 dark:text-neutral-200"
             >
               {{ formatCameraInfo(photo.exif.Make, photo.exif.Model) }}
             </span>
@@ -835,9 +836,9 @@ onUnmounted(() => {
             v-if="formattedLocation"
             class="flex min-w-0 flex-col gap-1.5"
           >
-            <span class="text-[11px] text-neutral-400">位置</span>
+            <span class="text-[10px] leading-none text-neutral-400">位置</span>
             <span
-              class="line-clamp-2 text-sm text-neutral-800 dark:text-neutral-200"
+              class="font-display break-words text-[15px] leading-6 text-neutral-800 dark:text-neutral-200"
             >
               {{ formattedLocation }}
             </span>
@@ -847,10 +848,12 @@ onUnmounted(() => {
             v-if="photo.dateTaken"
             class="flex min-w-0 flex-col gap-1.5"
           >
-            <span class="text-[11px] text-neutral-400">时间</span>
+            <span class="text-[10px] leading-none text-neutral-400"
+              >拍摄时间</span
+            >
             <time
               :datetime="$dayjs(photo.dateTaken).toISOString()"
-              class="whitespace-nowrap text-sm text-neutral-800 dark:text-neutral-200"
+              class="whitespace-nowrap font-sans text-[15px] leading-6 text-neutral-800 tabular-nums dark:text-neutral-200"
             >
               {{ $dayjs(photo.dateTaken).format('YYYY.MM.DD · HH:mm') }}
             </time>

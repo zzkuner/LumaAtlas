@@ -450,23 +450,26 @@ const columns: any[] = [
 </script>
 
 <template>
-  <UDashboardPanel>
+  <UDashboardPanel class="min-w-0 overflow-hidden">
     <template #header>
       <UDashboardNavbar :title="$t('title.albums')">
         <template #right>
           <UButton
             icon="tabler:plus"
             variant="soft"
+            :aria-label="$t('dashboard.albums.createButton')"
             @click="openCreateSlideover"
           >
-            {{ $t('dashboard.albums.createButton') }}
+            <span class="hidden sm:inline">{{
+              $t('dashboard.albums.createButton')
+            }}</span>
           </UButton>
         </template>
       </UDashboardNavbar>
     </template>
 
     <template #body>
-      <div class="flex flex-col gap-6">
+      <div class="flex min-w-0 flex-col gap-6">
         <div
           v-if="albums.length > 0"
           class="bg-white dark:bg-neutral-900 rounded-lg border border-gray-200 dark:border-neutral-800"

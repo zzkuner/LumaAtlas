@@ -126,7 +126,7 @@ const yearOptions = computed(() => {
 </script>
 
 <template>
-  <UDashboardPanel>
+  <UDashboardPanel class="min-w-0 overflow-hidden">
     <template #header>
       <UDashboardNavbar :title="$t('dashboard.overview.title')">
         <template #right>

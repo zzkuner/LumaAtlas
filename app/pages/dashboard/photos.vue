@@ -2325,7 +2325,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <UDashboardPanel>
+  <UDashboardPanel class="min-w-0 overflow-hidden">
     <template #header>
       <UDashboardNavbar :title="$t('dashboard.photos.toolbar.title')">
         <template #right>

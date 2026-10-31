@@ -141,7 +141,7 @@ const downloadQr = () => {
 </script>
 
 <template>
-  <UDashboardPanel>
+  <UDashboardPanel class="min-w-0 overflow-hidden">
     <template #header>
       <UDashboardNavbar :title="$t('dashboard.albums.share.title')">
         <template #leading>

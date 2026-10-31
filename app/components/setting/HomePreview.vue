@@ -391,15 +391,26 @@ const itemRatio = (naturalRatio: number) => {
             </div>
             <div
               v-if="layout === 'big' && showBigPhotoInfo"
-              class="flex flex-wrap items-start gap-x-4 gap-y-1.5 border-b border-neutral-200 py-2 text-[8px] dark:border-neutral-800"
+              class="grid grid-cols-2 gap-x-5 gap-y-2 border-b border-neutral-200 py-2.5 text-[8px] dark:border-neutral-800"
             >
-              <span class="flex flex-col gap-0.5">
-                <span class="text-[7px] text-neutral-400">参数</span>
-                <span>35 mm · ƒ/2.8 · 1/250 · ISO 100</span>
+              <span class="flex min-w-0 flex-col gap-0.5">
+                <span class="text-[7px] text-neutral-400">拍摄参数</span>
+                <span class="flex flex-wrap gap-x-1.5">
+                  <span>35 mm</span><span>ƒ/2.8</span><span>1/250</span
+                  ><span>ISO 100</span>
+                </span>
               </span>
-              <span class="flex flex-col gap-0.5">
+              <span class="flex min-w-0 flex-col gap-0.5">
                 <span class="text-[7px] text-neutral-400">相机</span>
                 <span>FUJIFILM X-T5</span>
+              </span>
+              <span class="flex min-w-0 flex-col gap-0.5">
+                <span class="text-[7px] text-neutral-400">位置</span>
+                <span>Hangzhou, China</span>
+              </span>
+              <span class="flex min-w-0 flex-col gap-0.5">
+                <span class="text-[7px] text-neutral-400">拍摄时间</span>
+                <span>2026.10.18 · 18:15</span>
               </span>
             </div>
           </div>

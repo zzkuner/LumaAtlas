@@ -8,9 +8,6 @@ if (getSetting('app:appearance.home.showAboutNav') !== true) {
 useHead({ title: () => $t('title.about') })
 
 const siteTitle = computed(() => String(getSetting('app:title') || 'LumaAtlas'))
-const siteLogo = computed(() =>
-  String(getSetting('app:logoUrl') || '/favicon.ico'),
-)
 const author = computed(() => String(getSetting('app:author') || ''))
 const avatarUrl = computed(() => String(getSetting('app:avatarUrl') || ''))
 const slogan = computed(() => String(getSetting('app:slogan') || ''))
@@ -54,31 +51,34 @@ const socialLinks = computed(() => {
     <MasonryItemHeader :show-gallery-controls="false" />
 
     <main
-      class="mx-auto w-full px-3 pb-24 pt-8 sm:px-5 sm:pt-12 lg:px-7"
+      class="mx-auto w-full px-5 pb-24 pt-16 sm:px-8 sm:pt-24 lg:px-10"
       :style="{ maxWidth: contentMaxWidth }"
     >
-      <header class="border-b border-neutral-200 pb-8 dark:border-neutral-800">
-        <p class="font-display text-sm text-neutral-500 dark:text-neutral-400">
-          关于本站
-        </p>
+      <article class="max-w-3xl">
         <div
-          class="mt-3 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between"
+          class="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between"
         >
-          <div class="flex min-w-0 items-center gap-4">
+          <div class="flex min-w-0 items-center gap-5">
             <img
-              :src="siteLogo"
-              :alt="siteTitle"
-              class="size-14 shrink-0 object-contain sm:size-16"
+              v-if="avatarUrl"
+              :src="avatarUrl"
+              :alt="author || siteTitle"
+              class="size-16 shrink-0 rounded-full object-cover sm:size-20"
             />
             <div class="min-w-0">
-              <h1
-                class="font-brand truncate text-4xl font-semibold sm:text-5xl"
+              <p
+                class="mb-2 text-[11px] font-medium text-neutral-400 dark:text-neutral-500"
               >
-                {{ siteTitle }}
+                关于
+              </p>
+              <h1
+                class="font-display text-3xl font-semibold leading-tight sm:text-4xl"
+              >
+                {{ author || siteTitle }}
               </h1>
               <p
                 v-if="slogan"
-                class="font-display mt-1 text-base text-neutral-500 dark:text-neutral-400"
+                class="mt-2 text-sm leading-6 text-neutral-500 dark:text-neutral-400"
               >
                 {{ slogan }}
               </p>
@@ -87,7 +87,7 @@ const socialLinks = computed(() => {
 
           <div
             v-if="socialLinks.length"
-            class="flex shrink-0 items-center gap-1"
+            class="flex shrink-0 items-center gap-0.5"
           >
             <UTooltip
               v-for="link in socialLinks"
@@ -100,50 +100,25 @@ const socialLinks = computed(() => {
                 :icon="link.icon"
                 color="neutral"
                 variant="ghost"
+                size="sm"
                 :aria-label="link.label"
               />
             </UTooltip>
           </div>
         </div>
-      </header>
 
-      <div
-        class="grid gap-10 pt-10 md:grid-cols-[14rem_minmax(0,48rem)] lg:gap-16"
-      >
-        <aside>
-          <img
-            v-if="avatarUrl"
-            :src="avatarUrl"
-            :alt="author || siteTitle"
-            class="size-20 rounded-full object-cover"
-          />
-          <span
-            v-else
-            class="flex size-20 items-center justify-center rounded-full bg-neutral-100 text-neutral-500 dark:bg-neutral-900 dark:text-neutral-400"
-          >
-            <Icon
-              name="lucide:user-round"
-              class="size-7"
-            />
-          </span>
-          <p class="font-display mt-4 text-lg font-semibold">
-            {{ author || siteTitle }}
-          </p>
-          <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
-            摄影与影像记录
-          </p>
-        </aside>
-
-        <article class="min-w-0">
+        <div
+          class="mt-14 border-t border-neutral-200 pt-10 dark:border-neutral-800"
+        >
           <p
             v-if="description"
-            class="font-display text-xl leading-9 text-neutral-800 sm:text-2xl dark:text-neutral-200"
+            class="font-display text-xl leading-9 text-neutral-800 sm:text-2xl sm:leading-10 dark:text-neutral-200"
           >
             {{ description }}
           </p>
           <p
             v-if="aboutText"
-            class="mt-7 whitespace-pre-line text-base leading-8 text-neutral-600 dark:text-neutral-400"
+            class="mt-8 max-w-2xl whitespace-pre-line text-[15px] leading-8 text-neutral-600 dark:text-neutral-400"
           >
             {{ aboutText }}
           </p>
@@ -153,8 +128,8 @@ const socialLinks = computed(() => {
           >
             这里记录值得被留下的光线、地点与日常片段。
           </p>
-        </article>
-      </div>
+        </div>
+      </article>
     </main>
   </div>
 </template>

@@ -100,7 +100,7 @@ watch(includeUnchanged, () => {
 </script>
 
 <template>
-  <UDashboardPanel>
+  <UDashboardPanel class="min-w-0 overflow-hidden">
     <template #header>
       <UDashboardNavbar :title="$t('title.storageImport')">
         <template #right>
@@ -109,15 +109,21 @@ watch(includeUnchanged, () => {
             color="neutral"
             variant="ghost"
             icon="lucide:list-checks"
+            :aria-label="$t('storageImport.actions.openQueue')"
           >
-            {{ $t('storageImport.actions.openQueue') }}
+            <span class="hidden sm:inline">{{
+              $t('storageImport.actions.openQueue')
+            }}</span>
           </UButton>
           <UButton
             icon="lucide:scan-search"
             :loading="isScanning"
+            :aria-label="$t('storageImport.actions.scan')"
             @click="scanStorage"
           >
-            {{ $t('storageImport.actions.scan') }}
+            <span class="hidden sm:inline">{{
+              $t('storageImport.actions.scan')
+            }}</span>
           </UButton>
         </template>
       </UDashboardNavbar>

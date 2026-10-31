@@ -238,7 +238,7 @@ const describeDevice = (userAgent: string | null) => {
 </script>
 
 <template>
-  <UDashboardPanel>
+  <UDashboardPanel class="min-w-0 overflow-hidden">
     <template #header>
       <UDashboardNavbar title="安全与登录" />
     </template>

@@ -216,6 +216,26 @@ const toggleMobileTask = (taskId: number) => {
   mobileExpanded.value[taskId] = !mobileExpanded.value[taskId]
 }
 
+const mobileActions = computed(() => [
+  {
+    label: $t('dashboard.queue.actions.refresh'),
+    icon: 'tabler:refresh',
+    onSelect: () => refreshData(),
+  },
+  {
+    label: $t('dashboard.queue.actions.retryAll'),
+    icon: 'tabler:repeat',
+    color: 'warning' as const,
+    onSelect: () => retryAllFailedTasks(),
+  },
+  {
+    label: $t('dashboard.queue.actions.clearNonActive'),
+    icon: 'tabler:trash',
+    color: 'error' as const,
+    onSelect: () => clearNonActiveTasks(),
+  },
+])
+
 // 表格列定义
 const columns: TableColumn<any>[] = [
   {
@@ -281,7 +301,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <UDashboardPanel>
+  <UDashboardPanel class="min-w-0 overflow-hidden">
     <template #header>
       <UDashboardNavbar :title="$t('dashboard.queue.title')">
         <template #right>
@@ -314,43 +334,26 @@ onBeforeUnmount(() => {
             </UButton>
           </div>
 
-          <div class="flex items-center gap-1 sm:hidden">
+          <UDropdownMenu
+            :items="mobileActions"
+            :content="{ align: 'end' }"
+            class="sm:hidden"
+          >
             <UButton
-              icon="tabler:refresh"
+              icon="lucide:ellipsis"
+              color="neutral"
               variant="ghost"
               square
               :loading="isLoading"
-              :aria-label="$t('dashboard.queue.actions.refresh')"
-              :title="$t('dashboard.queue.actions.refresh')"
-              @click="refreshData"
+              aria-label="任务操作"
             />
-            <UButton
-              icon="tabler:repeat"
-              color="warning"
-              variant="ghost"
-              square
-              :loading="isLoading"
-              :aria-label="$t('dashboard.queue.actions.retryAll')"
-              :title="$t('dashboard.queue.actions.retryAll')"
-              @click="retryAllFailedTasks"
-            />
-            <UButton
-              icon="tabler:trash"
-              color="error"
-              variant="ghost"
-              square
-              :loading="isLoading"
-              :aria-label="$t('dashboard.queue.actions.clearNonActive')"
-              :title="$t('dashboard.queue.actions.clearNonActive')"
-              @click="clearNonActiveTasks"
-            />
-          </div>
+          </UDropdownMenu>
         </template>
       </UDashboardNavbar>
     </template>
 
     <template #body>
-      <div class="flex flex-col gap-6">
+      <div class="flex min-w-0 flex-col gap-6">
         <!-- 状态指示器 -->
         <div class="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
           <DashboardIndicator
@@ -380,7 +383,7 @@ onBeforeUnmount(() => {
         </div>
 
         <!-- 筛选器和表格 -->
-        <UCard>
+        <UCard class="min-w-0 overflow-hidden">
           <template #header>
             <div
               class="flex flex-col gap-3 pb-2 sm:flex-row sm:items-center sm:justify-between"
@@ -645,7 +648,9 @@ onBeforeUnmount(() => {
                   />
                 </div>
 
-                <dl class="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-sm">
+                <dl
+                  class="mt-3 grid grid-cols-1 gap-x-3 gap-y-2 text-sm min-[360px]:grid-cols-2"
+                >
                   <div class="min-w-0">
                     <dt class="text-xs text-muted">
                       {{ $t('dashboard.queue.table.attempts') }}

@@ -418,7 +418,7 @@ const onStorageDelete = async (storageId: number) => {
 </script>
 
 <template>
-  <UDashboardPanel>
+  <UDashboardPanel class="min-w-0 overflow-hidden">
     <template #header>
       <UDashboardNavbar :title="$t('title.storageSettings')" />
     </template>

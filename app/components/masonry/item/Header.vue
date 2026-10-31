@@ -163,6 +163,11 @@ const layoutItems: Array<{
   { value: 'masonry', label: '瀑布流', icon: 'lucide:panels-top-left' },
   { value: 'grid', label: '方格', icon: 'lucide:grid-2x2' },
 ]
+const currentLayoutItem = computed(
+  () =>
+    layoutItems.find((item) => item.value === props.layoutMode) ||
+    layoutItems[0]!,
+)
 
 const columnItems: Array<{ value: GalleryColumns; label: string }> = [
   { value: 'auto', label: '自动' },
@@ -200,14 +205,14 @@ const {
 
 <template>
   <header
-    class="sticky top-0 z-40 w-full border-b border-neutral-200/80 bg-white/90 backdrop-blur-xl dark:border-neutral-800/80 dark:bg-neutral-950/90"
+    class="sticky top-0 z-40 w-full shrink-0 border-b border-neutral-200/80 bg-white/90 backdrop-blur-xl dark:border-neutral-800/80 dark:bg-neutral-950/90"
     style="font-family: var(--la-heading-font)"
   >
     <div
       class="mx-auto px-3 py-3 sm:px-5 lg:px-7"
       :style="{ maxWidth: resolvedMaxWidth }"
     >
-      <div class="flex min-h-10 items-center justify-between gap-3">
+      <div class="relative flex min-h-10 items-center justify-between gap-3">
         <NuxtLink
           to="/"
           class="inline-flex min-w-0 items-center gap-2.5 text-neutral-950 dark:text-white"
@@ -235,7 +240,7 @@ const {
         </NuxtLink>
 
         <nav
-          class="hidden items-center gap-7 text-base text-neutral-500 md:flex dark:text-neutral-400"
+          class="absolute left-1/2 hidden -translate-x-1/2 items-center gap-7 text-base text-neutral-500 lg:flex dark:text-neutral-400"
           aria-label="Primary navigation"
         >
           <NuxtLink
@@ -303,23 +308,71 @@ const {
             </UPopover>
           </div>
 
+          <UPopover
+            v-if="showGalleryControls"
+            class="sm:hidden"
+          >
+            <UTooltip :text="currentLayoutItem.label">
+              <UButton
+                :icon="currentLayoutItem.icon"
+                size="sm"
+                color="neutral"
+                variant="ghost"
+                :aria-label="`布局：${currentLayoutItem.label}`"
+              />
+            </UTooltip>
+            <template #content>
+              <div class="w-64 p-3 font-sans">
+                <p class="mb-2 text-xs text-neutral-500">展示方式</p>
+                <div class="grid grid-cols-3 gap-1">
+                  <UButton
+                    v-for="item in layoutItems"
+                    :key="item.value"
+                    :icon="item.icon"
+                    :label="item.label"
+                    size="sm"
+                    color="neutral"
+                    :variant="layoutMode === item.value ? 'soft' : 'ghost'"
+                    class="justify-center"
+                    @click="selectLayoutMode(item.value)"
+                  />
+                </div>
+                <template v-if="layoutMode !== 'big'">
+                  <p class="mb-2 mt-4 text-xs text-neutral-500">显示列数</p>
+                  <div class="grid grid-cols-4 gap-1">
+                    <UButton
+                      v-for="item in columnItems"
+                      :key="item.value"
+                      :label="item.label"
+                      size="sm"
+                      color="neutral"
+                      :variant="columnCount === item.value ? 'soft' : 'ghost'"
+                      class="justify-center"
+                      @click="emit('update:columnCount', item.value)"
+                    />
+                  </div>
+                </template>
+              </div>
+            </template>
+          </UPopover>
+
           <UDrawer
             v-if="showGalleryControls"
             v-model:open="gallerySettingsOpen"
-            title="浏览与布局"
-            description="选择照片范围和当前浏览器的展示方式"
+            title="浏览"
+            description="选择首页展示的照片范围"
             :ui="{
               content: 'max-h-[88svh]',
               body: 'p-0 sm:p-0',
             }"
           >
-            <UTooltip text="浏览与布局">
+            <UTooltip text="浏览">
               <UButton
                 :icon="currentViewItem.icon"
                 size="sm"
                 color="neutral"
                 :variant="viewMode === 'all' ? 'ghost' : 'soft'"
-                aria-label="浏览与布局"
+                aria-label="浏览"
               >
                 <span class="hidden lg:inline">{{
                   currentViewItem.label
@@ -362,48 +415,6 @@ const {
                         >
                       </span>
                     </button>
-                  </div>
-                </section>
-
-                <section
-                  class="mt-6 border-t border-neutral-200 pt-5 dark:border-neutral-800"
-                >
-                  <div class="mb-3 flex items-center justify-between gap-3">
-                    <p class="text-sm font-medium text-neutral-500">展示方式</p>
-                    <span class="text-xs text-neutral-400">仅当前浏览器</span>
-                  </div>
-                  <div class="grid grid-cols-3 gap-2">
-                    <UButton
-                      v-for="item in layoutItems"
-                      :key="item.value"
-                      :icon="item.icon"
-                      :label="item.label"
-                      color="neutral"
-                      :variant="layoutMode === item.value ? 'soft' : 'ghost'"
-                      class="justify-center"
-                      @click="selectLayoutMode(item.value)"
-                    />
-                  </div>
-                </section>
-
-                <section
-                  v-if="layoutMode !== 'big'"
-                  class="mt-5 border-t border-neutral-200 pt-5 dark:border-neutral-800"
-                >
-                  <p class="mb-3 text-sm font-medium text-neutral-500">
-                    显示列数
-                  </p>
-                  <div class="grid grid-cols-4 gap-2 sm:grid-cols-8">
-                    <UButton
-                      v-for="item in columnItems"
-                      :key="item.value"
-                      :label="item.label"
-                      size="sm"
-                      color="neutral"
-                      :variant="columnCount === item.value ? 'soft' : 'ghost'"
-                      class="justify-center"
-                      @click="emit('update:columnCount', item.value)"
-                    />
                   </div>
                 </section>
               </div>
@@ -486,7 +497,7 @@ const {
       </div>
 
       <nav
-        class="scrollbar-hidden mt-3 flex gap-5 overflow-x-auto border-t border-neutral-200 pt-3 text-base text-neutral-500 md:hidden dark:border-neutral-800 dark:text-neutral-400"
+        class="scrollbar-hidden mt-3 flex gap-5 overflow-x-auto border-t border-neutral-200 pt-3 text-base text-neutral-500 lg:hidden dark:border-neutral-800 dark:text-neutral-400"
         aria-label="Primary navigation"
       >
         <NuxtLink

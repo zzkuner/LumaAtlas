@@ -175,7 +175,7 @@ const userMenuItems = computed(() => [
   </div>
   <UDashboardGroup
     v-else
-    class="lumaatlas-dashboard bg-neutral-50 dark:bg-neutral-950"
+    class="lumaatlas-dashboard min-w-0 overflow-hidden bg-neutral-50 dark:bg-neutral-950"
   >
     <UDashboardSidebar
       id="cframe-dashboard-sidebar"
@@ -327,14 +327,43 @@ const userMenuItems = computed(() => [
 
 <style>
 .lumaatlas-dashboard [data-slot='header'] {
+  min-width: 0;
   flex-shrink: 0;
 }
 
 .lumaatlas-dashboard [data-slot='body'] {
+  min-width: 0;
+  max-width: 100%;
   scrollbar-gutter: stable;
 }
 
 .lumaatlas-dashboard [data-slot='base'] {
+  min-width: 0;
+  max-width: 100%;
   letter-spacing: 0;
+}
+
+.lumaatlas-dashboard pre,
+.lumaatlas-dashboard code {
+  max-width: 100%;
+}
+
+@media (max-width: 639px) {
+  .lumaatlas-dashboard [data-slot='body'] {
+    overflow-x: hidden;
+    padding-inline: 0.75rem;
+  }
+
+  .lumaatlas-dashboard [data-slot='header'] {
+    overflow: hidden;
+  }
+
+  .lumaatlas-dashboard [data-slot='header'] h1,
+  .lumaatlas-dashboard [data-slot='header'] h2 {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
 </style>

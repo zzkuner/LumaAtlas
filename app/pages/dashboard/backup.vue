@@ -148,7 +148,7 @@ const deleteBackup = async (filename: string) => {
 </script>
 
 <template>
-  <UDashboardPanel>
+  <UDashboardPanel class="min-w-0 overflow-hidden">
     <template #header>
       <UDashboardNavbar :title="$t('title.backup')" />
     </template>

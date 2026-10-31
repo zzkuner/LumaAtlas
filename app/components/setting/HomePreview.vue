@@ -378,33 +378,29 @@ const itemRatio = (naturalRatio: number) => {
               >
                 {{ item.title }}
               </div>
+              <div
+                v-if="layout === 'big' && item.title"
+                class="absolute inset-0 bg-linear-to-t from-black/70 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100"
+              >
+                <span
+                  class="absolute inset-x-0 bottom-0 px-2.5 py-2 text-[9px] font-medium text-white"
+                >
+                  {{ item.title }}
+                </span>
+              </div>
             </div>
             <div
               v-if="layout === 'big' && showBigPhotoInfo"
-              class="flex items-center gap-2 overflow-hidden border-b border-neutral-200 py-1.5 text-[8px] dark:border-neutral-800"
+              class="flex flex-wrap items-start gap-x-4 gap-y-1.5 border-b border-neutral-200 py-2 text-[8px] dark:border-neutral-800"
             >
-              <span class="inline-flex shrink-0 items-center gap-0.5">
-                <Icon
-                  name="lucide:telescope"
-                  class="size-2.5"
-                />35 mm
+              <span class="flex flex-col gap-0.5">
+                <span class="text-[7px] text-neutral-400">参数</span>
+                <span>35 mm · ƒ/2.8 · 1/250 · ISO 100</span>
               </span>
-              <span class="inline-flex shrink-0 items-center gap-0.5">
-                <Icon
-                  name="lucide:aperture"
-                  class="size-2.5"
-                />ƒ/2.8
+              <span class="flex flex-col gap-0.5">
+                <span class="text-[7px] text-neutral-400">相机</span>
+                <span>FUJIFILM X-T5</span>
               </span>
-              <span class="inline-flex shrink-0 items-center gap-0.5">
-                <Icon
-                  name="lucide:timer"
-                  class="size-2.5"
-                />1/250s
-              </span>
-              <span
-                class="ml-auto truncate border-l border-neutral-200 pl-2 text-neutral-400 dark:border-neutral-800"
-                >Shanghai</span
-              >
             </div>
           </div>
         </div>

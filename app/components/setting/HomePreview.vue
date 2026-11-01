@@ -394,23 +394,59 @@ const itemRatio = (naturalRatio: number) => {
               class="grid grid-cols-2 gap-x-5 gap-y-2 border-b border-neutral-200 py-2.5 text-[8px] dark:border-neutral-800"
             >
               <span class="flex min-w-0 flex-col gap-0.5">
-                <span class="text-[7px] text-neutral-400">拍摄参数</span>
+                <span class="text-[7px] text-neutral-400">参数</span>
                 <span class="flex flex-wrap gap-x-1.5">
-                  <span>35 mm</span><span>ƒ/2.8</span><span>1/250</span
-                  ><span>ISO 100</span>
+                  <span class="inline-flex items-center gap-0.5">
+                    <Icon
+                      name="lucide:focus"
+                      class="size-2.5 text-neutral-500"
+                    />35 mm
+                  </span>
+                  <span class="inline-flex items-center gap-0.5">
+                    <Icon
+                      name="lucide:aperture"
+                      class="size-2.5 text-neutral-500"
+                    />ƒ/2.8
+                  </span>
+                  <span class="inline-flex items-center gap-0.5">
+                    <Icon
+                      name="lucide:timer"
+                      class="size-2.5 text-neutral-500"
+                    />1/250
+                  </span>
+                  <span class="inline-flex items-center gap-0.5">
+                    <span class="border border-current px-0.5 text-[5px]"
+                      >ISO</span
+                    >100
+                  </span>
                 </span>
               </span>
               <span class="flex min-w-0 flex-col gap-0.5">
                 <span class="text-[7px] text-neutral-400">相机</span>
-                <span>FUJIFILM X-T5</span>
+                <span class="inline-flex items-center gap-1">
+                  <Icon
+                    name="lucide:camera"
+                    class="size-2.5 text-neutral-500"
+                  />FUJIFILM X-T5
+                </span>
               </span>
               <span class="flex min-w-0 flex-col gap-0.5">
                 <span class="text-[7px] text-neutral-400">位置</span>
-                <span>Hangzhou, China</span>
+                <span class="inline-flex items-center gap-1">
+                  <Icon
+                    name="lucide:map-pin"
+                    class="size-2.5 text-neutral-500"
+                  />Hangzhou, China
+                </span>
               </span>
               <span class="flex min-w-0 flex-col gap-0.5">
-                <span class="text-[7px] text-neutral-400">拍摄时间</span>
-                <span>2026.10.18 · 18:15</span>
+                <span class="text-[7px] text-neutral-400">时间</span>
+                <span class="inline-flex items-center gap-1">
+                  <Icon
+                    name="lucide:clock-3"
+                    class="size-2.5 text-neutral-500"
+                  />2026.10.18 · 18:15
+                </span>
               </span>
             </div>
           </div>

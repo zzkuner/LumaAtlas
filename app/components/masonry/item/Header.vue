@@ -225,18 +225,16 @@ const {
           />
           <span
             v-else
-            class="flex size-10 shrink-0 items-center justify-center border"
-            :style="{ borderColor: 'var(--la-accent)' }"
+            class="flex size-10 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-neutral-800 dark:bg-neutral-900 dark:text-neutral-200"
           >
             <Icon
               name="lucide:aperture"
-              class="size-5"
+              class="size-6"
             />
           </span>
-          <span
-            class="font-brand truncate text-2xl font-semibold sm:text-3xl"
-            >{{ siteTitle }}</span
-          >
+          <span class="truncate text-xl font-medium sm:text-2xl">{{
+            siteTitle
+          }}</span>
         </NuxtLink>
 
         <nav

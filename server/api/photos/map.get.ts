@@ -1,4 +1,5 @@
 import { and, desc, eq, isNotNull } from 'drizzle-orm'
+import { sanitizePhotoContent } from '~~/shared/utils/photo-content'
 
 export default eventHandler(async (event) => {
   const conditions = [
@@ -11,7 +12,7 @@ export default eventHandler(async (event) => {
     'Cache-Control': 'public, max-age=60, stale-while-revalidate=300',
   })
 
-  return useDB()
+  const photos = useDB()
     .select({
       id: tables.photos.id,
       title: tables.photos.title,
@@ -29,4 +30,6 @@ export default eventHandler(async (event) => {
     .where(and(...conditions))
     .orderBy(desc(tables.photos.dateTaken))
     .all()
+
+  return photos.map(sanitizePhotoContent)
 })

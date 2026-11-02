@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { formatCameraInfo } from '~/utils/camera'
 import { motion, useDomRef } from 'motion-v'
+import {
+  sanitizePhotoDescription,
+  sanitizePhotoTitle,
+} from '~~/shared/utils/photo-content'
 
 interface Props {
   photo: Photo
@@ -95,14 +99,12 @@ const formattedLocation = computed(() => {
   return ''
 })
 const contentTitle = computed(() => {
-  const title = String(props.photo.title || '').trim()
-  if (!title || title === String(props.photo.id)) return ''
-  if (/^[a-f\d]{32}$/i.test(title) || /^\d{8,}$/.test(title)) return ''
-  if (/^(?:img|dsc|pxl|mvimg|wx_camera|screenshot)[-_ ]?\d+/i.test(title)) {
-    return ''
-  }
-  return title
+  const title = sanitizePhotoTitle(props.photo.title)
+  return title === String(props.photo.id) ? '' : title
 })
+const contentDescription = computed(() =>
+  sanitizePhotoDescription(props.photo.description),
+)
 const hasExposureParameters = computed(
   () =>
     !!formattedFocalLength.value ||
@@ -631,7 +633,7 @@ onUnmounted(() => {
       />
 
       <div
-        v-if="isFeed && (contentTitle || photo.description)"
+        v-if="isFeed && (contentTitle || contentDescription)"
         class="pointer-events-none absolute inset-0 z-10 bg-linear-to-t from-black/75 via-black/5 via-45% to-transparent opacity-100 transition-opacity duration-500 ease-out md:opacity-0 md:group-hover:opacity-100"
       >
         <div
@@ -644,17 +646,17 @@ onUnmounted(() => {
             {{ contentTitle }}
           </h3>
           <p
-            v-if="photo.description"
-            class="mt-2 line-clamp-3 max-w-2xl text-sm leading-6 text-white/85"
+            v-if="contentDescription"
+            class="mt-2 line-clamp-2 max-w-2xl text-sm leading-6 text-white/85 sm:line-clamp-3"
           >
-            {{ photo.description }}
+            {{ contentDescription }}
           </p>
         </div>
       </div>
 
       <!-- Photo info overlay (bottom) -->
       <div
-        v-if="!isFeed && (contentTitle || photo.description || showPhotoInfo)"
+        v-if="!isFeed && (contentTitle || contentDescription || showPhotoInfo)"
         v-show="shouldShowInfoOverlay"
         class="pointer-events-none absolute inset-x-0 bottom-0 translate-y-3 bg-linear-to-t from-black/70 via-black/30 to-transparent p-3 opacity-0 transition-all duration-300 ease-out group-hover:translate-y-0 group-hover:opacity-100"
       >
@@ -667,10 +669,10 @@ onUnmounted(() => {
               {{ contentTitle }}
             </p>
             <p
-              v-if="photo.description"
+              v-if="contentDescription"
               class="text-xs text-justify opacity-80 line-clamp-2"
             >
-              {{ photo.description }}
+              {{ contentDescription }}
             </p>
             <p
               v-if="showPhotoInfo && (photo.dateTaken || photo.city)"

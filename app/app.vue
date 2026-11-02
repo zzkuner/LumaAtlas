@@ -2,6 +2,7 @@
 import dayjsLocale_zhCN from 'dayjs/locale/zh-cn'
 import dayjsLocale_zhTW from 'dayjs/locale/zh-tw'
 import dayjsLocale_zhHK from 'dayjs/locale/zh-hk'
+import { sanitizePhotoContent } from '~~/shared/utils/photo-content'
 
 const router = useRouter()
 const route = useRoute()
@@ -63,8 +64,14 @@ const { user } = useUserSession()
 const apiEndpoint = computed(() =>
   user.value?.isAdmin ? '/api/photos' : '/api/photos/visible',
 )
-const shouldLoadPhotoLibrary = computed(() =>
-  route.matched.some((record) => record.path.includes(':slug')),
+const shouldLoadPhotoLibrary = computed(
+  () =>
+    route.matched.some((record) => record.path.includes(':slug')) ||
+    route.path === '/albums' ||
+    route.path === '/dashboard' ||
+    route.path === '/dashboard/photos' ||
+    route.path === '/dashboard/albums' ||
+    route.path === '/dashboard/settings/general',
 )
 const requestFetch = useRequestFetch()
 
@@ -85,7 +92,12 @@ const { data, refresh, status } = await useAsyncData(
   },
 )
 
-const photos = computed(() => (data.value as Photo[]) || [])
+const photos = computed(() => {
+  const library = (data.value as Photo[]) || []
+  return route.path.startsWith('/dashboard')
+    ? library
+    : library.map(sanitizePhotoContent)
+})
 
 const viewerPhotos = computed(() => {
   return resolvePhotoCollection(photos.value, sourcePhotoIds.value)

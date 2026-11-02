@@ -46,6 +46,32 @@ const photosById = computed(
   () => new Map(photos.value.map((photo) => [photo.id, photo])),
 )
 
+const isMobile = useMediaQuery('(max-width: 768px)')
+const backgroundColumnCount = computed(() => (isMobile.value ? 3 : 8))
+const backgroundPhotos = computed(() =>
+  photos.value.filter((photo) => Boolean(photo.thumbnailUrl)).slice(0, 32),
+)
+const backgroundColumns = computed(() => {
+  const columnCount = backgroundColumnCount.value
+  const source = backgroundPhotos.value
+  const columns = Array.from({ length: columnCount }, () => [] as Photo[])
+
+  if (!source.length) return columns
+
+  const photosPerColumn = 5
+  for (let columnIndex = 0; columnIndex < columnCount; columnIndex += 1) {
+    for (let rowIndex = 0; rowIndex < photosPerColumn; rowIndex += 1) {
+      const photoIndex = (columnIndex + rowIndex * columnCount) % source.length
+      columns[columnIndex]!.push(source[photoIndex]!)
+    }
+  }
+
+  return columns
+})
+
+const backgroundDuration = (columnIndex: number) =>
+  `${82 + ((columnIndex * 13) % 37)}s`
+
 const albumCards = computed(() =>
   visibleAlbums.value.map((album) => {
     const candidateIds = [album.coverPhotoId, ...(album.photoIds || [])].filter(
@@ -66,12 +92,57 @@ const albumCards = computed(() =>
 
 <template>
   <div
-    class="min-h-svh bg-white text-neutral-950 dark:bg-neutral-950 dark:text-white"
+    class="relative min-h-svh overflow-x-hidden bg-white text-neutral-950 dark:bg-neutral-950 dark:text-white"
   >
     <MasonryItemHeader :show-gallery-controls="false" />
 
+    <div
+      v-if="backgroundPhotos.length"
+      class="pointer-events-none absolute inset-x-0 top-16 z-0 h-64 overflow-hidden opacity-45 sm:h-80"
+      aria-hidden="true"
+    >
+      <div class="absolute inset-0 flex gap-px">
+        <div
+          v-for="(column, columnIndex) in backgroundColumns"
+          :key="columnIndex"
+          class="relative flex-1 overflow-hidden"
+        >
+          <div
+            class="flex flex-col will-change-transform"
+            :class="
+              columnIndex % 2 === 0 ? 'album-scroll-up' : 'album-scroll-down'
+            "
+            :style="{ animationDuration: backgroundDuration(columnIndex) }"
+          >
+            <template
+              v-for="groupIndex in 2"
+              :key="groupIndex"
+            >
+              <div
+                v-for="(photo, photoIndex) in column"
+                :key="`${photo.id}-${groupIndex}-${photoIndex}`"
+                class="w-full overflow-hidden border-b border-white/15"
+              >
+                <ThumbImage
+                  class="h-auto w-full object-cover saturate-50"
+                  :lazy="false"
+                  :src="photo.thumbnailUrl!"
+                  :thumbhash="photo.thumbnailHash"
+                  alt=""
+                  :style="{ aspectRatio: photo.aspectRatio || 1 }"
+                />
+              </div>
+            </template>
+          </div>
+        </div>
+      </div>
+      <div
+        class="absolute -inset-1 bg-linear-to-b from-white/90 via-white/75 to-white dark:from-neutral-950/90 dark:via-neutral-950/75 dark:to-neutral-950"
+      />
+    </div>
+
     <main
-      class="mx-auto w-full px-3 pb-20 pt-8 sm:px-5 sm:pt-12 lg:px-7"
+      class="relative z-10 mx-auto w-full px-3 pb-20 pt-8 sm:px-5 sm:pt-12 lg:px-7"
       :style="{ maxWidth: contentMaxWidth }"
     >
       <header
@@ -209,3 +280,36 @@ const albumCards = computed(() =>
     </main>
   </div>
 </template>
+
+<style scoped>
+@keyframes album-scroll-up {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-50%);
+  }
+}
+
+@keyframes album-scroll-down {
+  from {
+    transform: translateY(-50%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.album-scroll-up,
+.album-scroll-down {
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .album-scroll-up,
+  .album-scroll-down {
+    animation-play-state: paused;
+  }
+}
+</style>

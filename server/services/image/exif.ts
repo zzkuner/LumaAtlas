@@ -3,6 +3,10 @@ import { mkdir, unlink, writeFile } from 'node:fs/promises'
 import type { Metadata } from 'sharp'
 import sharp from 'sharp'
 import type { NeededExif, PhotoInfo } from '../../../shared/types/photo'
+import {
+  sanitizePhotoDescription,
+  sanitizePhotoTitle,
+} from '../../../shared/utils/photo-content'
 import type { ExifDateTime, Tags } from 'exiftool-vendored'
 import { exiftool } from 'exiftool-vendored'
 import { noop } from 'es-toolkit'
@@ -522,33 +526,21 @@ export const extractPhotoInfo = (
     }
   }
 
-  const titleFromExif = pickFirstText(
-    exifData?.Title,
-    exifData?.XPTitle,
-    exifData?.Description,
-    exifData?.ImageDescription,
-    exifData?.CaptionAbstract,
+  // Only dedicated title fields represent an intentional title. Camera apps
+  // often write file paths and processing diagnostics into description tags.
+  const title = sanitizePhotoTitle(
+    pickFirstText(exifData?.Title, exifData?.XPTitle),
   )
 
-  let title = titleFromExif
-  const cleanedFileName = fileName
-    .replaceAll(/\d{4}-\d{2}-\d{2}[_-]?/g, '')
-    .replaceAll(/[_-]?\d+views?/gi, '')
-    .replaceAll(/[_-]+/g, ' ')
-    .trim()
-
-  if (!title) {
-    title = cleanedFileName || path.basename(s3key, path.extname(s3key))
-  }
-
-  const description =
+  const description = sanitizePhotoDescription(
     pickFirstText(
       exifData?.Description,
       exifData?.ImageDescription,
       exifData?.CaptionAbstract,
       exifData?.XPComment,
       exifData?.UserComment,
-    ) || ''
+    ),
+  )
 
   return {
     title,

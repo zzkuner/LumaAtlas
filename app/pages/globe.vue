@@ -15,6 +15,15 @@ useHead({
 const route = useRoute()
 const router = useRouter()
 const dayjs = useDayjs()
+const isHeaderVisible = ref(true)
+
+const toggleHeader = () => {
+  isHeaderVisible.value = !isHeaderVisible.value
+  localStorage.setItem(
+    'lumaatlas:map-header-visible',
+    String(isHeaderVisible.value),
+  )
+}
 
 const { data: mapPhotoData } = await useFetch<Photo[]>('/api/photos/map')
 const photos = computed(() => mapPhotoData.value || [])
@@ -543,17 +552,40 @@ onBeforeUnmount(() => {
   stopTimelineDragging()
   stopTimelinePlayback()
 })
+
+onMounted(() => {
+  isHeaderVisible.value =
+    localStorage.getItem('lumaatlas:map-header-visible') !== 'false'
+})
 </script>
 
 <template>
   <div
     class="flex h-svh w-full flex-col overflow-hidden bg-white dark:bg-neutral-950"
   >
-    <MasonryItemHeader :show-gallery-controls="false" />
+    <MasonryItemHeader
+      v-if="isHeaderVisible"
+      :show-gallery-controls="false"
+    />
 
     <div class="relative min-h-0 flex-1 overflow-hidden">
       <div class="absolute top-4 right-4 z-10 flex flex-col items-end">
-        <div class="relative">
+        <UTooltip
+          :text="isHeaderVisible ? '隐藏顶部栏' : '显示顶部栏'"
+          :delay-duration="0"
+        >
+          <GlassButton
+            :icon="
+              isHeaderVisible
+                ? 'lucide:panel-top-close'
+                : 'lucide:panel-top-open'
+            "
+            :aria-label="isHeaderVisible ? '隐藏顶部栏' : '显示顶部栏'"
+            @click="toggleHeader"
+          />
+        </UTooltip>
+
+        <div class="relative mt-2">
           <UTooltip
             :text="$t('globe.analysis.annotation')"
             :delay-duration="0"

@@ -312,10 +312,13 @@ const handleAppearanceSettingsSubmit = async () => {
               {{ $t('common.unsavedChanges') }}
             </div>
 
-            <div class="flex items-center justify-end gap-2">
+            <div
+              class="grid grid-cols-3 gap-2 sm:flex sm:items-center sm:justify-end"
+            >
               <UButton
                 color="neutral"
                 variant="outline"
+                class="min-w-0 justify-center whitespace-nowrap px-2 text-xs sm:px-3 sm:text-sm"
                 :disabled="!isAppearanceDirty"
                 @click="resetAppearanceSettings"
               >
@@ -324,6 +327,7 @@ const handleAppearanceSettingsSubmit = async () => {
               <UButton
                 color="neutral"
                 variant="soft"
+                class="min-w-0 justify-center whitespace-nowrap px-2 text-xs sm:px-3 sm:text-sm"
                 :disabled="isAppearanceDefault"
                 icon="lucide:rotate-ccw"
                 @click="restoreAppearanceDefaults"
@@ -332,6 +336,7 @@ const handleAppearanceSettingsSubmit = async () => {
               </UButton>
               <UButton
                 :loading="loading"
+                class="min-w-0 justify-center whitespace-nowrap px-2 text-xs sm:px-3 sm:text-sm"
                 type="submit"
                 form="appearanceSettingsForm"
                 :disabled="!isAppearanceDirty"

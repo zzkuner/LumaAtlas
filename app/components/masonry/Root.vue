@@ -31,7 +31,6 @@ const route = useRoute()
 const { status: photosStatus } = usePhotos()
 const { filteredPhotos, hasActiveFilters, clearAllFilters } = usePhotoFilters()
 const { sortedPhotos } = usePhotoSort()
-const siteTitle = computed(() => String(getSetting('app:title') || 'LumaAtlas'))
 const siteLogo = computed(() => String(getSetting('app:logoUrl') || ''))
 
 const allowedViewModes: HomeViewMode[] = [
@@ -176,6 +175,10 @@ const galleryDensity = computed(() =>
 const masonryGap = computed(() => {
   const value = Number(getSetting('app:appearance.home.galleryGap') ?? 12)
   return Math.min(24, Math.max(4, Number.isFinite(value) ? value : 12))
+})
+const galleryGap = computed(() => {
+  if (galleryLayout.value !== 'big') return masonryGap.value
+  return Math.max(isMobile.value ? 20 : 28, masonryGap.value * 2)
 })
 const columnWidth = computed(() => {
   if (galleryColumns.value === 'auto') {
@@ -413,28 +416,54 @@ const handleScroll = () => {
   showFloatingActions.value = scrollTop > 500
 }
 
+const saveVisitorLocation = (
+  location: DiscoveryLocation,
+  source: 'device' | 'ip',
+) => {
+  visitorLocation.value = location
+  locationStatus.value = 'ready'
+  localStorage.setItem(
+    'lumaatlas:discovery-location',
+    JSON.stringify({ ...location, source }),
+  )
+}
+
+const requestApproximateLocation = async () => {
+  try {
+    const location = await $fetch<DiscoveryLocation>('/api/location/ip')
+    saveVisitorLocation(location, 'ip')
+    return true
+  } catch {
+    return false
+  }
+}
+
 const requestLocation = () => {
-  if (!import.meta.client || !navigator.geolocation) {
-    locationStatus.value = 'denied'
+  if (!import.meta.client) return
+
+  locationStatus.value = 'loading'
+  const useApproximateLocation = async () => {
+    if (!(await requestApproximateLocation())) {
+      locationStatus.value = 'denied'
+    }
+  }
+
+  if (!navigator.geolocation) {
+    void useApproximateLocation()
     return
   }
 
-  locationStatus.value = 'loading'
   navigator.geolocation.getCurrentPosition(
     (position) => {
-      visitorLocation.value = {
-        latitude: position.coords.latitude,
-        longitude: position.coords.longitude,
-      }
-      locationStatus.value = 'ready'
-      localStorage.setItem(
-        'lumaatlas:discovery-location',
-        JSON.stringify(visitorLocation.value),
+      saveVisitorLocation(
+        {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        },
+        'device',
       )
     },
-    () => {
-      locationStatus.value = 'denied'
-    },
+    () => void useApproximateLocation(),
     { enableHighAccuracy: false, timeout: 10000, maximumAge: 600000 },
   )
 }
@@ -517,7 +546,10 @@ onMounted(() => {
   const savedLocation = localStorage.getItem('lumaatlas:discovery-location')
   if (savedLocation) {
     try {
-      visitorLocation.value = JSON.parse(savedLocation) as DiscoveryLocation
+      const location = JSON.parse(savedLocation) as DiscoveryLocation & {
+        source?: 'device' | 'ip'
+      }
+      visitorLocation.value = location
       locationStatus.value = 'ready'
     } catch {
       localStorage.removeItem('lumaatlas:discovery-location')
@@ -687,30 +719,23 @@ watch(currentPhotoIndex, (newIndex) => {
           v-else-if="photosStatus === 'pending' && photos.length === 0"
           class="flex min-h-[48svh] flex-col items-center justify-center text-center"
           aria-live="polite"
+          :aria-label="$t('discovery.loading')"
         >
           <img
             v-if="siteLogo"
             :src="siteLogo"
-            :alt="siteTitle"
-            class="size-16 object-contain"
+            alt=""
+            class="size-24 animate-pulse object-contain sm:size-28"
           />
           <span
             v-else
-            class="flex size-16 items-center justify-center border border-neutral-200 dark:border-neutral-800"
+            class="flex size-24 items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-900 sm:size-28"
           >
             <Icon
               name="lucide:aperture"
-              class="size-8 animate-pulse text-neutral-400"
+              class="size-14 animate-[spin_8s_linear_infinite] text-neutral-400 sm:size-16"
             />
           </span>
-          <p
-            class="font-brand mt-4 text-3xl font-semibold text-neutral-800 dark:text-neutral-100"
-          >
-            {{ siteTitle }}
-          </p>
-          <p class="mt-2 text-base text-neutral-500">
-            {{ $t('discovery.loading') }}
-          </p>
         </section>
 
         <section
@@ -774,12 +799,7 @@ watch(currentPhotoIndex, (newIndex) => {
             'grid',
             galleryLayout === 'grid' ? gridClass : 'grid-cols-1',
           ]"
-          :style="{
-            gap:
-              galleryLayout === 'big'
-                ? `${Math.max(36, masonryGap * 3)}px`
-                : `${masonryGap}px`,
-          }"
+          :style="{ gap: `${galleryGap}px` }"
         >
           <MasonryItem
             v-for="item in masonryItems"

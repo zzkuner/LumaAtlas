@@ -1,6 +1,7 @@
 import { count, desc, eq } from 'drizzle-orm'
 import { z } from 'zod'
 import { publicPhotoColumns } from '~~/server/utils/publicPhotoColumns'
+import { sanitizePhotoContent } from '~~/shared/utils/photo-content'
 
 export default eventHandler(async (event) => {
   const db = useDB()
@@ -23,12 +24,13 @@ export default eventHandler(async (event) => {
 
   // Preserve the original array response unless pagination is requested.
   if (!query.page && !query.limit) {
-    return db
+    const photos = db
       .select(publicPhotoColumns)
       .from(tables.photos)
       .where(visibilityCondition)
       .orderBy(desc(tables.photos.dateTaken))
       .all()
+    return photos.map(sanitizePhotoContent)
   }
 
   const page = query.page || 1
@@ -49,7 +51,7 @@ export default eventHandler(async (event) => {
     .all()
 
   return {
-    items,
+    items: items.map(sanitizePhotoContent),
     page,
     pageSize,
     total,

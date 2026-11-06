@@ -306,6 +306,14 @@ const albumCards = computed(() =>
   animation-iteration-count: infinite;
 }
 
+.album-scroll-up {
+  animation-name: album-scroll-up;
+}
+
+.album-scroll-down {
+  animation-name: album-scroll-down;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .album-scroll-up,
   .album-scroll-down {

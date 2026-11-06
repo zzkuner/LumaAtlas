@@ -305,7 +305,7 @@ onBeforeUnmount(() => {
     <template #header>
       <UDashboardNavbar :title="$t('dashboard.queue.title')">
         <template #right>
-          <div class="hidden items-center gap-2 sm:flex">
+          <div class="hidden items-center gap-2 lg:flex">
             <UButton
               icon="tabler:refresh"
               variant="soft"
@@ -337,7 +337,7 @@ onBeforeUnmount(() => {
           <UDropdownMenu
             :items="mobileActions"
             :content="{ align: 'end' }"
-            class="sm:hidden"
+            class="lg:hidden"
           >
             <UButton
               icon="lucide:ellipsis"
@@ -386,17 +386,19 @@ onBeforeUnmount(() => {
         <UCard class="min-w-0 overflow-hidden">
           <template #header>
             <div
-              class="flex flex-col gap-3 pb-2 sm:flex-row sm:items-center sm:justify-between"
+              class="flex flex-col gap-3 pb-2 lg:flex-row lg:items-center lg:justify-between"
             >
               <h2 class="text-base font-semibold sm:text-lg">队列任务列表</h2>
-              <div class="grid w-full grid-cols-1 gap-2 sm:flex sm:w-auto">
+              <div
+                class="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 lg:flex lg:w-auto"
+              >
                 <USelectMenu
                   v-model="statusFilter"
                   :items="statusOptions"
                   value-key="value"
                   size="sm"
                   variant="soft"
-                  class="w-full sm:w-36"
+                  class="w-full lg:w-36"
                   :search-input="false"
                 />
                 <USelectMenu
@@ -405,7 +407,7 @@ onBeforeUnmount(() => {
                   value-key="value"
                   size="sm"
                   variant="soft"
-                  class="w-full sm:w-44"
+                  class="w-full lg:w-44"
                   :search-input="false"
                 />
               </div>
@@ -423,7 +425,7 @@ onBeforeUnmount(() => {
                 icon: 'tabler:inbox',
                 label: $t('dashboard.queue.messages.noTasks'),
               }"
-              class="hidden w-full overflow-x-auto md:block"
+              class="hidden w-full overflow-x-auto lg:block"
             >
               <!-- 任务类型 -->
               <template #type-cell="{ row }">
@@ -582,7 +584,7 @@ onBeforeUnmount(() => {
             </UTable>
 
             <!-- 手机端任务卡片 -->
-            <div class="space-y-3 md:hidden">
+            <div class="space-y-3 lg:hidden">
               <div
                 v-if="isLoading && !queueData?.data?.length"
                 class="flex min-h-32 items-center justify-center text-sm text-muted"

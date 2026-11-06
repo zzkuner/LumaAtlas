@@ -1,5 +1,6 @@
 import { withRetry, RetryPresets } from '../../utils/retry'
 import { settingsManager } from '../settings/settingsManager'
+import { FallbackGeocodingProvider } from './fallbackGeocodingProvider'
 
 export interface LocationInfo {
   latitude: number
@@ -253,25 +254,34 @@ let cachedProvider:
   | undefined
 
 async function createGeocodingProvider(): Promise<GeocodingProvider> {
-  const mapboxToken = await settingsManager.get<string>(
+  const legacyMapboxToken = await settingsManager.get<string>(
     'location',
     'mapbox.token',
   )
+  const configuredMapboxToken = await settingsManager.get<string>(
+    'map',
+    'mapbox.token',
+  )
+  const mapboxToken = legacyMapboxToken || configuredMapboxToken
+
+  const baseUrl =
+    (await settingsManager.get<string>('location', 'nominatim.baseUrl')) ||
+    'https://nominatim.openstreetmap.org'
 
   if (mapboxToken) {
-    const cacheKey = `mapbox:${mapboxToken}`
+    const cacheKey = `mapbox:${mapboxToken}:nominatim:${baseUrl}`
     if (cachedProvider?.cacheKey !== cacheKey) {
       cachedProvider = {
         cacheKey,
-        provider: new MapboxGeocodingProvider(mapboxToken),
+        provider: new FallbackGeocodingProvider([
+          new MapboxGeocodingProvider(mapboxToken),
+          new NominatimGeocodingProvider(baseUrl),
+        ]),
       }
     }
     return cachedProvider.provider
   }
 
-  const baseUrl =
-    (await settingsManager.get<string>('location', 'nominatim.baseUrl')) ||
-    'https://nominatim.openstreetmap.org'
   const cacheKey = `nominatim:${baseUrl}`
   if (cachedProvider?.cacheKey !== cacheKey) {
     cachedProvider = {

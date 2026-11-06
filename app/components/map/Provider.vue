@@ -31,6 +31,7 @@ withDefaults(
 const emit = defineEmits<{
   load: [map: MapInstance]
   zoom: []
+  error: []
 }>()
 
 const colorMode = useColorMode()
@@ -87,6 +88,7 @@ const mapStyle = computed(() => {
         :attribution-control
         @map:load="emit('load', $event.map as MaplibreMap)"
         @map:zoom="emit('zoom')"
+        @map:error="emit('error')"
       >
         <slot />
       </MglMap>
@@ -108,6 +110,7 @@ const mapStyle = computed(() => {
         }"
         @load="emit('load', $event as MapboxMap)"
         @zoom="emit('zoom')"
+        @error="emit('error')"
       >
         <slot />
       </MapDirectMapbox>

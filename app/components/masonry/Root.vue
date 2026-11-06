@@ -54,6 +54,7 @@ const viewMode = computed<HomeViewMode>(() => {
     : configuredSource.value
 })
 const visitorLocation = ref<DiscoveryLocation | null>(null)
+const visitorLocationSource = ref<'device' | 'ip' | null>(null)
 const locationStatus = ref<'idle' | 'loading' | 'ready' | 'denied'>('idle')
 const randomSeed = computed(() => Number(route.query.seed || 1) || 1)
 
@@ -421,6 +422,7 @@ const saveVisitorLocation = (
   source: 'device' | 'ip',
 ) => {
   visitorLocation.value = location
+  visitorLocationSource.value = source
   locationStatus.value = 'ready'
   localStorage.setItem(
     'lumaatlas:discovery-location',
@@ -476,7 +478,10 @@ const setViewMode = (value: HomeViewMode) => {
   else delete query.seed
   router.replace({ query })
 
-  if ((value === 'nearby' || value === 'faraway') && !visitorLocation.value) {
+  if (
+    (value === 'nearby' || value === 'faraway') &&
+    visitorLocationSource.value !== 'device'
+  ) {
     requestLocation()
   }
 }
@@ -550,6 +555,7 @@ onMounted(() => {
         source?: 'device' | 'ip'
       }
       visitorLocation.value = location
+      visitorLocationSource.value = location.source || 'ip'
       locationStatus.value = 'ready'
     } catch {
       localStorage.removeItem('lumaatlas:discovery-location')
@@ -558,7 +564,7 @@ onMounted(() => {
 
   if (
     (viewMode.value === 'nearby' || viewMode.value === 'faraway') &&
-    !visitorLocation.value
+    visitorLocationSource.value !== 'device'
   ) {
     requestLocation()
   }

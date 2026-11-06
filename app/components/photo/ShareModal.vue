@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { AnimatePresence, motion } from 'motion-v'
+import { motion } from 'motion-v'
 
 const props = defineProps<{
   isOpen: boolean
@@ -124,132 +124,127 @@ defineShortcuts({ escape: () => emit('close') })
 
 <template>
   <Teleport to="body">
-    <AnimatePresence>
-      <motion.div
-        v-if="isOpen"
-        :initial="{ opacity: 0 }"
-        :animate="{ opacity: 1 }"
-        :exit="{ opacity: 0 }"
-        class="fixed inset-0 z-60 flex items-center justify-center bg-black/55 px-3 backdrop-blur-sm"
-        @click.self="emit('close')"
+    <div
+      v-if="isOpen"
+      class="fixed inset-0 z-60 flex items-center justify-center bg-black/50 px-3"
+      @click.self="emit('close')"
+    >
+      <motion.section
+        :initial="{ opacity: 0, scale: 0.985, y: 8 }"
+        :animate="{ opacity: 1, scale: 1, y: 0 }"
+        :transition="{ duration: 0.16, ease: 'easeOut' }"
+        class="w-full max-w-xl overflow-hidden rounded-md border border-neutral-200 bg-white shadow-2xl dark:border-neutral-800 dark:bg-neutral-950"
+        @click.stop
       >
-        <motion.section
-          :initial="{ opacity: 0, scale: 0.97, y: 12 }"
-          :animate="{ opacity: 1, scale: 1, y: 0 }"
-          :exit="{ opacity: 0, scale: 0.97, y: 12 }"
-          class="w-full max-w-xl overflow-hidden rounded-md border border-neutral-200 bg-white shadow-2xl dark:border-neutral-800 dark:bg-neutral-950"
-          @click.stop
+        <header
+          class="flex items-center justify-between border-b border-neutral-200 px-4 py-3 dark:border-neutral-800"
         >
-          <header
-            class="flex items-center justify-between border-b border-neutral-200 px-4 py-3 dark:border-neutral-800"
-          >
-            <div class="flex min-w-0 items-center gap-2">
-              <Icon
-                name="lucide:share-2"
-                class="size-4 shrink-0"
-              />
-              <h3 class="truncate text-sm font-semibold">
-                {{ $t('ui.action.share.title') }}
-              </h3>
-            </div>
-            <UButton
-              icon="lucide:x"
-              color="neutral"
-              variant="ghost"
-              size="sm"
-              aria-label="Close"
-              @click="emit('close')"
+          <div class="flex min-w-0 items-center gap-2">
+            <Icon
+              name="lucide:share-2"
+              class="size-4 shrink-0"
             />
-          </header>
-
-          <div class="max-h-[calc(100dvh-5rem)] space-y-4 overflow-y-auto p-4">
-            <div
-              class="overflow-hidden rounded-sm bg-neutral-100 dark:bg-neutral-900"
-            >
-              <div
-                v-if="previewLoading"
-                class="flex aspect-[1200/630] items-center justify-center"
-              >
-                <Icon
-                  name="lucide:loader-circle"
-                  class="size-5 animate-spin text-neutral-400"
-                />
-              </div>
-              <div
-                v-else-if="previewError"
-                class="flex aspect-[1200/630] flex-col items-center justify-center gap-2 text-neutral-500"
-              >
-                <Icon
-                  name="lucide:image-off"
-                  class="size-5"
-                />
-                <span class="text-xs">{{
-                  $t('ui.action.share.ogImage.loadError')
-                }}</span>
-              </div>
-              <img
-                v-show="!previewLoading && !previewError"
-                :src="shareCardUrl"
-                :alt="shareTitle"
-                class="aspect-[1200/630] w-full object-cover"
-                @load="previewLoading = false"
-                @error="((previewLoading = false), (previewError = true))"
-              />
-            </div>
-
-            <div
-              class="flex min-w-0 items-center gap-2 border-y border-neutral-200 py-3 dark:border-neutral-800"
-            >
-              <input
-                :value="shareUrl"
-                readonly
-                class="h-9 min-w-0 flex-1 truncate bg-transparent text-sm outline-none"
-              />
-              <UButton
-                icon="lucide:copy"
-                color="neutral"
-                variant="outline"
-                @click="copyLink"
-              >
-                {{ $t('ui.action.share.actions.copyLink') }}
-              </UButton>
-            </div>
-
-            <div class="grid gap-2 sm:grid-cols-3">
-              <UButton
-                v-if="canNativeShare"
-                icon="lucide:send"
-                color="neutral"
-                variant="solid"
-                block
-                @click="nativeShare"
-              >
-                {{ $t('ui.action.share.actions.nativeShare') }}
-              </UButton>
-              <UButton
-                icon="lucide:image-down"
-                color="neutral"
-                variant="outline"
-                block
-                @click="downloadShareCard"
-              >
-                {{ $t('ui.action.share.actions.downloadOgImage') }}
-              </UButton>
-              <UButton
-                v-if="originalDownloadEnabled"
-                icon="lucide:download"
-                color="neutral"
-                variant="outline"
-                block
-                :disabled="!photo.originalUrl"
-                @click="downloadOriginal"
-              >
-                {{ $t('ui.action.share.actions.downloadOriginalImage') }}
-              </UButton>
-            </div>
+            <h3 class="truncate text-sm font-semibold">
+              {{ $t('ui.action.share.title') }}
+            </h3>
           </div>
-        </motion.section>
-      </motion.div>
-    </AnimatePresence>
+          <UButton
+            icon="lucide:x"
+            color="neutral"
+            variant="ghost"
+            size="sm"
+            aria-label="Close"
+            @click="emit('close')"
+          />
+        </header>
+
+        <div class="max-h-[calc(100dvh-5rem)] space-y-4 overflow-y-auto p-4">
+          <div
+            class="overflow-hidden rounded-sm bg-neutral-100 dark:bg-neutral-900"
+          >
+            <div
+              v-if="previewLoading"
+              class="flex aspect-[1200/630] items-center justify-center"
+            >
+              <Icon
+                name="lucide:loader-circle"
+                class="size-5 animate-spin text-neutral-400"
+              />
+            </div>
+            <div
+              v-else-if="previewError"
+              class="flex aspect-[1200/630] flex-col items-center justify-center gap-2 text-neutral-500"
+            >
+              <Icon
+                name="lucide:image-off"
+                class="size-5"
+              />
+              <span class="text-xs">{{
+                $t('ui.action.share.ogImage.loadError')
+              }}</span>
+            </div>
+            <img
+              v-show="!previewLoading && !previewError"
+              :src="shareCardUrl"
+              :alt="shareTitle"
+              class="aspect-[1200/630] w-full object-cover"
+              @load="previewLoading = false"
+              @error="((previewLoading = false), (previewError = true))"
+            />
+          </div>
+
+          <div
+            class="flex min-w-0 items-center gap-2 border-y border-neutral-200 py-3 dark:border-neutral-800"
+          >
+            <input
+              :value="shareUrl"
+              readonly
+              class="h-9 min-w-0 flex-1 truncate bg-transparent text-sm outline-none"
+            />
+            <UButton
+              icon="lucide:copy"
+              color="neutral"
+              variant="outline"
+              @click="copyLink"
+            >
+              {{ $t('ui.action.share.actions.copyLink') }}
+            </UButton>
+          </div>
+
+          <div class="grid gap-2 sm:grid-cols-3">
+            <UButton
+              v-if="canNativeShare"
+              icon="lucide:send"
+              color="neutral"
+              variant="solid"
+              block
+              @click="nativeShare"
+            >
+              {{ $t('ui.action.share.actions.nativeShare') }}
+            </UButton>
+            <UButton
+              icon="lucide:image-down"
+              color="neutral"
+              variant="outline"
+              block
+              @click="downloadShareCard"
+            >
+              {{ $t('ui.action.share.actions.downloadOgImage') }}
+            </UButton>
+            <UButton
+              v-if="originalDownloadEnabled"
+              icon="lucide:download"
+              color="neutral"
+              variant="outline"
+              block
+              :disabled="!photo.originalUrl"
+              @click="downloadOriginal"
+            >
+              {{ $t('ui.action.share.actions.downloadOriginalImage') }}
+            </UButton>
+          </div>
+        </div>
+      </motion.section>
+    </div>
   </Teleport>
 </template>

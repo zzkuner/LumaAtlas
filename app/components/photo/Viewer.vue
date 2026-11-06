@@ -1035,7 +1035,7 @@ const swiperModules = [Navigation, Keyboard, Virtual]
 
     <!-- Share Modal -->
     <PhotoShareModal
-      v-if="currentPhoto"
+      v-if="showShareModal && currentPhoto"
       :is-open="showShareModal"
       :photo="currentPhoto"
       @close="closeShareModal"

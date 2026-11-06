@@ -326,7 +326,8 @@
     }
   },
   "minimap": {
-    "loading": "加载小地图..."
+    "loading": "加载小地图...",
+    "unavailable": "小地图暂时无法加载"
   },
   "viewer": {
     "hint": {

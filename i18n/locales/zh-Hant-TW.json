@@ -196,7 +196,8 @@
     }
   },
   "minimap": {
-    "loading": "正在載入小地圖..."
+    "loading": "正在載入小地圖...",
+    "unavailable": "小地圖暫時無法載入"
   },
   "viewer": {
     "hint": {

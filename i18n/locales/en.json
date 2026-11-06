@@ -329,7 +329,8 @@
     }
   },
   "minimap": {
-    "loading": "Loading minimap..."
+    "loading": "Loading minimap...",
+    "unavailable": "Minimap is temporarily unavailable"
   },
   "viewer": {
     "hint": {

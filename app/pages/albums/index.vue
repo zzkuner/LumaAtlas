@@ -94,11 +94,14 @@ const albumCards = computed(() =>
   <div
     class="relative min-h-svh overflow-x-hidden bg-white text-neutral-950 dark:bg-neutral-950 dark:text-white"
   >
-    <MasonryItemHeader :show-gallery-controls="false" />
+    <MasonryItemHeader
+      :show-gallery-controls="false"
+      immersive
+    />
 
     <div
       v-if="backgroundPhotos.length"
-      class="pointer-events-none absolute inset-x-0 top-16 z-0 h-64 overflow-hidden opacity-45 sm:h-80"
+      class="pointer-events-none absolute inset-x-0 top-0 z-0 h-72 overflow-hidden opacity-45 sm:h-96"
       aria-hidden="true"
     >
       <div class="absolute inset-0 flex gap-px">
@@ -142,7 +145,7 @@ const albumCards = computed(() =>
     </div>
 
     <main
-      class="relative z-10 mx-auto w-full px-3 pb-20 pt-8 sm:px-5 sm:pt-12 lg:px-7"
+      class="relative z-10 mx-auto w-full px-3 pb-20 pt-40 sm:px-5 sm:pt-44 lg:px-7 lg:pt-36"
       :style="{ maxWidth: contentMaxWidth }"
     >
       <header

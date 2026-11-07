@@ -534,7 +534,7 @@ onUnmounted(() => {
     tabindex="0"
     :aria-label="contentTitle ? `查看照片：${contentTitle}` : '查看照片详情'"
     :class="{
-      'flex flex-col py-6 sm:min-h-[calc(100svh-7rem)] sm:justify-center sm:py-8':
+      'flex flex-col py-2 sm:min-h-[calc(100svh-7rem)] sm:justify-center sm:py-8':
         isBig,
     }"
     :style="{
@@ -634,20 +634,20 @@ onUnmounted(() => {
 
       <div
         v-if="isFeed && (contentTitle || contentDescription)"
-        class="pointer-events-none absolute inset-0 z-10 bg-linear-to-t from-black/75 via-black/5 via-45% to-transparent opacity-100 transition-opacity duration-500 ease-out md:opacity-0 md:group-hover:opacity-100"
+        class="pointer-events-none absolute inset-0 z-10 bg-linear-to-t from-black/60 via-transparent via-55% to-transparent opacity-100 transition-opacity duration-500 ease-out md:from-black/75 md:via-black/5 md:via-45% md:opacity-0 md:group-hover:opacity-100"
       >
         <div
-          class="absolute inset-x-0 bottom-0 translate-y-0 px-5 py-5 text-white opacity-100 transition-all duration-500 ease-out md:translate-y-5 md:opacity-0 md:group-hover:translate-y-0 md:group-hover:opacity-100 sm:px-7 sm:py-7"
+          class="absolute inset-x-0 bottom-0 translate-y-0 px-4 py-4 text-white opacity-100 transition-all duration-500 ease-out md:translate-y-5 md:px-7 md:py-7 md:opacity-0 md:group-hover:translate-y-0 md:group-hover:opacity-100"
         >
           <h3
             v-if="contentTitle"
-            class="line-clamp-2 font-display text-lg font-semibold sm:text-xl"
+            class="line-clamp-1 font-display text-base font-medium leading-6 drop-shadow-sm md:line-clamp-2 md:text-xl md:font-semibold"
           >
             {{ contentTitle }}
           </h3>
           <p
             v-if="contentDescription"
-            class="mt-2 line-clamp-2 max-w-2xl text-sm leading-6 text-white/85 sm:line-clamp-3"
+            class="mt-1 line-clamp-1 max-w-2xl text-xs leading-5 text-white/78 drop-shadow-sm md:mt-2 md:line-clamp-3 md:text-sm md:leading-6 md:text-white/85"
           >
             {{ contentDescription }}
           </p>
@@ -779,11 +779,99 @@ onUnmounted(() => {
 
     <div
       v-if="showBigPhotoInfo && isFeed"
-      class="mx-auto w-full max-w-6xl border-b border-neutral-200/70 py-4 dark:border-neutral-800/70 sm:py-5"
+      class="mx-auto w-full max-w-6xl border-b border-neutral-200/70 py-3 dark:border-neutral-800/70 sm:py-5"
     >
       <div class="flex min-w-0 items-start gap-4 px-1 sm:px-2">
+        <div class="min-w-0 flex-1 font-sans sm:hidden">
+          <div
+            v-if="hasExposureParameters"
+            class="flex min-w-0 items-center gap-2.5 overflow-hidden whitespace-nowrap text-xs leading-5 text-neutral-700 dark:text-neutral-300"
+          >
+            <span
+              v-if="formattedFocalLength"
+              class="inline-flex shrink-0 items-center gap-1"
+            >
+              <Icon
+                name="lucide:focus"
+                class="size-3.5 text-neutral-500 dark:text-neutral-400"
+              />
+              {{ formattedFocalLength }}
+            </span>
+            <span
+              v-if="photo.exif?.FNumber"
+              class="inline-flex shrink-0 items-center gap-1"
+            >
+              <Icon
+                name="lucide:aperture"
+                class="size-3.5 text-neutral-500 dark:text-neutral-400"
+              />
+              ƒ/{{ photo.exif.FNumber }}
+            </span>
+            <span
+              v-if="photo.exif?.ExposureTime"
+              class="inline-flex shrink-0 items-center gap-1"
+            >
+              <Icon
+                name="lucide:timer"
+                class="size-3.5 text-neutral-500 dark:text-neutral-400"
+              />
+              {{ formatExposureTime(photo.exif.ExposureTime) }}
+            </span>
+            <span
+              v-if="photo.exif?.ISO"
+              class="inline-flex shrink-0 items-center gap-1"
+            >
+              <span
+                class="inline-flex h-3.5 min-w-4 items-center justify-center rounded-[2px] border border-neutral-400 px-0.5 text-[7px] font-semibold leading-none text-neutral-500 dark:border-neutral-500 dark:text-neutral-400"
+              >
+                ISO
+              </span>
+              {{ photo.exif.ISO }}
+            </span>
+          </div>
+
+          <div
+            v-else
+            class="flex min-w-0 items-center gap-2 overflow-hidden whitespace-nowrap text-xs leading-5 text-neutral-500 dark:text-neutral-400"
+          >
+            <span
+              v-if="photo.exif?.Make || photo.exif?.Model"
+              class="flex min-w-0 items-center gap-1"
+            >
+              <Icon
+                name="lucide:camera"
+                class="size-3.5 shrink-0"
+              />
+              <span class="truncate">
+                {{ formatCameraInfo(photo.exif.Make, photo.exif.Model) }}
+              </span>
+            </span>
+            <span
+              v-else-if="formattedLocation"
+              class="flex min-w-0 flex-1 items-center gap-1"
+            >
+              <Icon
+                name="lucide:map-pin"
+                class="size-3.5 shrink-0"
+              />
+              <span class="truncate">{{ formattedLocation }}</span>
+            </span>
+            <time
+              v-else-if="photo.dateTaken"
+              :datetime="$dayjs(photo.dateTaken).toISOString()"
+              class="inline-flex min-w-0 items-center gap-1 tabular-nums"
+            >
+              <Icon
+                name="lucide:clock-3"
+                class="size-3.5"
+              />
+              {{ $dayjs(photo.dateTaken).format('MM.DD HH:mm') }}
+            </time>
+          </div>
+        </div>
+
         <div
-          class="grid min-w-0 flex-1 grid-cols-1 gap-x-10 gap-y-4 sm:grid-cols-2 xl:grid-cols-[minmax(17rem,1.35fr)_minmax(11rem,1fr)_minmax(12rem,1.15fr)_auto]"
+          class="hidden min-w-0 flex-1 gap-x-10 gap-y-4 sm:grid sm:grid-cols-2 xl:grid-cols-[minmax(17rem,1.35fr)_minmax(11rem,1fr)_minmax(12rem,1.15fr)_auto]"
         >
           <div
             v-if="hasExposureParameters"

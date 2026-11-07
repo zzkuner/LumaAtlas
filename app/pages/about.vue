@@ -13,6 +13,11 @@ const avatarUrl = computed(() => String(getSetting('app:avatarUrl') || ''))
 const slogan = computed(() => String(getSetting('app:slogan') || ''))
 const description = computed(() => String(getSetting('app:description') || ''))
 const aboutText = computed(() => String(getSetting('app:aboutText') || ''))
+const distinctAboutText = computed(() => {
+  const text = aboutText.value.trim()
+  if (!text || text === description.value.trim()) return ''
+  return text
+})
 const contentMaxWidth = computed(() => {
   const width = String(getSetting('app:appearance.home.contentWidth') || 'wide')
   return (
@@ -117,10 +122,10 @@ const socialLinks = computed(() => {
             {{ description }}
           </p>
           <p
-            v-if="aboutText"
+            v-if="distinctAboutText"
             class="mt-8 max-w-2xl whitespace-pre-line text-[15px] leading-8 text-neutral-600 dark:text-neutral-400"
           >
-            {{ aboutText }}
+            {{ distinctAboutText }}
           </p>
           <p
             v-else-if="!description"

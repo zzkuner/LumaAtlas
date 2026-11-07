@@ -142,6 +142,7 @@ const viewItems: Array<{
 ]
 
 const gallerySettingsOpen = ref(false)
+const mobileLayoutOpen = ref(false)
 const currentViewItem = computed(
   () =>
     viewItems.find((item) => item.value === props.viewMode) || viewItems[0]!,
@@ -154,6 +155,12 @@ const selectViewMode = (value: HomeViewMode) => {
 
 const selectLayoutMode = (value: GalleryLayout) => {
   emit('update:layoutMode', value)
+  mobileLayoutOpen.value = false
+}
+
+const selectColumnCount = (value: GalleryColumns) => {
+  emit('update:columnCount', value)
+  mobileLayoutOpen.value = false
 }
 
 const layoutItems: Array<{
@@ -318,6 +325,7 @@ const {
 
           <UPopover
             v-if="showGalleryControls"
+            v-model:open="mobileLayoutOpen"
             class="sm:hidden"
           >
             <UTooltip :text="currentLayoutItem.label">
@@ -356,7 +364,7 @@ const {
                       color="neutral"
                       :variant="columnCount === item.value ? 'soft' : 'ghost'"
                       class="justify-center"
-                      @click="emit('update:columnCount', item.value)"
+                      @click="selectColumnCount(item.value)"
                     />
                   </div>
                 </template>

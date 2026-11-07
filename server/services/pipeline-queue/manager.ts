@@ -635,9 +635,9 @@ export class QueueManager {
 
           if (!hasLatitude || !hasLongitude) {
             this.logger.warn(
-              `[${taskId}:reverse-geocoding] missing coordinates for photo ${photoId}`,
+              `[${taskId}:reverse-geocoding] skipped: source photo ${photoId} has no valid GPS coordinates`,
             )
-            throw new Error(`Missing coordinates for photo ${photoId}`)
+            return
           }
 
           const locationInfo = await extractLocationFromGPS(

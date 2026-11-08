@@ -1,7 +1,6 @@
 <script lang="ts" setup>
 import { motion } from 'motion-v'
 import ThumbImage from '../ui/ThumbImage.vue'
-import { twMerge } from 'tailwind-merge'
 import type { ClusterPoint } from '~~/shared/types/map'
 
 const props = withDefaults(
@@ -41,7 +40,7 @@ const representativePhoto = computed(
 
 const sizeDelta = computed(() => {
   const count = pointCount.value
-  return Math.min(64, Math.max(44, 32 + Math.log(count) * 10))
+  return Math.min(68, Math.max(48, 42 + Math.log(count) * 7))
 })
 </script>
 
@@ -71,50 +70,37 @@ const sizeDelta = computed(() => {
             }"
             @click="onClick"
           >
-            <!-- Background image -->
-            <div class="absolute inset-0 overflow-hidden rounded-full">
-              <ThumbImage
-                :src="representativePhoto.thumbnailUrl!"
-                :alt="
-                  representativePhoto.title || `聚类 ${representativePhoto.id}`
-                "
-                :thumbhash="representativePhoto.thumbnailHash"
-                :threshold="0.1"
-                root-margin="100px"
-                class="h-full w-full object-cover opacity-50"
-              />
-              <div
-                class="absolute inset-0 bg-linear-to-br from-blue/40 to-purple/60 dark:from-blue/60 dark:to-purple/80"
-              />
-            </div>
-
-            <!-- Cluster marker -->
             <div
-              :class="
-                twMerge(
-                  'relative flex flex-col justify-center items-center rounded-full border shadow-lg hover:shadow-xl',
-                  'border-white/50 bg-white/80 hover:bg-white/90 dark:border-white/30 dark:bg-black/60 dark:hover:bg-black/80',
-                )
-              "
+              class="relative overflow-hidden rounded-md border-2 border-white bg-neutral-100 shadow-lg ring-1 ring-black/15 transition-shadow hover:shadow-xl dark:border-neutral-900 dark:bg-neutral-800 dark:ring-white/20"
               :style="{
                 width: `${sizeDelta}px`,
                 height: `${sizeDelta}px`,
               }"
             >
-              <div
-                class="absolute inset-0 rounded-full bg-linear-to-br from-white/10 to-white/5"
+              <ThumbImage
+                v-if="representativePhoto.thumbnailUrl"
+                :src="representativePhoto.thumbnailUrl"
+                :alt="
+                  representativePhoto.title || `照片 ${representativePhoto.id}`
+                "
+                :thumbhash="representativePhoto.thumbnailHash"
+                :threshold="0.1"
+                root-margin="100px"
+                class="size-full object-cover"
               />
-
-              <!-- Cluster count -->
+              <Icon
+                v-else
+                name="lucide:image"
+                class="absolute left-1/2 top-1/2 size-5 -translate-x-1/2 -translate-y-1/2 text-neutral-400"
+              />
               <span
-                class="text-neutral-800 dark:text-white text-sm font-bold drop-shadow leading-none"
+                class="absolute inset-x-0 bottom-0 h-1/2 bg-linear-to-t from-black/55 to-transparent"
+              />
+              <span
+                class="absolute bottom-1 right-1 inline-flex min-w-5 items-center justify-center rounded-full bg-black/75 px-1.5 py-1 text-[10px] font-semibold leading-none text-white backdrop-blur-sm"
               >
                 {{ pointCount }}
               </span>
-
-              <div
-                class="absolute inset-0 rounded-full shadow-inner shadow-black/5"
-              />
             </div>
           </motion.div>
         </HoverCardTrigger>

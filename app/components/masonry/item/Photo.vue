@@ -76,7 +76,7 @@ const displayAspectRatio = computed(() => {
 
 const isFeed = computed(() => isBig.value)
 const showPhotoInfo = computed(
-  () => getSetting('app:appearance.home.showPhotoInfo') === true,
+  () => getSetting('app:appearance.home.showPhotoInfo') !== false,
 )
 const showBigPhotoInfo = computed(
   () => getSetting('app:appearance.home.showBigPhotoInfo') !== false,
@@ -534,8 +534,7 @@ onUnmounted(() => {
     tabindex="0"
     :aria-label="contentTitle ? `查看照片：${contentTitle}` : '查看照片详情'"
     :class="{
-      'flex flex-col py-2 sm:min-h-[calc(100svh-7rem)] sm:justify-center sm:py-8':
-        isBig,
+      'flex flex-col py-1 sm:py-4': isBig,
     }"
     :style="{
       transform: 'translateZ(0)',
@@ -619,7 +618,7 @@ onUnmounted(() => {
 
       <!-- Overlay -->
       <div
-        v-if="showPhotoInfo"
+        v-if="!isFeed && showPhotoInfo"
         class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300"
       />
 
@@ -641,7 +640,7 @@ onUnmounted(() => {
         >
           <h3
             v-if="contentTitle"
-            class="line-clamp-1 font-display text-base font-medium leading-6 drop-shadow-sm md:line-clamp-2 md:text-xl md:font-semibold"
+            class="line-clamp-1 font-display text-base font-medium leading-6 drop-shadow-sm md:line-clamp-2 md:text-lg md:font-medium md:leading-7"
           >
             {{ contentTitle }}
           </h3>
@@ -656,7 +655,11 @@ onUnmounted(() => {
 
       <!-- Photo info overlay (bottom) -->
       <div
-        v-if="!isFeed && (contentTitle || contentDescription || showPhotoInfo)"
+        v-if="
+          !isFeed &&
+          showPhotoInfo &&
+          (contentTitle || contentDescription || photo.dateTaken || photo.city)
+        "
         v-show="shouldShowInfoOverlay"
         class="pointer-events-none absolute inset-x-0 bottom-0 translate-y-3 bg-linear-to-t from-black/70 via-black/30 to-transparent p-3 opacity-0 transition-all duration-300 ease-out group-hover:translate-y-0 group-hover:opacity-100"
       >
@@ -779,7 +782,7 @@ onUnmounted(() => {
 
     <div
       v-if="showBigPhotoInfo && isFeed"
-      class="mx-auto w-full max-w-6xl border-b border-neutral-200/70 py-3 dark:border-neutral-800/70 sm:py-5"
+      class="mx-auto w-full max-w-6xl border-b border-neutral-200/70 py-2 dark:border-neutral-800/70 sm:py-3"
     >
       <div class="flex min-w-0 items-start gap-4 px-1 sm:px-2">
         <div class="min-w-0 flex-1 font-sans sm:hidden">
@@ -877,7 +880,10 @@ onUnmounted(() => {
             v-if="hasExposureParameters"
             class="flex min-w-0 flex-col gap-2"
           >
-            <span class="text-xs leading-none text-neutral-400">参数</span>
+            <span
+              class="font-display text-sm font-normal leading-none text-neutral-500 dark:text-neutral-400"
+              >参数</span
+            >
             <span
               class="flex flex-wrap items-center gap-x-4 gap-y-2 font-sans text-[15px] leading-6 text-neutral-900 dark:text-neutral-100"
             >
@@ -929,7 +935,10 @@ onUnmounted(() => {
             v-if="photo.exif?.Make || photo.exif?.Model"
             class="flex min-w-0 flex-col gap-2"
           >
-            <span class="text-xs leading-none text-neutral-400">相机</span>
+            <span
+              class="font-display text-sm font-normal leading-none text-neutral-500 dark:text-neutral-400"
+              >相机</span
+            >
             <span
               class="flex min-w-0 items-start gap-2 font-sans text-[15px] leading-6 text-neutral-900 dark:text-neutral-100"
             >
@@ -947,7 +956,10 @@ onUnmounted(() => {
             v-if="formattedLocation"
             class="flex min-w-0 flex-col gap-2"
           >
-            <span class="text-xs leading-none text-neutral-400">位置</span>
+            <span
+              class="font-display text-sm font-normal leading-none text-neutral-500 dark:text-neutral-400"
+              >位置</span
+            >
             <span
               class="flex min-w-0 items-start gap-2 font-sans text-[15px] leading-6 text-neutral-900 dark:text-neutral-100"
             >
@@ -963,7 +975,10 @@ onUnmounted(() => {
             v-if="photo.dateTaken"
             class="flex min-w-0 flex-col gap-2"
           >
-            <span class="text-xs leading-none text-neutral-400">时间</span>
+            <span
+              class="font-display text-sm font-normal leading-none text-neutral-500 dark:text-neutral-400"
+              >时间</span
+            >
             <time
               :datetime="$dayjs(photo.dateTaken).toISOString()"
               class="inline-flex items-center gap-2 whitespace-nowrap font-sans text-[15px] leading-6 text-neutral-900 tabular-nums dark:text-neutral-100"

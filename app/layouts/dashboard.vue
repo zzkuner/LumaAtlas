@@ -10,6 +10,10 @@ const appTitle = computed(() => {
   const value = settingsStore.getSetting('app:title')
   return value ? String(value) : $t('title.dashboard')
 })
+const appLogo = computed(() => {
+  const value = settingsStore.getSetting('app:logoUrl')
+  return value ? String(value) : ''
+})
 
 const overviewNav = computed<NavigationMenuItem[]>(() => [
   {
@@ -205,8 +209,15 @@ const userMenuItems = computed(() => [
           v-if="!collapsed"
           class="flex items-center gap-2"
         >
+          <img
+            v-if="appLogo"
+            :src="appLogo"
+            :alt="appTitle"
+            class="size-8 shrink-0 rounded-full object-contain"
+          />
           <span
-            class="flex size-8 shrink-0 items-center justify-center border border-neutral-900 text-neutral-900 dark:border-white dark:text-white"
+            v-else
+            class="flex size-8 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-neutral-800 dark:bg-neutral-900 dark:text-neutral-200"
           >
             <Icon
               name="lucide:aperture"
@@ -223,9 +234,15 @@ const userMenuItems = computed(() => [
             <span class="text-xs text-neutral-500">管理后台</span>
           </div>
         </div>
+        <img
+          v-else-if="appLogo"
+          :src="appLogo"
+          :alt="appTitle"
+          class="mx-auto size-8 rounded-full object-contain"
+        />
         <span
           v-else
-          class="mx-auto flex size-8 items-center justify-center border border-neutral-900 text-neutral-900 dark:border-white dark:text-white"
+          class="mx-auto flex size-8 items-center justify-center rounded-full bg-neutral-100 text-neutral-800 dark:bg-neutral-900 dark:text-neutral-200"
         >
           <Icon
             name="lucide:aperture"

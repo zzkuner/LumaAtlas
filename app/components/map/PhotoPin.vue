@@ -41,11 +41,17 @@ const parseExifNumber = (value: unknown): number | null => {
     return null
   }
 
-  const fractionMatch = trimmed.match(/^(-?\d+(?:\.\d+)?)\s*\/\s*(-?\d+(?:\.\d+)?)$/)
+  const fractionMatch = trimmed.match(
+    /^(-?\d+(?:\.\d+)?)\s*\/\s*(-?\d+(?:\.\d+)?)$/,
+  )
   if (fractionMatch) {
     const numerator = Number(fractionMatch[1])
     const denominator = Number(fractionMatch[2])
-    if (!Number.isFinite(numerator) || !Number.isFinite(denominator) || denominator === 0) {
+    if (
+      !Number.isFinite(numerator) ||
+      !Number.isFinite(denominator) ||
+      denominator === 0
+    ) {
       return null
     }
     return numerator / denominator
@@ -62,7 +68,8 @@ const parseExifNumber = (value: unknown): number | null => {
 
 const focalLengthValue = computed(() => {
   return parseExifNumber(
-    marker.value.exif?.FocalLengthIn35mmFormat ?? marker.value.exif?.FocalLength,
+    marker.value.exif?.FocalLengthIn35mmFormat ??
+      marker.value.exif?.FocalLength,
   )
 })
 
@@ -76,7 +83,8 @@ const altitudeValue = computed(() => {
     return null
   }
 
-  const isBelowSeaLevel = marker.value.exif?.GPSAltitudeRef === 'Below Sea Level'
+  const isBelowSeaLevel =
+    marker.value.exif?.GPSAltitudeRef === 'Below Sea Level'
   return isBelowSeaLevel ? -Math.abs(altitude) : altitude
 })
 
@@ -293,43 +301,36 @@ const onClick = () => {
           >
             <div
               v-if="isSelected"
-              class="bg-primary/20 dark:bg-primary/30 absolute -inset-1 animate-pulse rounded-full"
+              class="absolute -inset-1 animate-pulse rounded-lg bg-primary/20 dark:bg-primary/30"
             />
             <div
               v-if="isSelected"
-              class="absolute -inset-2 rounded-full border border-primary/40 dark:border-primary/50 animate-ping"
+              class="absolute -inset-2 animate-ping rounded-lg border border-primary/40 dark:border-primary/50"
             />
-            <div class="absolute inset-0 overflow-hidden rounded-full">
+            <div
+              :class="
+                twMerge(
+                  'relative flex size-12 items-center justify-center overflow-hidden rounded-md border-2 bg-neutral-100 shadow-lg ring-1 transition-shadow hover:shadow-xl dark:bg-neutral-800',
+                  isSelected
+                    ? 'border-primary shadow-primary/30 ring-primary/40 dark:shadow-primary/40'
+                    : 'border-white ring-black/15 dark:border-neutral-900 dark:ring-white/20',
+                  props.analysisMode !== 'none' ? analysisVisual.ringClass : '',
+                )
+              "
+            >
               <ThumbImage
-                :src="marker.thumbnailUrl!"
+                v-if="marker.thumbnailUrl"
+                :src="marker.thumbnailUrl"
                 :alt="marker.title || `照片 ${marker.id}`"
                 :thumbhash="marker.thumbnailHash"
                 :threshold="0.1"
                 root-margin="100px"
-                class="h-full w-full object-cover opacity-50"
-              />
-              <div
-                :class="twMerge('absolute inset-0', analysisVisual.overlayClass)"
-              />
-            </div>
-
-            <!-- Single photo marker -->
-            <div
-              :class="
-                twMerge(
-                  'relative size-10 flex justify-center items-center rounded-full border shadow-lg hover:shadow-xl',
-                  isSelected
-                    ? 'border-primary/60 bg-primary/80 shadow-primary/30 dark:border-primary/40 dark:bg-primary/90 dark:shadow-primary/50'
-                    : analysisVisual.pinClass,
-                )
-              "
-            >
-              <div
-                class="absolute inset-0 rounded-full bg-linear-to-br from-white/10 to-white/5"
+                class="size-full object-cover"
               />
               <Icon
-                name="tabler:photo"
-                class="size-5 text-neutral-700 dark:text-white drop-shadow"
+                v-else
+                name="lucide:image"
+                class="size-5 text-neutral-400"
               />
               <span
                 v-if="props.analysisMode !== 'none' && analysisBucket"
@@ -342,9 +343,6 @@ const onClick = () => {
               >
                 {{ analysisVisual.badgeLabel }}
               </span>
-              <div
-                class="absolute inset-0 rounded-full shadow-inner shadow-black/5"
-              />
             </div>
           </motion.div>
         </HoverCardTrigger>

@@ -16,6 +16,18 @@ const appFields = computed(() =>
   fields.value.filter((f) => !f.key.startsWith('appearance.')),
 )
 
+const contentAppearanceKeys = new Set([
+  'appearance.home.socialLinks',
+  'appearance.footer.enabled',
+  'appearance.footer.text',
+  'appearance.footer.showIcp',
+  'appearance.footer.icpNumber',
+])
+const legacyAppearanceKeys = new Set(['appearance.home.footerText'])
+const contentAppearanceFields = computed(() =>
+  fields.value.filter((field) => contentAppearanceKeys.has(field.key)),
+)
+
 const identityFields = computed(() =>
   appFields.value.filter((field) =>
     ['title', 'slogan', 'description', 'logoUrl'].includes(field.key),
@@ -29,7 +41,12 @@ const aboutFields = computed(() =>
 )
 
 const appearanceFields = computed(() =>
-  fields.value.filter((f) => f.key.startsWith('appearance.')),
+  fields.value.filter(
+    (field) =>
+      field.key.startsWith('appearance.') &&
+      !contentAppearanceKeys.has(field.key) &&
+      !legacyAppearanceKeys.has(field.key),
+  ),
 )
 
 const themeFields = computed(() =>
@@ -42,8 +59,13 @@ const sameValue = (left: any, right: any) =>
 const getDefaultFieldValue = (field: (typeof fields.value)[number]) =>
   field.value ?? field.defaultValue ?? null
 
+const contentFields = computed(() => [
+  ...appFields.value,
+  ...contentAppearanceFields.value,
+])
+
 const isAppDirty = computed(() =>
-  appFields.value.some(
+  contentFields.value.some(
     (field) => !sameValue(state[field.key], getDefaultFieldValue(field)),
   ),
 )
@@ -67,7 +89,7 @@ const previewPhotos = computed(() =>
 )
 
 const resetAppSettings = () => {
-  appFields.value.forEach((field) => {
+  contentFields.value.forEach((field) => {
     state[field.key] = getDefaultFieldValue(field)
   })
 }
@@ -90,12 +112,26 @@ const updateAppearanceSetting = (key: string, value: unknown) => {
 
 const handleAppSettingsSubmit = async () => {
   const appData = Object.fromEntries(
-    appFields.value.map((f) => [f.key, state[f.key]]),
+    contentFields.value.map((f) => [f.key, state[f.key]]),
   )
   try {
     await submit(appData)
   } catch {
     /* empty */
+  }
+}
+
+const socialLinks = computed<Record<string, string>>(() => {
+  const value = state['appearance.home.socialLinks']
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? (value as Record<string, string>)
+    : {}
+})
+
+const updateSocialLink = (key: string, value: string) => {
+  state['appearance.home.socialLinks'] = {
+    ...socialLinks.value,
+    [key]: value,
   }
 }
 
@@ -137,10 +173,10 @@ const handleAppearanceSettingsSubmit = async () => {
             <h3
               class="text-base font-semibold text-neutral-900 dark:text-neutral-100"
             >
-              站点内容
+              站点与公开内容
             </h3>
             <p class="mt-1 text-sm text-neutral-500">
-              保存后会同步更新首页、浏览器分享卡片和关于页面。
+              首页、关于页面和全站页脚分别管理，保存后同步更新前台。
             </p>
           </header>
 
@@ -180,9 +216,9 @@ const handleAppearanceSettingsSubmit = async () => {
 
             <section class="space-y-5 py-5">
               <div>
-                <h4 class="text-sm font-semibold">作者与关于</h4>
+                <h4 class="text-sm font-semibold">关于页面</h4>
                 <p class="mt-1 text-sm text-neutral-500">
-                  作者信息可用于首页简介，也会组成可选的关于页面。
+                  作者介绍和外部链接只在关于页面集中呈现；首页是否引用作者简介由下方“首页信息”控制。
                 </p>
               </div>
               <SettingField
@@ -192,6 +228,120 @@ const handleAppearanceSettingsSubmit = async () => {
                 :model-value="state[field.key]"
                 @update:model-value="(val) => (state[field.key] = val)"
               />
+
+              <div
+                class="grid gap-4 border-t border-neutral-200 pt-5 sm:grid-cols-2 dark:border-neutral-800"
+              >
+                <UFormField label="个人网站">
+                  <UInput
+                    type="url"
+                    icon="lucide:link"
+                    :model-value="String(socialLinks.website || '')"
+                    @update:model-value="
+                      updateSocialLink('website', String($event))
+                    "
+                  />
+                </UFormField>
+                <UFormField label="Instagram">
+                  <UInput
+                    type="url"
+                    icon="simple-icons:instagram"
+                    :model-value="String(socialLinks.instagram || '')"
+                    @update:model-value="
+                      updateSocialLink('instagram', String($event))
+                    "
+                  />
+                </UFormField>
+                <UFormField label="X">
+                  <UInput
+                    type="url"
+                    icon="simple-icons:x"
+                    :model-value="String(socialLinks.x || '')"
+                    @update:model-value="updateSocialLink('x', String($event))"
+                  />
+                </UFormField>
+                <UFormField label="GitHub">
+                  <UInput
+                    type="url"
+                    icon="simple-icons:github"
+                    :model-value="String(socialLinks.github || '')"
+                    @update:model-value="
+                      updateSocialLink('github', String($event))
+                    "
+                  />
+                </UFormField>
+              </div>
+            </section>
+
+            <section class="space-y-5 py-5">
+              <div>
+                <h4 class="text-sm font-semibold">全站页脚</h4>
+                <p class="mt-1 text-sm text-neutral-500">
+                  固定显示在公开页面内容结束处，不参与首页模块排序。
+                </p>
+              </div>
+
+              <label
+                class="flex items-center justify-between gap-4 border-y border-neutral-200 py-3 text-sm dark:border-neutral-800"
+              >
+                <span>
+                  <span class="block font-medium">显示全站页脚</span>
+                  <span class="mt-1 block text-xs text-neutral-500"
+                    >关闭后隐藏版权文案和备案信息。</span
+                  >
+                </span>
+                <USwitch
+                  class="shrink-0"
+                  :model-value="state['appearance.footer.enabled'] !== false"
+                  @update:model-value="
+                    state['appearance.footer.enabled'] = $event
+                  "
+                />
+              </label>
+
+              <UFormField
+                label="页脚文案"
+                description="留空时自动显示当前年份和网站名称。"
+              >
+                <UTextarea
+                  :rows="2"
+                  :model-value="String(state['appearance.footer.text'] || '')"
+                  @update:model-value="
+                    state['appearance.footer.text'] = String($event)
+                  "
+                />
+              </UFormField>
+
+              <label
+                class="flex items-center justify-between gap-4 border-y border-neutral-200 py-3 text-sm dark:border-neutral-800"
+              >
+                <span>
+                  <span class="block font-medium">显示备案信息</span>
+                  <span class="mt-1 block text-xs text-neutral-500"
+                    >显示后链接至工信部备案查询网站。</span
+                  >
+                </span>
+                <USwitch
+                  class="shrink-0"
+                  :model-value="state['appearance.footer.showIcp'] === true"
+                  @update:model-value="
+                    state['appearance.footer.showIcp'] = $event
+                  "
+                />
+              </label>
+
+              <UFormField label="备案号">
+                <UInput
+                  placeholder="粤ICP备XXXXXXXX号"
+                  :disabled="state['appearance.footer.showIcp'] !== true"
+                  :model-value="
+                    String(state['appearance.footer.icpNumber'] || '')
+                  "
+                  @update:model-value="
+                    state['appearance.footer.icpNumber'] = String($event)
+                  "
+                />
+              </UFormField>
             </section>
           </UForm>
 

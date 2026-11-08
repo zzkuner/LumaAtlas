@@ -93,7 +93,7 @@ const asRecord = (value: unknown): Record<string, unknown> =>
 
 const homeModules = computed(() => {
   const config = asRecord(getSetting('app:appearance.home.modules'))
-  const allowed = ['header', 'author', 'gallery', 'footer']
+  const allowed = ['header', 'author', 'gallery']
   const requested = Array.isArray(config.order) ? config.order : []
   const order = [...new Set([...requested, ...allowed])].filter(
     (item): item is string =>
@@ -822,9 +822,9 @@ watch(currentPhotoIndex, (newIndex) => {
     </div>
 
     <MasonryItemFooter
-      v-if="mode === 'home' && moduleVisible('footer')"
+      v-if="mode === 'home'"
+      class="order-last"
       :max-width="galleryMaxWidth"
-      :style="{ order: moduleOrder('footer') }"
     />
   </div>
 </template>

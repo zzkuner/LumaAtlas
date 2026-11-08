@@ -30,20 +30,6 @@ const setting = (key: string, fallback: unknown) =>
   props.settings[key] ?? fallback
 const update = (key: string, value: unknown) => emit('change', key, value)
 
-const socialLinks = computed(() => {
-  const value = setting('appearance.home.socialLinks', {})
-  return value && typeof value === 'object' && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : {}
-})
-
-const updateSocial = (key: string, value: string) => {
-  update('appearance.home.socialLinks', {
-    ...socialLinks.value,
-    [key]: value,
-  })
-}
-
 const sourceOptions = [
   { value: 'all', label: '全部', icon: 'lucide:images' },
   { value: 'featured', label: '精选', icon: 'lucide:sparkles' },
@@ -72,7 +58,7 @@ const gridImageRatio = computed(() => {
 })
 
 type PublicPageId = 'globe' | 'albums' | 'about'
-type HomeModuleId = 'header' | 'author' | 'gallery' | 'footer'
+type HomeModuleId = 'header' | 'author' | 'gallery'
 
 const normalizeOrder = <T extends string>(
   value: unknown,
@@ -158,11 +144,6 @@ const homeModuleMeta: Record<
     label: '照片内容',
     description: '首页的大图、瀑布流或方格',
     icon: 'lucide:images',
-  },
-  footer: {
-    label: '页脚信息',
-    description: '页脚文案和外部链接',
-    icon: 'lucide:panel-bottom',
   },
 }
 const homeModuleIds = Object.keys(homeModuleMeta) as HomeModuleId[]
@@ -496,10 +477,16 @@ const toggleHomeModule = (id: HomeModuleId, visible: boolean) => {
           <label
             class="flex items-center justify-between border-b border-neutral-200 py-3 text-sm dark:border-neutral-800"
           >
-            <span>缩略图悬浮信息</span>
+            <span class="min-w-0 pr-4">
+              <span class="block">瀑布流与方格悬浮信息</span>
+              <span class="mt-1 block text-xs leading-5 text-neutral-500">
+                仅桌面端生效；鼠标停在缩略图上时显示标题、说明与拍摄参数。
+              </span>
+            </span>
             <USwitch
+              class="shrink-0"
               :model-value="
-                setting('appearance.home.showPhotoInfo', false) === true
+                setting('appearance.home.showPhotoInfo', true) !== false
               "
               @update:model-value="
                 update('appearance.home.showPhotoInfo', $event)
@@ -619,57 +606,6 @@ const toggleHomeModule = (id: HomeModuleId, visible: boolean) => {
             />
           </label>
         </div>
-      </section>
-
-      <section class="pt-8">
-        <h5 class="text-sm font-semibold">页脚与外部链接</h5>
-        <p class="mt-1 text-sm text-neutral-500">留空的项目不会出现在前台。</p>
-        <div class="mt-4 grid gap-4 sm:grid-cols-2">
-          <UFormField label="个人网站">
-            <UInput
-              type="url"
-              icon="lucide:link"
-              :model-value="String(socialLinks.website || '')"
-              @update:model-value="updateSocial('website', String($event))"
-            />
-          </UFormField>
-          <UFormField label="Instagram">
-            <UInput
-              type="url"
-              icon="simple-icons:instagram"
-              :model-value="String(socialLinks.instagram || '')"
-              @update:model-value="updateSocial('instagram', String($event))"
-            />
-          </UFormField>
-          <UFormField label="X">
-            <UInput
-              type="url"
-              icon="simple-icons:x"
-              :model-value="String(socialLinks.x || '')"
-              @update:model-value="updateSocial('x', String($event))"
-            />
-          </UFormField>
-          <UFormField label="GitHub">
-            <UInput
-              type="url"
-              icon="simple-icons:github"
-              :model-value="String(socialLinks.github || '')"
-              @update:model-value="updateSocial('github', String($event))"
-            />
-          </UFormField>
-        </div>
-        <UFormField
-          label="页脚文案"
-          class="mt-4"
-        >
-          <UTextarea
-            :rows="2"
-            :model-value="String(setting('appearance.home.footerText', ''))"
-            @update:model-value="
-              update('appearance.home.footerText', String($event))
-            "
-          />
-        </UFormField>
       </section>
     </div>
 

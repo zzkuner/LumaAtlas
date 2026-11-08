@@ -281,6 +281,8 @@ const albumCards = computed(() =>
         <p class="mt-2 text-sm text-neutral-500">照片仍可在首页按时间浏览。</p>
       </div>
     </main>
+
+    <MasonryItemFooter :max-width="contentMaxWidth" />
   </div>
 </template>
 

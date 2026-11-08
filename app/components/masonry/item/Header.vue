@@ -249,7 +249,7 @@ const {
               class="size-6"
             />
           </span>
-          <span class="truncate text-xl font-medium sm:text-2xl">{{
+          <span class="font-brand truncate text-xl font-medium sm:text-2xl">{{
             siteTitle
           }}</span>
         </NuxtLink>

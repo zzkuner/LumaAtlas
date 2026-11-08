@@ -236,6 +236,8 @@ onUnmounted(() => window.removeEventListener('scroll', handleScroll))
       </div>
     </main>
 
+    <MasonryItemFooter :max-width="contentMaxWidth" />
+
     <UTooltip
       v-if="showBackToTop"
       :text="$t('ui.action.backtotop.tooltip') || '回到顶部'"

@@ -12,8 +12,8 @@ export function clusterMarkers(
 ): ClusterPoint[] {
   if (markers.length === 0) return []
 
-  // At high zoom levels, don't cluster
-  if (zoom >= 15) {
+  // Reveal individual photos earlier as the visitor zooms into a place.
+  if (zoom >= 14) {
     return markers.map((marker) => ({
       type: 'Feature' as const,
       properties: { marker },
@@ -27,7 +27,7 @@ export function clusterMarkers(
   const clusters: ClusterPoint[] = []
   const processed = new Set<string>()
 
-  const threshold = Math.max(0.001, 0.01 / Math.pow(2, zoom - 10))
+  const threshold = Math.max(0.00008, 0.015 / Math.pow(2, zoom - 8))
 
   for (const marker of markers) {
     if (processed.has(marker.id)) continue
@@ -73,7 +73,7 @@ export function clusterMarkers(
           cluster: true,
           point_count: nearby.length,
           point_count_abbreviated: nearby.length.toString(),
-          marker: nearby[0], // Representative marker for the cluster
+          marker: nearby.find((item) => item.thumbnailUrl) || nearby[0],
           clusteredPhotos: nearby, // All photos in the cluster
         },
         geometry: {

@@ -35,8 +35,9 @@ const socialLinks = computed(() => {
     value && typeof value === 'object' && !Array.isArray(value)
       ? (value as Record<string, unknown>)
       : {}
+  const defaultMeta = { label: 'Website', icon: 'lucide:globe-2' }
   const meta: Record<string, { label: string; icon: string }> = {
-    website: { label: 'Website', icon: 'lucide:globe-2' },
+    website: defaultMeta,
     instagram: { label: 'Instagram', icon: 'simple-icons:instagram' },
     x: { label: 'X', icon: 'simple-icons:x' },
     github: { label: 'GitHub', icon: 'simple-icons:github' },
@@ -45,96 +46,96 @@ const socialLinks = computed(() => {
     .filter((entry): entry is [string, string] =>
       Boolean(typeof entry[1] === 'string' && entry[1]),
     )
-    .map(([id, url]) => ({ id, url, ...(meta[id] || meta.website) }))
+    .map(([id, url]) => ({ id, url, ...(meta[id] || defaultMeta) }))
 })
 </script>
 
 <template>
   <div
-    class="min-h-svh bg-white text-neutral-950 dark:bg-neutral-950 dark:text-white"
+    class="flex min-h-svh flex-col bg-white text-neutral-950 dark:bg-neutral-950 dark:text-white"
   >
     <MasonryItemHeader :show-gallery-controls="false" />
 
     <main
-      class="mx-auto w-full px-5 pb-24 pt-16 sm:px-8 sm:pt-24 lg:px-10"
+      class="mx-auto flex w-full flex-1 items-center px-5 py-16 sm:px-8 sm:py-24 lg:px-10"
       :style="{ maxWidth: contentMaxWidth }"
     >
-      <article class="max-w-3xl">
-        <div
-          class="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between"
-        >
-          <div class="flex min-w-0 items-center gap-5">
-            <img
-              v-if="avatarUrl"
-              :src="avatarUrl"
-              :alt="author || siteTitle"
-              class="size-16 shrink-0 rounded-full object-cover sm:size-20"
-            />
-            <div class="min-w-0">
-              <p
-                class="mb-2 text-[11px] font-medium text-neutral-400 dark:text-neutral-500"
-              >
-                关于
-              </p>
-              <h1
-                class="font-display text-3xl font-semibold leading-tight sm:text-4xl"
-              >
-                {{ author || siteTitle }}
-              </h1>
-              <p
-                v-if="slogan"
-                class="mt-2 text-sm leading-6 text-neutral-500 dark:text-neutral-400"
-              >
-                {{ slogan }}
-              </p>
-            </div>
-          </div>
-
-          <div
-            v-if="socialLinks.length"
-            class="flex shrink-0 items-center gap-0.5"
-          >
-            <UTooltip
-              v-for="link in socialLinks"
-              :key="link.id"
-              :text="link.label"
-            >
-              <UButton
-                :to="link.url"
-                target="_blank"
-                :icon="link.icon"
-                color="neutral"
-                variant="ghost"
-                size="sm"
-                :aria-label="link.label"
-              />
-            </UTooltip>
-          </div>
+      <article
+        class="grid w-full gap-10 border-t border-neutral-200 pt-7 md:grid-cols-[11rem_minmax(0,44rem)] md:gap-14 md:pt-10 dark:border-neutral-800"
+      >
+        <div class="flex items-start justify-between md:block">
+          <p class="text-xs font-medium text-neutral-400 dark:text-neutral-500">
+            ABOUT / 关于
+          </p>
+          <img
+            v-if="avatarUrl"
+            :src="avatarUrl"
+            :alt="author || siteTitle"
+            class="size-11 rounded-full object-cover grayscale md:mt-10 md:size-14"
+          />
         </div>
 
-        <div
-          class="mt-14 border-t border-neutral-200 pt-10 dark:border-neutral-800"
-        >
-          <p
-            v-if="description"
-            class="font-display text-xl leading-9 text-neutral-800 sm:text-2xl sm:leading-10 dark:text-neutral-200"
+        <div class="min-w-0">
+          <h1
+            class="font-display text-3xl font-normal leading-tight sm:text-5xl"
           >
-            {{ description }}
-          </p>
+            {{ author || siteTitle }}
+          </h1>
           <p
-            v-if="distinctAboutText"
-            class="mt-8 max-w-2xl whitespace-pre-line text-[15px] leading-8 text-neutral-600 dark:text-neutral-400"
+            v-if="slogan"
+            class="mt-4 font-display text-lg leading-8 text-neutral-500 sm:text-xl dark:text-neutral-400"
           >
-            {{ distinctAboutText }}
+            {{ slogan }}
           </p>
-          <p
-            v-else-if="!description"
-            class="text-base leading-8 text-neutral-500 dark:text-neutral-400"
+
+          <div
+            class="mt-10 max-w-2xl border-l border-neutral-300 pl-5 sm:mt-14 sm:pl-7 dark:border-neutral-700"
           >
-            这里记录值得被留下的光线、地点与日常片段。
-          </p>
+            <p
+              v-if="description"
+              class="font-display text-lg leading-9 text-neutral-800 sm:text-xl sm:leading-10 dark:text-neutral-200"
+            >
+              {{ description }}
+            </p>
+            <p
+              v-if="distinctAboutText"
+              class="whitespace-pre-line text-[15px] leading-8 text-neutral-600 dark:text-neutral-400"
+              :class="description ? 'mt-7' : ''"
+            >
+              {{ distinctAboutText }}
+            </p>
+            <p
+              v-else-if="!description"
+              class="font-display text-lg leading-9 text-neutral-600 dark:text-neutral-300"
+            >
+              以照片保存那些无法重来的光线与日常。
+            </p>
+          </div>
+
+          <nav
+            v-if="socialLinks.length"
+            class="mt-10 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm sm:mt-14"
+            aria-label="作者链接"
+          >
+            <a
+              v-for="link in socialLinks"
+              :key="link.id"
+              :href="link.url"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-2 text-neutral-500 transition-colors hover:text-neutral-950 dark:text-neutral-400 dark:hover:text-white"
+            >
+              <Icon
+                :name="link.icon"
+                class="size-4"
+              />
+              {{ link.label }}
+            </a>
+          </nav>
         </div>
       </article>
     </main>
+
+    <MasonryItemFooter :max-width="contentMaxWidth" />
   </div>
 </template>

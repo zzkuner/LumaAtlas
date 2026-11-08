@@ -66,7 +66,7 @@ const showStats = computed(
   () => setting('appearance.home.showStats', true) !== false,
 )
 const showPhotoInfo = computed(
-  () => setting('appearance.home.showPhotoInfo', false) === true,
+  () => setting('appearance.home.showPhotoInfo', true) !== false,
 )
 const showBigPhotoInfo = computed(
   () => setting('appearance.home.showBigPhotoInfo', true) !== false,
@@ -88,7 +88,7 @@ const asRecord = (value: unknown): Record<string, unknown> =>
 
 const moduleSettings = computed(() => {
   const value = asRecord(setting('appearance.home.modules', {}))
-  const allowed = ['header', 'author', 'gallery', 'footer']
+  const allowed = ['header', 'author', 'gallery']
   const source = Array.isArray(value.order) ? value.order : []
   const order = [...new Set([...source, ...allowed])].filter(
     (item): item is string =>
@@ -136,15 +136,6 @@ const navigationItems = computed(() => {
     .filter((id) => visible[id])
     .map((id) => ({ id, label: labels[id] }))
 })
-
-const socialLinks = computed(() => {
-  const value = asRecord(setting('appearance.home.socialLinks', {}))
-  return Object.values(value).filter((link) => typeof link === 'string' && link)
-})
-
-const footerText = computed(() =>
-  String(setting('appearance.home.footerText', '')),
-)
 
 const frameClass = computed(() =>
   props.viewport === 'mobile' ? 'mx-auto max-w-[238px]' : 'w-full',
@@ -451,20 +442,6 @@ const itemRatio = (naturalRatio: number) => {
             </div>
           </div>
         </div>
-      </div>
-
-      <div
-        v-if="moduleVisible('footer') && (footerText || socialLinks.length)"
-        class="flex items-center justify-between gap-3 border-t border-neutral-200 px-3 py-2 text-[8px] text-neutral-500 dark:border-neutral-800"
-        :style="{ order: moduleOrder('footer') }"
-      >
-        <span class="truncate">{{ footerText }}</span>
-        <span
-          v-if="socialLinks.length"
-          class="shrink-0"
-        >
-          {{ socialLinks.length }} links
-        </span>
       </div>
     </div>
   </aside>

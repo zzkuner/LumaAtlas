@@ -830,6 +830,9 @@ onMounted(() => {
                 v-for="clusterPoint in clusterGroups"
                 :key="`cluster-${clusterPoint.properties.marker?.id}`"
                 :cluster-point="clusterPoint"
+                :cluster-count="
+                  currentZoom >= 10 ? 12 : currentZoom >= 7 ? 9 : 6
+                "
                 :marker-id="`cluster-${clusterPoint.properties.marker?.id}`"
                 @click="onMarkerPinClick"
                 @close="onMarkerPinClose"

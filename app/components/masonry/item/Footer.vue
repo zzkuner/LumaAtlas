@@ -4,70 +4,50 @@ defineProps<{
 }>()
 
 const footerText = computed(() =>
-  String(getSetting('app:appearance.home.footerText') || ''),
+  String(
+    getSetting('app:appearance.footer.text') ||
+      getSetting('app:appearance.home.footerText') ||
+      '',
+  ).trim(),
 )
-
-const socialItems = computed(() => {
-  const value = getSetting('app:appearance.home.socialLinks')
-  const links =
-    value && typeof value === 'object' && !Array.isArray(value)
-      ? (value as Record<string, unknown>)
-      : {}
-  const definitions = {
-    website: { label: 'Website', icon: 'lucide:link' },
-    instagram: { label: 'Instagram', icon: 'simple-icons:instagram' },
-    x: { label: 'X', icon: 'simple-icons:x' },
-    github: { label: 'GitHub', icon: 'simple-icons:github' },
-  }
-
-  return Object.entries(definitions).flatMap(([key, meta]) => {
-    const url = String(links[key] || '').trim()
-    return /^https?:\/\//i.test(url) ? [{ key, url, ...meta }] : []
-  })
-})
-
-const hasContent = computed(() =>
-  Boolean(footerText.value || socialItems.value.length),
+const siteTitle = computed(() => String(getSetting('app:title') || 'LumaAtlas'))
+const footerEnabled = computed(
+  () => getSetting('app:appearance.footer.enabled') !== false,
+)
+const icpNumber = computed(() =>
+  String(getSetting('app:appearance.footer.icpNumber') || '').trim(),
+)
+const showIcp = computed(
+  () =>
+    getSetting('app:appearance.footer.showIcp') === true &&
+    Boolean(icpNumber.value),
+)
+const copyrightText = computed(
+  () => footerText.value || `© ${new Date().getFullYear()} ${siteTitle.value}`,
 )
 </script>
 
 <template>
   <footer
-    v-if="hasContent"
+    v-if="footerEnabled"
     class="w-full border-t border-neutral-200 dark:border-neutral-800"
   >
     <div
-      class="mx-auto flex min-h-20 flex-col justify-between gap-4 px-3 py-6 sm:flex-row sm:items-center sm:px-5 lg:px-7"
+      class="mx-auto flex min-h-16 flex-col justify-between gap-2 px-3 py-5 text-xs text-neutral-500 sm:flex-row sm:items-center sm:px-5 lg:px-7 dark:text-neutral-400"
       :style="{ maxWidth: maxWidth || '1600px' }"
     >
-      <p
-        v-if="footerText"
-        class="text-sm leading-6 text-neutral-500 dark:text-neutral-400"
-      >
-        {{ footerText }}
+      <p class="leading-6">
+        {{ copyrightText }}
       </p>
-      <nav
-        v-if="socialItems.length"
-        class="flex items-center gap-1"
-        aria-label="Social links"
+      <a
+        v-if="showIcp"
+        href="https://beian.miit.gov.cn/"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="transition-colors hover:text-neutral-900 dark:hover:text-neutral-100"
       >
-        <UTooltip
-          v-for="item in socialItems"
-          :key="item.key"
-          :text="item.label"
-        >
-          <UButton
-            :to="item.url"
-            target="_blank"
-            rel="noopener noreferrer"
-            :icon="item.icon"
-            color="neutral"
-            variant="ghost"
-            size="sm"
-            :aria-label="item.label"
-          />
-        </UTooltip>
-      </nav>
+        {{ icpNumber }}
+      </a>
     </div>
   </footer>
 </template>

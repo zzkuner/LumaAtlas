@@ -256,6 +256,20 @@ export const APP_SETTINGS_UI: Record<string, FieldUIConfig> = {
   'appearance.home.footerText': {
     type: 'custom',
   },
+  'appearance.footer.enabled': {
+    type: 'toggle',
+  },
+  'appearance.footer.text': {
+    type: 'textarea',
+    placeholder: '© 2026 Your Name',
+  },
+  'appearance.footer.showIcp': {
+    type: 'toggle',
+  },
+  'appearance.footer.icpNumber': {
+    type: 'input',
+    placeholder: '粤ICP备XXXXXXXX号',
+  },
 }
 
 export const PUBLISHING_SETTINGS_UI: Record<string, FieldUIConfig> = {

@@ -6,11 +6,19 @@ export default eventHandler(async (event) => {
 
   const body = await readValidatedBody(
     event,
-    z.object({
-      provider: z.enum(['mapbox', 'maplibre']),
-      token: z.string().min(1),
-      style: z.string().optional(),
-    }).parse,
+    z
+      .object({
+        provider: z.enum(['mapbox', 'maplibre']),
+        token: z.string().default(''),
+        style: z.string().optional(),
+      })
+      .refine(
+        (map) => map.provider !== 'mapbox' || map.token.trim().length > 0,
+        {
+          path: ['token'],
+          message: 'Mapbox requires an access token',
+        },
+      ).parse,
   )
 
   await settingsManager.set('map', 'provider', body.provider)

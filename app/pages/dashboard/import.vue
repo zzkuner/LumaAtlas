@@ -18,6 +18,32 @@ const includeUnchanged = ref(false)
 const isScanning = ref(false)
 const isEnqueueing = ref(false)
 const scanResult = ref<StorageImportScanResult | null>(null)
+const remoteUrl = ref('')
+const isImportingUrl = ref(false)
+const remoteImportError = ref('')
+
+const importRemoteImage = async () => {
+  if (!remoteUrl.value.trim()) return
+  isImportingUrl.value = true
+  remoteImportError.value = ''
+  try {
+    await $fetch('/api/import/url', {
+      method: 'POST',
+      body: { url: remoteUrl.value.trim() },
+    })
+    remoteUrl.value = ''
+    toast.add({
+      title: '图片已进入处理队列',
+      description: '处理完成后将在照片库显示。',
+      color: 'success',
+    })
+  } catch (error: any) {
+    remoteImportError.value =
+      error?.data?.statusMessage || error?.message || '导入失败。'
+  } finally {
+    isImportingUrl.value = false
+  }
+}
 
 const statusColor: Record<
   StorageImportItemStatus,
@@ -131,6 +157,47 @@ watch(includeUnchanged, () => {
 
     <template #body>
       <div class="mx-auto w-full max-w-6xl space-y-6">
+        <section
+          class="space-y-4 border-b border-neutral-200 pb-6 dark:border-neutral-800"
+        >
+          <div>
+            <h2 class="text-xl font-semibold text-neutral-950 dark:text-white">
+              在线图片
+            </h2>
+            <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+              粘贴公开图片的直接链接。图片会保存到当前存储，并按普通上传流程处理。
+            </p>
+          </div>
+          <form
+            class="flex flex-col gap-3 sm:flex-row"
+            @submit.prevent="importRemoteImage"
+          >
+            <UInput
+              v-model="remoteUrl"
+              type="url"
+              required
+              placeholder="https://example.com/photo.jpg"
+              aria-label="图片地址"
+              class="min-w-0 flex-1"
+              :disabled="isImportingUrl"
+            />
+            <UButton
+              type="submit"
+              icon="lucide:link-2"
+              :loading="isImportingUrl"
+              :disabled="!remoteUrl.trim()"
+              class="justify-center"
+              >导入图片</UButton
+            >
+          </form>
+          <p
+            v-if="remoteImportError"
+            role="alert"
+            class="text-sm text-red-600 dark:text-red-400"
+          >
+            {{ remoteImportError }}
+          </p>
+        </section>
         <section
           class="space-y-2 border-b border-neutral-200 pb-5 dark:border-neutral-800"
         >

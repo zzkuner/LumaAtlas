@@ -474,7 +474,7 @@
     "siteAdministration": "サイト設定",
     "generalSettings": "一般設定",
     "publishingSettings": "公開設定",
-    "storageImport": "ストレージ読み込み",
+    "storageImport": "写真の取り込み",
     "appearanceSettings": "外観設定",
     "privacySettings": "プライバシー設定",
     "mapAndLocation": "地図と場所",
@@ -1100,6 +1100,14 @@
         "description": "オーナーのアバター画像へのリンク",
         "help": "アバターはローディングページとホームページに表示されます"
       },
+      "aboutLead": {
+        "label": "紹介の一文",
+        "description": "「このサイトについて」ページだけに表示する短い文章"
+      },
+      "aboutText": {
+        "label": "紹介文",
+        "description": "作者やサイトについての本文"
+      },
       "appearance": {
         "theme": {
           "label": "テーマ",
@@ -1284,7 +1292,7 @@
         "token": {
           "label": "MapTiler トークン",
           "description": "MapTiler API アクセストークン",
-          "help": "MapLibre はデフォルトで無料の地図サービスプロバイダー MapTiler を使用します"
+          "help": "空欄なら公開ベースマップを使用します。MapTiler の地図にはトークンを入力してください"
         },
         "style": {
           "label": "MapLibre スタイル",

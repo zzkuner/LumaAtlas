@@ -39,10 +39,10 @@ const introCopy = computed(() =>
 <template>
   <section
     v-if="showAuthorIntro || showStats"
-    class="w-full border-b border-neutral-200/80 font-display dark:border-neutral-800/80"
+    class="w-full border-b border-neutral-200/80 dark:border-neutral-800/80"
   >
     <div
-      class="mx-auto px-3 py-5 sm:px-5 sm:py-6 lg:px-7"
+      class="mx-auto px-4 py-6 sm:px-6 sm:py-7 lg:px-8"
       :style="{ maxWidth }"
     >
       <div
@@ -58,18 +58,10 @@ const introCopy = computed(() =>
             :alt="introTitle"
             class="size-12 shrink-0 rounded-full object-cover sm:size-14"
           />
-          <span
-            v-else
-            class="flex size-12 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-neutral-500 sm:size-14 dark:bg-neutral-900 dark:text-neutral-400"
-          >
-            <Icon
-              name="lucide:user-round"
-              class="size-5"
-            />
-          </span>
           <div class="min-w-0">
             <p
-              class="truncate text-lg font-semibold text-neutral-950 sm:text-xl dark:text-white"
+              class="font-brand truncate text-xl font-normal text-neutral-950 sm:text-2xl dark:text-white"
+              :style="{ fontFamily: 'var(--la-heading-font)' }"
             >
               {{ introTitle }}
             </p>

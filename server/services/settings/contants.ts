@@ -73,6 +73,15 @@ export const DEFAULT_SETTINGS = [
   },
   {
     namespace: 'app',
+    key: 'aboutLead',
+    type: 'string',
+    defaultValue: '',
+    label: 'settings.app.aboutLead.label',
+    description: 'settings.app.aboutLead.description',
+    isPublic: true,
+  },
+  {
+    namespace: 'app',
     key: 'aboutText',
     type: 'string',
     defaultValue: '',

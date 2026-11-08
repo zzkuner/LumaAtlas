@@ -547,7 +547,7 @@
     "siteAdministration": "站点设置",
     "generalSettings": "基本设置",
     "publishingSettings": "发布设置",
-    "storageImport": "存储导入",
+    "storageImport": "照片导入",
     "appearanceSettings": "外观设置",
     "storageSettings": "存储设置",
     "privacySettings": "隐私设置",
@@ -1301,6 +1301,10 @@
         "label": "关于正文",
         "description": "关于页面中用于介绍作者和网站的正文"
       },
+      "aboutLead": {
+        "label": "开场短句",
+        "description": "只显示在关于页面，用一句话介绍自己或作品"
+      },
       "appearance": {
         "theme": {
           "label": "主题",
@@ -1498,7 +1502,7 @@
         "token": {
           "label": "MapTiler Token",
           "description": "MapTiler API 访问令牌",
-          "help": "MapLibre 默认使用免费地图服务商 MapTiler"
+          "help": "可留空使用公开底图；填写 MapTiler Token 后可使用 MapTiler 地图"
         },
         "style": {
           "label": "MapLibre 样式",

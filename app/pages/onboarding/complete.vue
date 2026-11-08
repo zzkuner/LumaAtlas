@@ -69,7 +69,8 @@ async function onComplete() {
     console.error(error)
     toast.add({
       title: $t('onboarding.complete.setupFailedTitle'),
-      description: error.data?.message || $t('onboarding.complete.setupFailedDescription'),
+      description:
+        error.data?.message || $t('onboarding.complete.setupFailedDescription'),
       color: 'error',
     })
   } finally {
@@ -84,21 +85,12 @@ async function onComplete() {
     :description="$t('onboarding.complete.description')"
   >
     <div
-      class="flex flex-col items-center justify-center py-12 space-y-8 text-center"
+      class="flex flex-col items-center justify-center space-y-7 py-12 text-center"
     >
-      <div class="relative">
-        <div
-          class="absolute inset-0 bg-green-500/20 blur-3xl rounded-full"
-        ></div>
-        <div
-          class="relative size-28 bg-linear-to-br from-green-400/20 to-green-600/20 rounded-full flex items-center justify-center border border-green-500/30 shadow-2xl shadow-green-500/20"
-        >
-          <UIcon
-            name="tabler:check"
-            class="size-18 text-green-400"
-          />
-        </div>
-      </div>
+      <UIcon
+        name="lucide:circle-check"
+        class="size-12 text-neutral-200"
+      />
 
       <div class="max-w-md text-neutral-300 text-lg">
         <p>
@@ -110,7 +102,7 @@ async function onComplete() {
         size="xl"
         color="primary"
         :loading="loading"
-        class="px-6 py-3 text-base font-bold shadow-xl shadow-primary-500/20 hover:shadow-primary-500/40 transition-all duration-300"
+        class="px-6 py-3 text-base font-medium"
         @click="onComplete"
       >
         {{ $t('onboarding.complete.goToDashboard') }}

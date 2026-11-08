@@ -22,71 +22,17 @@ const currentStepIndex = computed(() => {
 
 <template>
   <div
-    class="min-h-screen flex items-center justify-center bg-neutral-950 text-white relative overflow-hidden selection:bg-primary-500/30"
+    class="flex min-h-svh items-center justify-center bg-neutral-950 text-white selection:bg-neutral-600/40"
   >
-    <!-- Background Elements -->
-    <div class="absolute inset-0 pointer-events-none">
-      <!-- Noise Texture -->
-      <div
-        class="absolute inset-0 bg-[url('~/assets/images/noise.svg')] mix-blend-overlay"
-      ></div>
-
-      <!-- Spotlights -->
-      <motion.div
-        class="absolute -top-[20%] -left-[10%] w-[50vw] h-[50vw] bg-primary-500/20 rounded-full blur-[120px]"
-        :animate="{
-          x: [0, 50, 0],
-          y: [0, 30, 0],
-          scale: [1, 1.1, 1],
-        }"
-        :transition="{
-          duration: 20,
-          repeat: Infinity,
-          repeatType: 'reverse',
-          ease: 'easeInOut',
-        }"
-      />
-      <motion.div
-        class="absolute top-[40%] -right-[10%] w-[40vw] h-[40vw] bg-purple-500/10 rounded-full blur-[100px]"
-        :animate="{
-          x: [0, -30, 0],
-          y: [0, 50, 0],
-          scale: [1, 1.2, 1],
-        }"
-        :transition="{
-          duration: 15,
-          repeat: Infinity,
-          repeatType: 'reverse',
-          ease: 'easeInOut',
-          delay: 2,
-        }"
-      />
-      <motion.div
-        class="absolute -bottom-[20%] left-[20%] w-[45vw] h-[45vw] bg-blue-500/10 rounded-full blur-[120px]"
-        :animate="{
-          x: [0, 40, 0],
-          y: [0, -40, 0],
-        }"
-        :transition="{
-          duration: 18,
-          repeat: Infinity,
-          repeatType: 'reverse',
-          ease: 'easeInOut',
-          delay: 5,
-        }"
-      />
-    </div>
-
-    <!-- Main Container -->
     <motion.div
-      class="relative z-10 w-full max-w-6xl h-[80vh] max-h-225 mx-4 lg:mx-8 flex rounded-3xl overflow-hidden border border-white/10 bg-neutral-900/40 backdrop-blur-2xl shadow-2xl shadow-black/50"
-      :initial="{ opacity: 0, scale: 0.95, y: 20 }"
-      :animate="{ opacity: 1, scale: 1, y: 0 }"
-      :transition="{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }"
+      class="my-4 flex h-[calc(100svh-2rem)] max-h-225 w-full max-w-6xl overflow-hidden border border-white/10 bg-neutral-900 sm:mx-4 lg:mx-8"
+      :initial="{ opacity: 0 }"
+      :animate="{ opacity: 1 }"
+      :transition="{ duration: 0.25 }"
     >
       <!-- Left Panel: Sidebar -->
       <div
-        class="hidden lg:flex w-80 flex-col gap-6 p-8 border-r border-white/5 bg-white/3 relative"
+        class="relative hidden w-80 flex-col gap-6 border-r border-white/10 p-8 lg:flex"
       >
         <!-- Logo -->
         <div class="flex items-center gap-3">
@@ -95,9 +41,7 @@ const currentStepIndex = computed(() => {
             alt="LumaAtlas Logo"
             class="size-14 object-contain"
           />
-          <span
-            class="font-brand bg-linear-to-r from-white to-white/60 bg-clip-text text-3xl font-semibold text-transparent"
-          >
+          <span class="font-brand text-3xl font-normal text-white">
             LumaAtlas
           </span>
         </div>
@@ -202,9 +146,7 @@ const currentStepIndex = computed(() => {
       </div>
 
       <!-- Right Panel: Content -->
-      <div
-        class="flex-1 flex flex-col relative overflow-hidden bg-neutral-900/20"
-      >
+      <div class="relative flex min-w-0 flex-1 flex-col overflow-hidden">
         <!-- Top Bar (Mobile only) -->
         <div
           class="lg:hidden flex items-center justify-between p-6 border-b border-white/5 bg-neutral-900/50 backdrop-blur-md z-20"

@@ -42,6 +42,10 @@ export const APP_SETTINGS_UI: Record<string, FieldUIConfig> = {
     type: 'textarea',
     placeholder: '介绍你的创作、摄影经历或这个网站。',
   },
+  aboutLead: {
+    type: 'input',
+    placeholder: '例如：在光线里，记住来过的地方。',
+  },
   'appearance.theme': {
     type: 'tabs',
     options: [
@@ -329,7 +333,6 @@ export const MAP_SETTINGS_UI: Record<string, FieldUIConfig> = {
   'maplibre.token': {
     type: 'password',
     placeholder: 'pk.xxxxxx',
-    required: true,
     visibleIf: { fieldKey: 'provider', value: 'maplibre' },
     help: 'settings.map.maplibre.token.help',
   },

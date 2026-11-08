@@ -27,11 +27,19 @@ export default eventHandler(async (event) => {
         name: z.string().min(1),
         config: storageConfigSchema,
       }),
-      map: z.object({
-        provider: z.enum(['mapbox', 'maplibre']),
-        token: z.string().min(1),
-        style: z.string().optional(),
-      }),
+      map: z
+        .object({
+          provider: z.enum(['mapbox', 'maplibre']),
+          token: z.string().default(''),
+          style: z.string().optional(),
+        })
+        .refine(
+          (map) => map.provider !== 'mapbox' || map.token.trim().length > 0,
+          {
+            path: ['token'],
+            message: 'Mapbox requires an access token',
+          },
+        ),
     }).parse,
   )
 
@@ -58,6 +66,8 @@ export default eventHandler(async (event) => {
       .from(tables.users)
       .where(eq(tables.users.email, body.admin.email))
       .get()
+    // If a later setup step fails, the new admin can retry without being locked out.
+    if (adminUser) await establishUserSession(event, adminUser)
   }
 
   // 2. Handle Site Settings
@@ -69,14 +79,21 @@ export default eventHandler(async (event) => {
   if (body.site.author)
     await settingsManager.set('app', 'author', body.site.author)
 
-  // 3. Handle Storage Settings
-  // Check if provider already exists to avoid duplicates if re-running?
-  // For now, just add it.
-  const id = await settingsManager.storage.addProvider({
-    name: body.storage.name,
-    provider: body.storage.config.provider,
-    config: body.storage.config,
-  })
+  // A failed/retried setup must not create another copy of the same provider.
+  const providers = await settingsManager.storage.getProviders()
+  const matchingProvider = providers.find(
+    (provider) =>
+      provider.name === body.storage.name &&
+      provider.provider === body.storage.config.provider &&
+      JSON.stringify(provider.config) === JSON.stringify(body.storage.config),
+  )
+  const id =
+    matchingProvider?.id ??
+    (await settingsManager.storage.addProvider({
+      name: body.storage.name,
+      provider: body.storage.config.provider,
+      config: body.storage.config,
+    }))
   await settingsManager.set('storage', 'provider', id)
 
   // 4. Handle Map Settings
@@ -93,11 +110,6 @@ export default eventHandler(async (event) => {
 
   // 5. Mark Complete
   await settingsManager.set('system', 'firstLaunch', false, undefined, true)
-
-  // 6. Auto-login the admin user
-  if (adminUser) {
-    await establishUserSession(event, adminUser)
-  }
 
   return { success: true }
 })

@@ -548,7 +548,7 @@
     "location": "Location services",
     "generalSettings": "General Settings",
     "publishingSettings": "Publishing",
-    "storageImport": "Storage Import",
+    "storageImport": "Import Photos",
     "appearanceSettings": "Appearance Settings",
     "privacySettings": "Privacy Settings",
     "mapAndLocation": "Map & Location"
@@ -1297,6 +1297,10 @@
         "label": "About Text",
         "description": "Long-form author and site introduction for the About page"
       },
+      "aboutLead": {
+        "label": "About Introduction",
+        "description": "A short opening line shown only on the About page"
+      },
       "appearance": {
         "theme": {
           "label": "Theme",
@@ -1494,7 +1498,7 @@
         "token": {
           "label": "MapTiler Token",
           "description": "MapTiler API access token",
-          "help": "MapLibre uses the free map service provider MapTiler by default"
+          "help": "Leave blank for the public basemap, or enter a MapTiler token to use MapTiler tiles"
         },
         "style": {
           "label": "MapLibre Style",

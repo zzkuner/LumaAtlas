@@ -36,7 +36,7 @@ const identityFields = computed(() =>
 
 const aboutFields = computed(() =>
   appFields.value.filter((field) =>
-    ['author', 'avatarUrl', 'aboutText'].includes(field.key),
+    ['author', 'avatarUrl', 'aboutLead', 'aboutText'].includes(field.key),
   ),
 )
 

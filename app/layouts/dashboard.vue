@@ -36,7 +36,7 @@ const contentNav = computed<NavigationMenuItem[]>(() => [
   },
   {
     label: $t('title.storageImport'),
-    icon: 'lucide:folder-input',
+    icon: 'lucide:image-plus',
     to: '/dashboard/import',
   },
 ])
@@ -227,7 +227,7 @@ const userMenuItems = computed(() => [
           <div class="flex flex-col overflow-hidden">
             <NuxtLink
               to="/"
-              class="font-brand line-clamp-1 text-xl font-semibold"
+              class="font-brand line-clamp-1 text-xl font-normal"
             >
               {{ appTitle }}
             </NuxtLink>

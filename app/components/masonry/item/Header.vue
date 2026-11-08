@@ -12,14 +12,12 @@ const props = withDefaults(
     layoutMode?: GalleryLayout
     columnCount?: GalleryColumns
     showGalleryControls?: boolean
-    immersive?: boolean
   }>(),
   {
     viewMode: 'all',
     layoutMode: 'masonry',
     columnCount: 'auto',
     showGalleryControls: true,
-    immersive: false,
   },
 )
 
@@ -214,48 +212,40 @@ const {
 
 <template>
   <header
-    :class="[
-      immersive
-        ? 'absolute left-1/2 top-3 z-40 w-[calc(100%-1.5rem)] -translate-x-1/2 rounded-lg border border-white/70 bg-white/78 shadow-[0_8px_32px_rgba(0,0,0,0.08)] backdrop-blur-2xl dark:border-white/10 dark:bg-neutral-950/72'
-        : 'sticky top-0 z-40 w-full shrink-0 border-b border-neutral-200/80 bg-white/90 backdrop-blur-xl dark:border-neutral-800/80 dark:bg-neutral-950/90',
-    ]"
-    :style="[
-      { fontFamily: 'var(--la-heading-font)' },
-      immersive ? { maxWidth: resolvedMaxWidth } : undefined,
-    ]"
+    class="sticky top-0 z-40 w-full shrink-0 border-b border-neutral-200/70 bg-white/95 backdrop-blur-xl dark:border-neutral-800/70 dark:bg-neutral-950/95"
   >
     <div
-      class="mx-auto px-3 sm:px-5 lg:px-6"
-      :class="immersive ? 'py-2' : 'py-3'"
-      :style="immersive ? undefined : { maxWidth: resolvedMaxWidth }"
+      class="mx-auto px-4 py-3 sm:px-6 lg:px-8"
+      :style="{ maxWidth: resolvedMaxWidth }"
     >
       <div class="relative flex min-h-10 items-center justify-between gap-3">
         <NuxtLink
           to="/"
-          class="inline-flex min-w-0 items-center gap-2.5 text-neutral-950 dark:text-white"
+          class="inline-flex min-w-0 items-center gap-3 text-neutral-950 dark:text-white"
         >
           <img
             v-if="siteLogo"
             :src="siteLogo"
             :alt="siteTitle"
-            class="size-10 shrink-0 object-contain"
+            class="size-9 shrink-0 object-contain"
           />
           <span
             v-else
-            class="flex size-10 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-neutral-800 dark:bg-neutral-900 dark:text-neutral-200"
+            class="flex size-9 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-neutral-800 dark:bg-neutral-900 dark:text-neutral-200"
           >
             <Icon
               name="lucide:aperture"
-              class="size-6"
+              class="size-5"
             />
           </span>
-          <span class="font-brand truncate text-xl font-medium sm:text-2xl">{{
-            siteTitle
-          }}</span>
+          <span
+            class="font-brand truncate text-[1.35rem] font-normal sm:text-[1.6rem]"
+            >{{ siteTitle }}</span
+          >
         </NuxtLink>
 
         <nav
-          class="absolute left-1/2 hidden -translate-x-1/2 items-center gap-7 text-base text-neutral-500 lg:flex dark:text-neutral-400"
+          class="absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 font-sans text-sm text-neutral-500 lg:flex dark:text-neutral-400"
           aria-label="Primary navigation"
         >
           <NuxtLink
@@ -513,12 +503,7 @@ const {
       </div>
 
       <nav
-        class="scrollbar-hidden flex gap-5 overflow-x-auto text-base text-neutral-500 lg:hidden dark:text-neutral-400"
-        :class="
-          immersive
-            ? 'mt-2 border-t border-neutral-200/60 pt-2 dark:border-neutral-800/70'
-            : 'mt-3 border-t border-neutral-200 pt-3 dark:border-neutral-800'
-        "
+        class="scrollbar-hidden mt-3 flex gap-6 overflow-x-auto border-t border-neutral-200/70 pt-3 font-sans text-sm text-neutral-500 lg:hidden dark:border-neutral-800/70 dark:text-neutral-400"
         aria-label="Primary navigation"
       >
         <NuxtLink

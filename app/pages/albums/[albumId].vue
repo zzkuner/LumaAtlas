@@ -6,6 +6,7 @@ if (getSetting('app:appearance.home.showAlbumsNav') === false) {
 const route = useRoute()
 const router = useRouter()
 const dayjs = useDayjs()
+const themeStyle = usePublicThemeStyle()
 
 const albumId = computed(() =>
   Number.parseInt(route.params.albumId as string, 10),
@@ -110,11 +111,12 @@ onUnmounted(() => window.removeEventListener('scroll', handleScroll))
 <template>
   <div
     class="min-h-svh bg-white text-neutral-950 dark:bg-neutral-950 dark:text-white"
+    :style="themeStyle"
   >
     <MasonryItemHeader :show-gallery-controls="false" />
 
     <main
-      class="mx-auto w-full px-3 pb-20 pt-6 sm:px-5 sm:pt-9 lg:px-7"
+      class="mx-auto w-full px-4 pb-20 pt-8 sm:px-6 sm:pt-10 lg:px-8"
       :style="{ maxWidth: contentMaxWidth }"
     >
       <div
@@ -141,7 +143,10 @@ onUnmounted(() => window.removeEventListener('scroll', handleScroll))
           class="mt-5 flex flex-col gap-5 border-b border-neutral-200 pb-8 sm:flex-row sm:items-end sm:justify-between dark:border-neutral-800"
         >
           <div class="min-w-0">
-            <h1 class="font-display text-3xl font-semibold sm:text-4xl">
+            <h1
+              class="font-brand text-4xl font-normal sm:text-5xl"
+              :style="{ fontFamily: 'var(--la-heading-font)' }"
+            >
               {{ albumData.title }}
             </h1>
             <p

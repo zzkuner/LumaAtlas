@@ -566,14 +566,10 @@ onMounted(() => {
     <MasonryItemHeader
       v-if="isHeaderVisible"
       :show-gallery-controls="false"
-      immersive
     />
 
     <div class="relative min-h-0 flex-1 overflow-hidden">
-      <div
-        class="absolute right-4 z-10 flex flex-col items-end transition-[top] duration-200"
-        :class="isHeaderVisible ? 'top-32 lg:top-24' : 'top-4'"
-      >
+      <div class="absolute right-4 top-4 z-10 flex flex-col items-end">
         <UTooltip
           :text="isHeaderVisible ? '隐藏顶部栏' : '显示顶部栏'"
           :delay-duration="0"

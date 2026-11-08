@@ -16,73 +16,77 @@ definePageMeta({
         </p>
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div
-          class="p-4 rounded-xl bg-white/5 border border-white/10 flex items-start gap-4"
-        >
+      <div class="max-w-xl divide-y divide-white/10 border-y border-white/10">
+        <div class="flex items-start gap-4 py-4">
           <div
-            class="size-12 flex items-center justify-center rounded-lg bg-primary-500/20 text-primary-400"
+            class="flex size-8 shrink-0 items-center justify-center text-neutral-400"
           >
             <UIcon
               name="tabler:user"
-              class="size-6"
+              class="size-5"
             />
           </div>
           <div>
-            <h3 class="font-medium text-white">{{ $t('onboarding.welcome.cards.admin.title') }}</h3>
-            <p class="text-sm text-neutral-400 mt-1">{{ $t('onboarding.welcome.cards.admin.description') }}</p>
+            <h3 class="font-medium text-white">
+              {{ $t('onboarding.welcome.cards.admin.title') }}
+            </h3>
+            <p class="text-sm text-neutral-400 mt-1">
+              {{ $t('onboarding.welcome.cards.admin.description') }}
+            </p>
           </div>
         </div>
 
-        <div
-          class="p-4 rounded-xl bg-white/5 border border-white/10 flex items-start gap-4"
-        >
+        <div class="flex items-start gap-4 py-4">
           <div
-            class="size-12 flex items-center justify-center rounded-lg bg-purple-500/20 text-purple-400"
+            class="flex size-8 shrink-0 items-center justify-center text-neutral-400"
           >
             <UIcon
               name="tabler:device-laptop"
-              class="size-6"
+              class="size-5"
             />
           </div>
           <div>
-            <h3 class="font-medium text-white">{{ $t('onboarding.welcome.cards.site.title') }}</h3>
-            <p class="text-sm text-neutral-400 mt-1">{{ $t('onboarding.welcome.cards.site.description') }}</p>
+            <h3 class="font-medium text-white">
+              {{ $t('onboarding.welcome.cards.site.title') }}
+            </h3>
+            <p class="text-sm text-neutral-400 mt-1">
+              {{ $t('onboarding.welcome.cards.site.description') }}
+            </p>
           </div>
         </div>
 
-        <div
-          class="p-4 rounded-xl bg-white/5 border border-white/10 flex items-start gap-4"
-        >
+        <div class="flex items-start gap-4 py-4">
           <div
-            class="size-12 flex items-center justify-center rounded-lg bg-blue-500/20 text-blue-400"
+            class="flex size-8 shrink-0 items-center justify-center text-neutral-400"
           >
             <UIcon
               name="tabler:server"
-              class="size-6"
+              class="size-5"
             />
           </div>
           <div>
-            <h3 class="font-medium text-white">{{ $t('onboarding.welcome.cards.storage.title') }}</h3>
+            <h3 class="font-medium text-white">
+              {{ $t('onboarding.welcome.cards.storage.title') }}
+            </h3>
             <p class="text-sm text-neutral-400 mt-1">
               {{ $t('onboarding.welcome.cards.storage.description') }}
             </p>
           </div>
         </div>
 
-        <div
-          class="p-4 rounded-xl bg-white/5 border border-white/10 flex items-start gap-4"
-        >
+        <div class="flex items-start gap-4 py-4">
           <div
-            class="size-12 flex items-center justify-center rounded-lg bg-green-500/20 text-green-400"
+            class="flex size-8 shrink-0 items-center justify-center text-neutral-400"
           >
             <UIcon
               name="tabler:map"
-              class="size-6"
+              class="size-5"
             />
           </div>
           <div>
-            <h3 class="font-medium text-white">{{ $t('onboarding.welcome.cards.map.title') }}</h3>
+            <h3 class="font-medium text-white">
+              {{ $t('onboarding.welcome.cards.map.title') }}
+            </h3>
             <p class="text-sm text-neutral-400 mt-1">
               {{ $t('onboarding.welcome.cards.map.description') }}
             </p>
@@ -92,8 +96,8 @@ definePageMeta({
     </div>
 
     <template #actions>
-      <div class="w-full flex justify-between items-center">
-        <p class="text-xs text-neutral-500 font-medium">
+      <div class="flex w-full flex-wrap items-center justify-between gap-3">
+        <p class="min-w-0 text-xs text-neutral-500">
           {{ $t('onboarding.welcome.privacyNotice') }}
         </p>
         <WizardButton

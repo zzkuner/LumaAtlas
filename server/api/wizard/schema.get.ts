@@ -234,7 +234,10 @@ export default eventHandler(async (event) => {
   try {
     const schema = await settingsManager.getSchema()
     const namespaceSettings = schema.filter(
-      (s) => s.namespace === query.namespace,
+      (s) =>
+        s.namespace === query.namespace &&
+        (query.namespace !== 'app' ||
+          ['title', 'slogan', 'author', 'avatarUrl'].includes(s.key)),
     )
 
     const fields = namespaceSettings.map((setting) => {

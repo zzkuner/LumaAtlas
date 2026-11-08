@@ -54,10 +54,11 @@
     'Segoe UI Variable', 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
     'Microsoft YaHei UI', 'Microsoft YaHei', 'Noto Sans CJK SC', sans-serif;
   --font-display:
-    'LXGW WenKai Lite', 'Noto Serif SC', 'Songti SC', 'STSong', serif;
+    'Iowan Old Style', 'Noto Serif CJK SC', 'Noto Serif SC', 'Songti SC',
+    'STSong', Georgia, serif;
   --font-brand:
-    'Bodoni 72', 'Bodoni MT', Didot, 'Iowan Old Style', 'Palatino Linotype',
-    'Book Antiqua', Georgia, 'Noto Serif SC', 'Songti SC', serif;
+    'Iowan Old Style', 'Baskerville', 'Noto Serif CJK SC', 'Noto Serif SC',
+    'Songti SC', 'STSong', Georgia, serif;
 
   --text-xs: 0.8125rem;
   --text-xs--line-height: 1.125rem;
@@ -79,6 +80,13 @@ body {
   color: var(--ui-text);
   font-family: var(--font-sans);
   font-size: var(--text-base);
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
 }
 
 .scrollbar-hidden {

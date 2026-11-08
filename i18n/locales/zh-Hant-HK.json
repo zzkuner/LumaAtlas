@@ -471,7 +471,7 @@
     "siteAdministration": "站點設置",
     "generalSettings": "基本設置",
     "publishingSettings": "發佈設置",
-    "storageImport": "儲存空間匯入",
+    "storageImport": "相片匯入",
     "appearanceSettings": "外觀設置",
     "privacySettings": "隱私設置",
     "mapAndLocation": "地圖和位置",
@@ -1097,6 +1097,14 @@
         "description": "所有者頭像的圖片連結",
         "help": "頭像顯示加載頁面同首頁頭像中"
       },
+      "aboutLead": {
+        "label": "開場短句",
+        "description": "只顯示喺關於頁面，用一句話介紹自己或作品"
+      },
+      "aboutText": {
+        "label": "關於正文",
+        "description": "關於頁面中介紹作者和網站嘅正文"
+      },
       "appearance": {
         "theme": {
           "label": "主題",
@@ -1281,7 +1289,7 @@
         "token": {
           "label": "MapTiler Token",
           "description": "MapTiler API 訪問令牌",
-          "help": "MapLibre 預設使用免費地圖服務商 MapTiler"
+          "help": "可留空使用公開底圖；填寫 MapTiler Token 後可使用 MapTiler 地圖"
         },
         "style": {
           "label": "MapLibre 樣式",

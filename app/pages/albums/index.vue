@@ -15,6 +15,7 @@ const { photos } = usePhotos()
 const { user } = useUserSession()
 const isAdmin = computed(() => Boolean(user.value?.isAdmin))
 const siteSlogan = computed(() => String(getSetting('app:slogan') || ''))
+const themeStyle = usePublicThemeStyle()
 const contentMaxWidth = computed(() => {
   const width = String(getSetting('app:appearance.home.contentWidth') || 'wide')
   return (
@@ -93,11 +94,9 @@ const albumCards = computed(() =>
 <template>
   <div
     class="relative min-h-svh overflow-x-hidden bg-white text-neutral-950 dark:bg-neutral-950 dark:text-white"
+    :style="themeStyle"
   >
-    <MasonryItemHeader
-      :show-gallery-controls="false"
-      immersive
-    />
+    <MasonryItemHeader :show-gallery-controls="false" />
 
     <div
       v-if="backgroundPhotos.length"
@@ -140,24 +139,23 @@ const albumCards = computed(() =>
         </div>
       </div>
       <div
-        class="absolute -inset-1 bg-linear-to-b from-white/90 via-white/75 to-white dark:from-neutral-950/90 dark:via-neutral-950/75 dark:to-neutral-950"
+        class="absolute -inset-1 bg-linear-to-b from-white/60 via-white/75 to-white dark:from-neutral-950/65 dark:via-neutral-950/80 dark:to-neutral-950"
       />
     </div>
 
     <main
-      class="relative z-10 mx-auto w-full px-3 pb-20 pt-40 sm:px-5 sm:pt-44 lg:px-7 lg:pt-36"
+      class="relative z-10 mx-auto w-full px-4 pb-20 sm:px-6 lg:px-8"
+      :class="backgroundPhotos.length ? 'pt-24 sm:pt-28' : 'pt-8 sm:pt-10'"
       :style="{ maxWidth: contentMaxWidth }"
     >
       <header
         class="flex flex-col gap-5 border-b border-neutral-200 pb-7 sm:flex-row sm:items-end sm:justify-between dark:border-neutral-800"
       >
         <div class="min-w-0">
-          <p
-            class="font-display text-sm text-neutral-500 dark:text-neutral-400"
+          <h1
+            class="font-brand text-4xl font-normal sm:text-5xl"
+            :style="{ fontFamily: 'var(--la-heading-font)' }"
           >
-            影像档案
-          </p>
-          <h1 class="font-display mt-2 text-3xl font-semibold sm:text-4xl">
             {{ $t('title.albums') }}
           </h1>
           <p
@@ -215,7 +213,7 @@ const albumCards = computed(() =>
           class="group block min-w-0"
         >
           <div
-            class="relative aspect-[4/3] overflow-hidden rounded-md bg-neutral-100 dark:bg-neutral-900"
+            class="relative aspect-[4/3] overflow-hidden rounded-sm bg-neutral-100 dark:bg-neutral-900"
           >
             <ThumbImage
               v-if="card.cover?.thumbnailUrl"
@@ -249,7 +247,8 @@ const albumCards = computed(() =>
           <div class="mt-4 flex items-start justify-between gap-4">
             <div class="min-w-0">
               <h2
-                class="font-display truncate text-lg font-semibold text-neutral-900 transition-colors group-hover:text-[var(--la-accent)] dark:text-neutral-100"
+                class="font-brand truncate text-xl font-normal text-neutral-900 transition-colors group-hover:text-[var(--la-accent)] dark:text-neutral-100"
+                :style="{ fontFamily: 'var(--la-heading-font)' }"
               >
                 {{ card.album.title }}
               </h2>

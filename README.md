@@ -1,257 +1,82 @@
 # LumaAtlas
 
-LumaAtlas is a self-hosted personal photo gallery focused on elegant presentation, map-based exploration, and practical library management. It is currently under active development and is based on the MIT-licensed [ChronoFrame](https://github.com/HoshinoSuzumi/chronoframe) project.
+一个以照片为中心的自托管影像网站。用大图、瀑布流或方格展示作品，也可以沿着地图与相册重新浏览它们；上传、整理和网站外观由后台管理。
 
-<p align="center">
-  <img src="https://socialify.git.ci/HoshinoSuzumi/chronoframe/image?custom_description=Self-hosted+personal+gallery+application.&description=1&font=KoHo&forks=0&issues=0&logo=https%3A%2F%2Fgithub.com%2FHoshinoSuzumi%2Fchronoframe%2Fraw%2Frefs%2Fheads%2Fmain%2Fpublic%2Ffavicon.svg&name=1&owner=1&pattern=Plus&pulls=0&stargazers=0&theme=Auto" alt="Chronoframe">
-</p>
+[在线预览](https://photo.kun.ee/) · [部署与备份](DEPLOYMENT.zh-CN.md) · [MIT License](LICENSE)
 
-<p align="center">
-  <a href="https://github.com/HoshinoSuzumi/chronoframe/releases/latest">
-    <img src="https://badgen.net/github/release/HoshinoSuzumi/chronoframe/stable?icon=docker&label=stable" alt="Latest Release">
-  </a>
-  <a href="https://github.com/HoshinoSuzumi/chronoframe/releases?q=beta&expanded=false">
-    <img src="https://badgen.net/github/release/HoshinoSuzumi/chronoframe?icon=docker&label=nightly" alt="Latest Nightly Release">
-  </a>
-  <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License">
-</p>
+![LumaAtlas 首页大图模式](docs/images/lumaatlas-home.png)
 
-<p align="center">
-  <a href="https://discord.gg/MM4ZK4Ed7s">
-    <img src="https://dcbadge.limes.pink/api/server/https://discord.gg/MM4ZK4Ed7s" alt="Discord Server" />
-  </a>
-</p>
+上图截自 LumaAtlas 的公开站点。照片、站点名称和作者信息由站点管理员设置，并非安装后的预置内容。
 
-<p align="center">
-  <a href="https://hellogithub.com/repository/HoshinoSuzumi/chronoframe" target="_blank"><img src="https://api.hellogithub.com/v1/widgets/recommend.svg?rid=947d47ffe8404985908b266e187dec99&claim_uid=kLVoiAFPJaBtr1D&theme=neutral" alt="Featured｜HelloGitHub" style="width: 250px; height: 54px;" width="250" height="54" /></a>
-  <a href="https://www.producthunt.com/products/chronoframe?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-chronoframe" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1029556&theme=neutral&t=1761159404569" alt="ChronoFrame - Self&#0045;hosted&#0032;photo&#0032;gallery&#0032;for&#0032;photographers&#0046; | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>
-</p>
+## 可以做什么
 
-**Languages:** English | [中文](README_zh.md)
+**访客浏览**
 
-A smooth photo display and management application, supporting multiple image formats and large-size image rendering.
+- 在首页切换大图、瀑布流和方格；列数只影响当前浏览器，不改动全站设置。
+- 按精选、最新、随机及距离等方式浏览，结合筛选、排序和颜色主题找到照片。
+- 在地图上查看带有效坐标的照片，或按相册浏览；照片详情保留拍摄参数等信息。
+- 可选展示作者介绍、关于页和页脚备案信息。
 
-[Live Demo: TimoYin's Mems](https://lens.bh8.ga)
+**站点管理**
 
-## ✨ Features
+- 批量上传照片，也可从公开图片直链导入到当前存储；管理公开状态、相册与封面。
+- 解析 EXIF、生成缩略图，并通过任务队列处理照片与地理信息。
+- 在后台修改网站信息、首页布局与显示内容、地图和存储配置。
+- 支持本地目录、S3 兼容存储与 OpenList；支持后台备份与恢复。
 
-### 🖼️ Powerful Photo Management
+照片是否能显示位置取决于原图中是否存在有效 GPS 坐标；地点名称还取决于逆地理编码服务是否可用。MapLibre 是地图渲染库，所选底图服务可能另有使用条款或费用。
 
-- **Manage photos online** - Easily manage and browse photos via the web interface
-- **Explore map** - Browse photo locations on a map
-- **Smart EXIF parsing** - Automatically extracts metadata such as capture time, geolocation, and camera parameters
-- **Reverse geocoding** - Automatically identifies photo shooting locations
-- **Multi-format support** - Supports mainstream formats including JPEG, PNG, HEIC/HEIF
-- **Smart thumbnails** - Efficient thumbnail generation using ThumbHash
+## 快速部署
 
-### 🔧 Modern Tech Stack
-
-- **Nuxt 4** - Built on the latest Nuxt framework with SSR/SSG support
-- **TypeScript** - Full type safety
-- **TailwindCSS** - Modern CSS framework
-- **Drizzle ORM** - Type-safe database ORM
-
-### ☁️ Flexible Storage Solutions
-
-- **Multiple storage backends** - Supports S3-compatible storage, local filesystem
-- **CDN acceleration** - Configurable CDN URL for faster photo delivery
-
-## 🐳 Deployment
-
-LumaAtlas builds its container image from this repository. Copy the example configuration, set a strong session secret and admin credentials, then start Docker Compose:
+推荐 Docker Engine 24+ 与 Docker Compose v2。以下命令在 Linux 服务器上执行：
 
 ```bash
+git clone https://github.com/zzkuner/LumaAtlas.git
+cd LumaAtlas
 cp .env.example .env
+mkdir -p data
+sudo chown -R 10001:10001 data
+```
+
+至少在 `.env` 中设置站点地址、长期保留的会话密钥和存储位置。例如使用本地存储：
+
+```dotenv
+NUXT_PUBLIC_SITE_URL=https://photos.example.com
+NUXT_SESSION_PASSWORD=请替换为至少32位的随机字符串
+NUXT_STORAGE_PROVIDER=local
+NUXT_PROVIDER_LOCAL_PATH=./data/storage
+NUXT_PROVIDER_LOCAL_BASE_URL=/storage
+```
+
+不要将真实 `.env` 提交到 Git。若在 `.env` 中预设管理员密码，务必改成强密码，不要使用示例默认值。首次打开网站时，按页面向导创建管理员并设置站点、存储和地图。
+
+```bash
 docker compose up -d --build
+docker compose ps
+curl http://127.0.0.1:3000/api/health
 ```
 
-The service listens on `127.0.0.1:3000` by default. See the [deployment and operations guide](DEPLOYMENT.zh-CN.md) for the complete environment reference, HTTPS proxying, backups, upgrades, and rollback.
+Compose 默认只监听服务器本机的 `127.0.0.1:3000`，请通过 HTTPS 反向代理对外提供服务。修改 `.env` 中的会话密钥会使现有登录失效，还可能影响已配置的两步验证。完整的反向代理、升级、备份与回滚说明见 [部署文档](DEPLOYMENT.zh-CN.md)。
 
-## 📖 User Guide
+## 数据与更新
 
-On first launch, follow the onboarding wizard to create the administrator account, configure storage, and choose a map provider.
+`./data` 是持久化目录，包含数据库、本地照片、日志和备份；`.env` 单独保存部署密钥。升级前请备份两者，更新镜像时不要删除数据卷。
 
-### Logging into the Dashboard
+推送到 `main` 会触发 GitHub Actions 构建 Linux 镜像，并发布到 `server-latest`。**镜像发布不会自动替换你服务器上的容器**；自建服务器仍需自行拉取、校验并重启服务。
 
-1. Click avatar to sign in with GitHub OAuth or use email/password login
+## 本地开发
 
-### Uploading Photos
-
-1. Go to the dashboard at /dashboard
-2. On the Photos page, select and upload images (supports batch & drag-and-drop)
-3. System will automatically parse EXIF data, generate thumbnails, and perform reverse geocoding
-
-## 📸 Screenshots
-
-![Gallery](./docs/images/screenshot1.png)
-![Photo Detail](./docs/images/screenshot2.png)
-![Map Explore](./docs/images/screenshot3.png)
-![Dashboard](./docs/images/screenshot4.png)
-
-## 🛠️ Development
-
-### Requirements
-
-- Node.js 18+
-- pnpm 9.0+
-
-### Install dependencies
+项目使用 Nuxt 4、Vue 3、TypeScript、Tailwind CSS、Drizzle ORM 和 SQLite。CI 使用 Node.js 22 与 pnpm 11.25.0。
 
 ```bash
-# With pnpm (recommended)
-pnpm install
-
-# Or with other package managers
-npm install
-yarn install
-```
-
-### Configure environment variables
-
-```bash
-cp .env.example .env
-```
-
-### Initialize database
-
-```bash
-# 2. Generate migration files (optional)
-pnpm db:generate
-
-# 3. Run database migrations
-pnpm db:migrate
-```
-
-### Start development server
-
-```bash
-pnpm dev
-```
-
-App will start at http://localhost:3000.
-
-### Project Structure
-
-```
-chronoframe/
-├── app/                    # Nuxt app
-│   ├── components/         # Components
-│   ├── pages/              # Page routes
-│   ├── composables/        # Composables
-│   └── stores/             # Pinia stores
-├── packages/
-│   └── webgl-image/        # WebGL image viewer
-├── server/
-│   ├── api/                # API routes
-│   ├── database/           # DB schema & migrations
-│   └── services/           # Business logic services
-└── shared/                 # Shared types & utils
-```
-
-### Build commands
-
-```bash
-# Development (with dependencies build)
-pnpm dev
-
-# Build only dependencies
+pnpm install --frozen-lockfile
 pnpm build:deps
-
-# Production build
-pnpm build
-
-# Database operations
-pnpm db:generate    # Generate migration files
-pnpm db:migrate     # Run migrations
-
-# Preview production build
-pnpm preview
+cp .env.example .env
+pnpm dev
 ```
 
-## 🤝 Contributing
+提交前可运行 `pnpm lint`、`pnpm typecheck`、`pnpm test` 和 `pnpm build`。
 
-Contributions are welcome! Please:
+## 来源与许可
 
-1. Fork the repo
-2. Create a feature branch (git checkout -b feature/amazing-feature)
-3. Commit changes (git commit -m 'Add some amazing feature')
-4. Push to branch (git push origin feature/amazing-feature)
-5. Open a Pull Request
-
-### Coding Guidelines
-
-- Use TypeScript for type safety
-- Follow ESLint and Prettier conventions
-- Update documentation accordingly
-
-## 📄 License
-
-This project is licensed under the MIT License.
-
-## 👤 Author
-
-**Timothy Yin**
-
-- Email: master@uniiem.com
-- GitHub: @HoshinoSuzumi
-- Website: bh8.ga
-- Gallery: lens.bh8.ga
-
-## ❓ FAQ
-
-<details>
-  <summary>How is the admin user created?</summary>
-  <p>
-    On first startup, an admin user is created based on <code>CFRAME_ADMIN_EMAIL</code>, <code>CFRAME_ADMIN_NAME</code>, and <code>CFRAME_ADMIN_PASSWORD</code>. The email must match your GitHub account email used for login.
-  </p>
-</details>
-<details>
-  <summary>Which image formats are supported?</summary>
-  <p>
-    Supported formats: JPEG, PNG, HEIC/HEIF, MOV (for Live Photos).
-  </p>
-</details>
-<details>
-  <summary>Why can’t I use GitHub/Local storage?</summary>
-  <p>
-    Currently only S3-compatible storage is supported. GitHub and local storage support is planned.
-  </p>
-</details>
-<details>
-  <summary>Why is a map service required and how to configure it?</summary>
-  <p>
-    The map is used to browse photo locations and render mini-maps in photo details. Currently Mapbox is used. After registering, <a href="https://console.mapbox.com/account/access-tokens/">get an access token</a> and set it to the <code>MAPBOX_TOKEN</code> variable.
-  </p>
-</details>
-<details>
-  <summary>Why wasn’t my MOV file recognized as a Live Photo?</summary>
-  <p>
-    Ensure the image (.heic) and video (.mov) share the same filename (e.g., <code>IMG_1234.heic</code> and <code>IMG_1234.mov</code>). Upload order does not matter. If not recognized, you can trigger pairing manually from the dashboard.
-  </p>
-</details>
-<details>
-  <summary>How do I import existing photos from storage?</summary>
-  <p>
-    Direct import of existing photos is not yet supported. A directory scanning import feature is planned.
-  </p>
-</details>
-
-## 🙏 Acknowledgements
-
-This project was inspired by Afilmory, another excellent personal gallery project.
-
-Thanks to the following open-source projects and libraries:
-
-- [Nuxt](https://nuxt.com/)
-- [TailwindCSS](https://tailwindcss.com/)
-- [Drizzle ORM](https://orm.drizzle.team/)
-
-## ⭐️ Star History
-
-<a href="https://www.star-history.com/#HoshinoSuzumi/chronoframe&type=date&legend=top-left">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=HoshinoSuzumi/chronoframe&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=HoshinoSuzumi/chronoframe&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=HoshinoSuzumi/chronoframe&type=date&legend=top-left" />
- </picture>
-</a>
+LumaAtlas 基于 [ChronoFrame](https://github.com/HoshinoSuzumi/chronoframe) 开发，保留其 MIT 许可与原作者 Timothy Yin 的版权声明。界面与功能设计也参考了 [CamLife](https://github.com/sun0225SUN/camlife)、[PicImpact](https://github.com/besscroft/PicImpact) 和 [Afilmory](https://github.com/Afilmory/Afilmory) 的思路；各项目的代码及素材仍遵循各自许可。详见 [LICENSE](LICENSE)。

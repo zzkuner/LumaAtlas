@@ -59,41 +59,43 @@ const socialLinks = computed(() => {
       :style="{ maxWidth: contentMaxWidth }"
     >
       <article
-        class="grid w-full gap-10 border-t border-neutral-200 pt-7 md:grid-cols-[11rem_minmax(0,44rem)] md:gap-14 md:pt-10 dark:border-neutral-800"
+        class="mx-auto w-full max-w-[42rem] border-t border-neutral-200 pt-6 sm:pt-8 dark:border-neutral-800"
       >
-        <div class="flex items-start justify-between md:block">
-          <p class="text-sm text-neutral-500 dark:text-neutral-400">关于</p>
+        <div class="flex items-start justify-between gap-6">
+          <div class="min-w-0">
+            <p class="text-xs text-neutral-500 dark:text-neutral-400">
+              关于 · {{ siteTitle }}
+            </p>
+            <h1
+              class="mt-7 font-display text-3xl font-normal leading-tight sm:mt-9 sm:text-4xl"
+              :style="{ fontFamily: 'var(--la-heading-font)' }"
+            >
+              {{ author || siteTitle }}
+            </h1>
+          </div>
           <img
             v-if="avatarUrl"
             :src="avatarUrl"
             :alt="author || siteTitle"
-            class="size-11 rounded-full object-cover grayscale md:mt-10 md:size-14"
+            class="size-11 shrink-0 rounded-full object-cover grayscale sm:size-14"
           />
         </div>
 
         <div class="min-w-0">
-          <p class="text-xs text-neutral-400 dark:text-neutral-500">
-            {{ siteTitle }}
-          </p>
-          <h1
-            class="mt-4 font-brand text-4xl font-normal leading-tight sm:text-5xl"
-            :style="{ fontFamily: 'var(--la-heading-font)' }"
-          >
-            {{ author || siteTitle }}
-          </h1>
           <p
             v-if="aboutLead"
-            class="mt-8 max-w-xl font-display text-xl leading-9 text-neutral-800 sm:text-2xl sm:leading-10 dark:text-neutral-200"
+            class="mt-10 max-w-[36rem] font-display text-xl leading-9 text-neutral-800 sm:mt-12 sm:text-2xl sm:leading-10 dark:text-neutral-200"
           >
             {{ aboutLead }}
           </p>
 
           <div
             v-if="aboutText.trim()"
-            class="mt-10 max-w-2xl border-t border-neutral-200 pt-8 sm:mt-14 dark:border-neutral-800"
+            class="max-w-[38rem] border-t border-neutral-200 pt-8 dark:border-neutral-800"
+            :class="aboutLead ? 'mt-10 sm:mt-12' : 'mt-12 sm:mt-16'"
           >
             <p
-              class="whitespace-pre-line text-[15px] leading-8 text-neutral-600 dark:text-neutral-400"
+              class="whitespace-pre-line text-base leading-8 text-neutral-600 sm:leading-9 dark:text-neutral-400"
             >
               {{ aboutText.trim() }}
             </p>
@@ -101,7 +103,7 @@ const socialLinks = computed(() => {
 
           <nav
             v-if="socialLinks.length"
-            class="mt-10 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm sm:mt-14"
+            class="mt-12 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm sm:mt-16"
             aria-label="作者链接"
           >
             <a

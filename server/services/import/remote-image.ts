@@ -19,7 +19,7 @@ const supportedTypes = new Set([
 export const isPublicAddress = (address: string): boolean => {
   const family = isIP(address)
   if (family === 4) {
-    const [a, b, c] = address.split('.').map(Number)
+    const [a = 0, b = 0, c = 0] = address.split('.').map(Number)
     return !(
       a === 0 ||
       a === 10 ||

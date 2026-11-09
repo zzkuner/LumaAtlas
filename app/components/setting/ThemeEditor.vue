@@ -526,7 +526,7 @@ const toggleHomeModule = (id: HomeModuleId, visible: boolean) => {
                 )
               "
             >
-              <option value="wenkai">文艺宋体</option>
+              <option value="wenkai">霞鹜文楷</option>
               <option value="serif">经典衬线</option>
               <option value="sans">现代无衬线</option>
             </select>

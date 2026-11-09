@@ -33,10 +33,10 @@ const copyrightText = computed(
     class="w-full border-t border-neutral-200 dark:border-neutral-800"
   >
     <div
-      class="mx-auto flex min-h-16 flex-col justify-between gap-2 px-3 py-5 text-xs text-neutral-500 sm:flex-row sm:items-center sm:px-5 lg:px-7 dark:text-neutral-400"
+      class="mx-auto flex min-h-16 flex-col items-center justify-center gap-x-4 gap-y-1 px-3 py-5 text-center text-xs leading-6 text-neutral-500 sm:flex-row sm:flex-wrap sm:px-5 lg:px-7 dark:text-neutral-400"
       :style="{ maxWidth: maxWidth || '1600px' }"
     >
-      <p class="leading-6">
+      <p>
         {{ copyrightText }}
       </p>
       <a

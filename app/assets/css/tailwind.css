@@ -54,11 +54,10 @@
     'Segoe UI Variable', 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
     'Microsoft YaHei UI', 'Microsoft YaHei', 'Noto Sans CJK SC', sans-serif;
   --font-display:
-    'Iowan Old Style', 'Noto Serif CJK SC', 'Noto Serif SC', 'Songti SC',
-    'STSong', Georgia, serif;
+    'LXGW WenKai Lite', 'Noto Serif SC', 'Songti SC', 'STSong', serif;
   --font-brand:
-    'Iowan Old Style', 'Baskerville', 'Noto Serif CJK SC', 'Noto Serif SC',
-    'Songti SC', 'STSong', Georgia, serif;
+    'Bodoni 72', 'Bodoni MT', Didot, 'Iowan Old Style', 'Palatino Linotype',
+    'Book Antiqua', Georgia, 'LXGW WenKai Lite', serif;
 
   --text-xs: 0.8125rem;
   --text-xs--line-height: 1.125rem;

@@ -1,7 +1,8 @@
-import { useLocalStorage } from '@vueuse/core'
+import { useLocalStorage, useSessionStorage } from '@vueuse/core'
 
 export const useWizardStore = defineStore('wizard', () => {
-  const admin = ref(useLocalStorage<Record<string, any>>('wizard-admin', {}))
+  const admin = ref(useSessionStorage<Record<string, any>>('wizard-admin', {}))
+  const setupToken = ref(useSessionStorage('wizard-setup-token', ''))
   const site = ref(useLocalStorage<Record<string, any>>('wizard-site', {}))
   const storage = ref(
     useLocalStorage<Record<string, any>>('wizard-storage', {}),
@@ -26,6 +27,7 @@ export const useWizardStore = defineStore('wizard', () => {
 
   const clear = () => {
     admin.value = {}
+    setupToken.value = ''
     site.value = {}
     storage.value = {}
     map.value = {}
@@ -33,6 +35,7 @@ export const useWizardStore = defineStore('wizard', () => {
 
   return {
     admin,
+    setupToken,
     site,
     storage,
     map,

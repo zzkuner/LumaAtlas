@@ -51,6 +51,7 @@ async function onComplete() {
     // 5. Submit All
     await $fetch('/api/wizard/submit', {
       method: 'POST',
+      headers: { 'x-setup-token': store.setupToken },
       body: {
         admin: adminData,
         site: siteData,

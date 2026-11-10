@@ -30,6 +30,7 @@ cp .env.example .env
 CFRAME_ADMIN_EMAIL=you@example.com
 CFRAME_ADMIN_NAME=Your Name
 CFRAME_ADMIN_PASSWORD=请使用强密码
+CFRAME_SETUP_TOKEN=首次安装时使用的至少24位随机密钥
 
 NUXT_PUBLIC_SITE_URL=https://photos.example.com
 NUXT_SESSION_PASSWORD=至少32位且长期保持不变的随机字符串
@@ -46,6 +47,8 @@ openssl rand -base64 48
 ```
 
 `NUXT_SESSION_PASSWORD` 同时用于会话签名和 TOTP 密钥加密。不要随意轮换；丢失后，所有设备会退出，已经配置的 TOTP 也需要重新设置。
+
+首次安装时，在后台安装向导的“安装密钥”栏输入 `CFRAME_SETUP_TOKEN`。安装完成后安装向导关闭，后续在网页后台修改网站信息不需要此密钥。旧版环境若已完成安装，无需为了升级补填该值。`CFRAME_ADMIN_PASSWORD` 不会自动填入安装向导，也不会返回给浏览器。
 
 ## 3. 启动
 
@@ -100,6 +103,17 @@ docker compose start lumaatlas
 2. 按上一节停止服务并备份 `data`。
 3. 拉取代码并重建镜像。
 4. 启动后等待健康检查，再检查日志。
+
+网站名称、外观设置、账号和相册都保存在 `./data/app.sqlite3`，不在镜像里。每次升级都应在**同一个 Compose 目录**执行，保持 `./data:/app/data` 挂载不变；不要删除或覆盖 `data`。若自定义 `DATABASE_URL`，应使用容器内的 `/app/data/app.sqlite3`（或 `/app/data` 内的其他路径），不能填写宿主机的 `/www/...` 路径。迁移和运行时必须指向同一文件。
+
+升级前先确认当前数据文件存在且大小正常：
+
+```bash
+ls -lh data/app.sqlite3
+docker compose config
+```
+
+检查输出中的卷挂载仍是当前目录的 `./data` 到容器的 `/app/data`。如果文件不存在，先找到旧数据目录并恢复挂载，不要直接启动一个空数据库。
 
 ```bash
 git pull --ff-only

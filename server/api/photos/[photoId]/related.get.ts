@@ -1,5 +1,7 @@
-import { eq, ne } from 'drizzle-orm'
+import { and, desc, eq, ne } from 'drizzle-orm'
 import z from 'zod'
+import { publicPhotoColumns } from '~~/server/utils/publicPhotoColumns'
+import { sanitizePhotoContent } from '~~/shared/utils/photo-content'
 
 const DAY_MS = 24 * 60 * 60 * 1000
 
@@ -16,22 +18,29 @@ export default eventHandler(async (event) => {
   )
 
   const db = useDB()
+  const isAdmin = Boolean(session.user?.isAdmin)
   const current = db
     .select()
     .from(tables.photos)
     .where(eq(tables.photos.id, photoId))
     .get()
 
-  if (!current || (!session.user && !current.isVisible)) {
+  if (!current || (!isAdmin && !current.isVisible)) {
     throw createError({ statusCode: 404, statusMessage: 'Photo not found' })
   }
 
   const candidates = db
-    .select()
+    .select(publicPhotoColumns)
     .from(tables.photos)
-    .where(ne(tables.photos.id, photoId))
+    .where(
+      and(
+        ne(tables.photos.id, photoId),
+        isAdmin ? undefined : eq(tables.photos.isVisible, true),
+      ),
+    )
+    .orderBy(desc(tables.photos.dateTaken))
+    .limit(500)
     .all()
-    .filter((photo) => session.user || photo.isVisible)
   const currentDate = current.dateTaken
     ? new Date(current.dateTaken).getTime()
     : null
@@ -90,7 +99,11 @@ export default eventHandler(async (event) => {
         reasons.push('tag')
       }
 
-      return { photo, score, reasons: [...new Set(reasons)] }
+      return {
+        photo: sanitizePhotoContent(photo),
+        score,
+        reasons: [...new Set(reasons)],
+      }
     })
     .filter((item) => item.score > 0)
     .sort((a, b) => b.score - a.score)

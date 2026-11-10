@@ -19,6 +19,10 @@ const isLoading = ref(false)
 const selectedTasks = ref<number[]>([])
 const statusFilter = ref<string>('all')
 const typeFilter = ref<string>('all')
+const page = ref(1)
+watch([statusFilter, typeFilter], () => {
+  page.value = 1
+})
 
 // 数据获取
 const { data: queueData, refresh: refreshQueue } = await useFetch(
@@ -27,24 +31,22 @@ const { data: queueData, refresh: refreshQueue } = await useFetch(
     query: computed(() => ({
       ...(statusFilter.value !== 'all' && { status: statusFilter.value }),
       ...(typeFilter.value !== 'all' && { type: typeFilter.value }),
+      page: page.value,
+      limit: 30,
     })),
   },
 )
 
 // 队列统计数据
-const queueStats = computed(() => {
-  if (!queueData.value?.data)
-    return { pending: 0, processing: 0, completed: 0, failed: 0 }
-
-  const stats = { pending: 0, processing: 0, completed: 0, failed: 0 }
-  queueData.value.data.forEach((task) => {
-    if (task.status === 'pending') stats.pending++
-    else if (task.status === 'in-stages') stats.processing++
-    else if (task.status === 'completed') stats.completed++
-    else if (task.status === 'failed') stats.failed++
-  })
-  return stats
-})
+const queueStats = computed(
+  () =>
+    queueData.value?.stats || {
+      pending: 0,
+      processing: 0,
+      completed: 0,
+      failed: 0,
+    },
+)
 
 // 刷新数据
 const refreshData = async () => {
@@ -294,9 +296,15 @@ const columns: TableColumn<any>[] = [
 ]
 
 // 自动刷新
-const refreshInterval = setInterval(refreshData, 10000) // 每10秒刷新一次
+let refreshInterval: ReturnType<typeof setInterval> | undefined
+onMounted(() => {
+  refreshInterval = setInterval(() => {
+    if (document.visibilityState === 'visible' && !isLoading.value)
+      refreshQueue()
+  }, 30000)
+})
 onBeforeUnmount(() => {
-  clearInterval(refreshInterval)
+  if (refreshInterval) clearInterval(refreshInterval)
 })
 </script>
 
@@ -754,6 +762,32 @@ onBeforeUnmount(() => {
                   </div>
                 </div>
               </article>
+            </div>
+            <div
+              v-if="(queueData?.totalPages ?? 0) > 1"
+              class="flex items-center justify-end gap-3 pt-2"
+            >
+              <UButton
+                icon="lucide:chevron-left"
+                color="neutral"
+                variant="ghost"
+                square
+                :disabled="page <= 1"
+                aria-label="上一页"
+                @click="page--"
+              />
+              <span class="text-sm text-muted"
+                >{{ page }} / {{ queueData?.totalPages }}</span
+              >
+              <UButton
+                icon="lucide:chevron-right"
+                color="neutral"
+                variant="ghost"
+                square
+                :disabled="page >= (queueData?.totalPages ?? 0)"
+                aria-label="下一页"
+                @click="page++"
+              />
             </div>
           </div>
         </UCard>

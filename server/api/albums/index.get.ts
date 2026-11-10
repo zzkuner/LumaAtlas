@@ -1,4 +1,6 @@
 import { and, eq } from 'drizzle-orm'
+import { publicPhotoColumns } from '~~/server/utils/publicPhotoColumns'
+import { sanitizePhotoContent } from '~~/shared/utils/photo-content'
 
 export default eventHandler(async (event) => {
   const db = useDB()
@@ -47,10 +49,24 @@ export default eventHandler(async (event) => {
             .orderBy(tables.albumPhotos.position)
             .all()
 
+      const orderedIds = photoIds.map((photo) => photo.photoId)
+      const coverId =
+        (album.coverPhotoId && orderedIds.includes(album.coverPhotoId)
+          ? album.coverPhotoId
+          : orderedIds[0]) || null
+      const coverPhoto = coverId
+        ? db
+            .select(publicPhotoColumns)
+            .from(tables.photos)
+            .where(eq(tables.photos.id, coverId))
+            .get()
+        : null
+
       return {
         ...album,
         // 即使是空相册，也返回空数组而不是 undefined
-        photoIds: photoIds.length > 0 ? photoIds.map((p) => p.photoId) : [],
+        photoIds: orderedIds,
+        coverPhoto: coverPhoto ? sanitizePhotoContent(coverPhoto) : null,
       }
     }),
   )

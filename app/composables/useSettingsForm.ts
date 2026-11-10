@@ -77,10 +77,14 @@ export function useSettingsForm(namespace: string) {
         value,
       }))
 
-      await $fetch('/api/system/settings/batch', {
-        method: 'PUT',
-        body: { updates },
-      })
+      const result = await $fetch<{ success: boolean }>(
+        '/api/system/settings/batch',
+        {
+          method: 'PUT',
+          body: { updates },
+        },
+      )
+      if (!result.success) throw new Error('部分设置未保存，请刷新后重试')
 
       // 刷新全局设置状态，确保所有使用 getSetting() 的地方都能获取到最新值
       await refreshSettings()

@@ -59,6 +59,10 @@ export function useWizardForm(namespace: string) {
         '/api/wizard/schema',
         {
           query: { namespace },
+          headers:
+            namespace === 'admin' || !store.setupToken
+              ? undefined
+              : { 'x-setup-token': store.setupToken },
         },
       )
       fields.value = response.fields

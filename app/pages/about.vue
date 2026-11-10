@@ -1,4 +1,10 @@
 <script setup lang="ts">
+import {
+  ABOUT_LINK_OPTIONS,
+  isPublicAboutLink,
+  normalizeAboutLinks,
+} from '~~/shared/utils/about-links'
+
 definePageMeta({ layout: false })
 
 if (getSetting('app:appearance.home.showAboutNav') !== true) {
@@ -10,10 +16,32 @@ useHead({ title: () => $t('title.about') })
 const siteTitle = computed(() => String(getSetting('app:title') || 'LumaAtlas'))
 const author = computed(() => String(getSetting('app:author') || ''))
 const avatarUrl = computed(() => String(getSetting('app:avatarUrl') || ''))
+const showAuthor = computed(
+  () => getSetting('app:appearance.about.showAuthor') !== false,
+)
+const showAvatar = computed(
+  () => getSetting('app:appearance.about.showAvatar') !== false,
+)
 const aboutLead = computed(() =>
   String(getSetting('app:aboutLead') || '').trim(),
 )
-const aboutText = computed(() => String(getSetting('app:aboutText') || ''))
+const aboutText = computed(() =>
+  String(getSetting('app:aboutText') || '').trim(),
+)
+const heading = computed(() =>
+  showAuthor.value && author.value.trim()
+    ? author.value.trim()
+    : aboutLead.value || siteTitle.value,
+)
+const leadBelowHeading = computed(() =>
+  Boolean(aboutLead.value && heading.value !== aboutLead.value),
+)
+const paragraphs = computed(() =>
+  aboutText.value
+    .split(/\n\s*\n/)
+    .map((text) => text.trim())
+    .filter(Boolean),
+)
 const themeStyle = usePublicThemeStyle()
 const contentMaxWidth = computed(() => {
   const width = String(getSetting('app:appearance.home.contentWidth') || 'wide')
@@ -27,23 +55,15 @@ const contentMaxWidth = computed(() => {
 })
 
 const socialLinks = computed(() => {
-  const value = getSetting('app:appearance.home.socialLinks')
-  const links =
-    value && typeof value === 'object' && !Array.isArray(value)
-      ? (value as Record<string, unknown>)
-      : {}
-  const defaultMeta = { label: 'Website', icon: 'lucide:globe-2' }
-  const meta: Record<string, { label: string; icon: string }> = {
-    website: defaultMeta,
-    instagram: { label: 'Instagram', icon: 'simple-icons:instagram' },
-    x: { label: 'X', icon: 'simple-icons:x' },
-    github: { label: 'GitHub', icon: 'simple-icons:github' },
-  }
-  return Object.entries(links)
-    .filter((entry): entry is [string, string] =>
-      Boolean(typeof entry[1] === 'string' && /^https?:\/\//i.test(entry[1])),
-    )
-    .map(([id, url]) => ({ id, url, ...(meta[id] || defaultMeta) }))
+  const links = normalizeAboutLinks(
+    getSetting('app:appearance.home.socialLinks'),
+  )
+  return ABOUT_LINK_OPTIONS.flatMap((option) => {
+    const link = links[option.id]
+    return link.enabled && isPublicAboutLink(link.url)
+      ? [{ ...option, ...link, label: link.label.trim() || option.label }]
+      : []
+  })
 })
 </script>
 
@@ -55,73 +75,76 @@ const socialLinks = computed(() => {
     <MasonryItemHeader :show-gallery-controls="false" />
 
     <main
-      class="mx-auto w-full flex-1 px-5 py-16 sm:px-8 sm:py-24 lg:px-10"
+      class="mx-auto w-full flex-1 px-5 pb-20 pt-14 sm:px-8 sm:pb-24 sm:pt-20 lg:px-10"
       :style="{ maxWidth: contentMaxWidth }"
     >
-      <article
-        class="mx-auto w-full max-w-[42rem] border-t border-neutral-200 pt-6 sm:pt-8 dark:border-neutral-800"
-      >
-        <div class="flex items-start justify-between gap-6">
-          <div class="min-w-0">
-            <p class="text-xs text-neutral-500 dark:text-neutral-400">
-              关于 · {{ siteTitle }}
-            </p>
+      <article class="mx-auto w-full max-w-[48rem]">
+        <header
+          class="border-t border-neutral-200 pt-6 dark:border-neutral-800"
+        >
+          <p class="text-sm text-neutral-500 dark:text-neutral-400">
+            关于 · {{ siteTitle }}
+          </p>
+          <div class="mt-12 flex items-start justify-between gap-8 sm:mt-16">
             <h1
-              class="mt-7 font-display text-3xl font-normal leading-tight sm:mt-9 sm:text-4xl"
+              class="min-w-0 font-display text-3xl font-normal leading-snug sm:text-4xl"
               :style="{ fontFamily: 'var(--la-heading-font)' }"
             >
-              {{ author || siteTitle }}
+              {{ heading }}
             </h1>
+            <img
+              v-if="showAvatar && avatarUrl"
+              :src="avatarUrl"
+              :alt="showAuthor ? author : ''"
+              class="size-16 shrink-0 rounded-full object-cover grayscale sm:size-20"
+            />
           </div>
-          <img
-            v-if="avatarUrl"
-            :src="avatarUrl"
-            :alt="author || siteTitle"
-            class="size-11 shrink-0 rounded-full object-cover grayscale sm:size-14"
-          />
-        </div>
-
-        <div class="min-w-0">
           <p
-            v-if="aboutLead"
-            class="mt-10 max-w-[36rem] font-display text-xl leading-9 text-neutral-800 sm:mt-12 sm:text-2xl sm:leading-10 dark:text-neutral-200"
+            v-if="leadBelowHeading"
+            class="mt-9 max-w-[40rem] font-display text-xl leading-relaxed text-neutral-700 sm:mt-11 sm:text-2xl dark:text-neutral-300"
           >
             {{ aboutLead }}
           </p>
+        </header>
 
-          <div
-            v-if="aboutText.trim()"
-            class="max-w-[38rem] border-t border-neutral-200 pt-8 dark:border-neutral-800"
-            :class="aboutLead ? 'mt-10 sm:mt-12' : 'mt-12 sm:mt-16'"
+        <div
+          v-if="paragraphs.length"
+          class="mt-12 space-y-7 border-t border-neutral-200 pt-9 font-display text-base leading-9 text-neutral-600 sm:mt-14 sm:pt-11 sm:text-lg sm:leading-10 dark:border-neutral-800 dark:text-neutral-400"
+        >
+          <p
+            v-for="(paragraph, index) in paragraphs"
+            :key="index"
+            class="whitespace-pre-line"
           >
-            <p
-              class="whitespace-pre-line text-base leading-8 text-neutral-600 sm:leading-9 dark:text-neutral-400"
-            >
-              {{ aboutText.trim() }}
-            </p>
-          </div>
+            {{ paragraph }}
+          </p>
+        </div>
 
-          <nav
-            v-if="socialLinks.length"
-            class="mt-12 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm sm:mt-16"
-            aria-label="作者链接"
-          >
+        <nav
+          v-if="socialLinks.length"
+          class="mt-14 border-t border-neutral-200 pt-7 sm:mt-16 dark:border-neutral-800"
+          aria-label="作者链接"
+        >
+          <p class="mb-5 text-sm text-neutral-500 dark:text-neutral-400">
+            链接
+          </p>
+          <div class="flex flex-wrap items-center gap-x-7 gap-y-4">
             <a
               v-for="link in socialLinks"
               :key="link.id"
               :href="link.url"
               target="_blank"
               rel="noopener noreferrer"
-              class="inline-flex items-center gap-2 text-neutral-500 transition-colors hover:text-neutral-950 dark:text-neutral-400 dark:hover:text-white"
+              class="inline-flex items-center gap-2 font-display text-base text-neutral-700 transition-colors hover:text-neutral-950 dark:text-neutral-300 dark:hover:text-white"
             >
               <Icon
                 :name="link.icon"
-                class="size-4"
+                class="size-4 shrink-0"
               />
               {{ link.label }}
             </a>
-          </nav>
-        </div>
+          </div>
+        </nav>
       </article>
     </main>
 

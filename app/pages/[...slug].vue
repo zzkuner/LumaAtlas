@@ -10,11 +10,15 @@ const router = useRouter()
 
 const { switchToIndex, closeViewer, openViewer, clearReturnRoute } =
   useViewerState()
-const { isViewerOpen, sourcePhotoIds } = storeToRefs(useViewerState())
+const { isViewerOpen, sourcePhotoIds, sourcePhotos } =
+  storeToRefs(useViewerState())
 
 const { photos } = usePhotos()
 const viewerPhotos = computed(() => {
-  return resolvePhotoCollection(photos.value, sourcePhotoIds.value)
+  return resolvePhotoCollection(
+    sourcePhotos.value || photos.value,
+    sourcePhotoIds.value,
+  )
 })
 
 const slug = computed(() => (route.params.slug as string[]) || [])

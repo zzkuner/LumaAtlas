@@ -685,7 +685,7 @@ watch(currentPhotoIndex, (newIndex) => {
 
     <div
       v-if="moduleVisible('gallery')"
-      class="mx-auto w-full px-3 pb-3 sm:px-5 sm:pb-5 lg:px-7 lg:pb-7"
+      class="mx-auto w-full flex-1 px-3 pb-3 sm:px-5 sm:pb-5 lg:px-7 lg:pb-7"
       :style="{ maxWidth: galleryMaxWidth, order: moduleOrder('gallery') }"
     >
       <div class="relative">
@@ -822,7 +822,9 @@ watch(currentPhotoIndex, (newIndex) => {
     </div>
 
     <MasonryItemFooter
-      v-if="mode === 'home'"
+      v-if="
+        mode === 'home' && !(photosStatus === 'pending' && photos.length === 0)
+      "
       class="order-last"
       :max-width="galleryMaxWidth"
     />

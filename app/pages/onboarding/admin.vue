@@ -6,6 +6,8 @@ definePageMeta({
 })
 
 const router = useRouter()
+const wizardStore = useWizardStore()
+const toast = useToast()
 
 // Use the wizard form composable
 const {
@@ -31,6 +33,10 @@ const schema = z
   })
 
 function onSubmit() {
+  if (wizardStore.setupToken.length < 24) {
+    toast.add({ title: '请输入服务器配置的安装密钥', color: 'error' })
+    return
+  }
   // Validation passed, data is already in the store via useWizardForm binding
   router.push('/onboarding/site')
 }
@@ -59,6 +65,17 @@ function onSubmit() {
       class="space-y-4"
       @submit="onSubmit"
     >
+      <WizardFormField
+        label="安装密钥"
+        name="setupToken"
+        required
+        help="在服务器 .env 中设置 CFRAME_SETUP_TOKEN；仅首次安装使用。"
+      >
+        <WizardInput
+          v-model="wizardStore.setupToken"
+          type="password"
+        />
+      </WizardFormField>
       <template
         v-for="field in fields"
         :key="field.key"

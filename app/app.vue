@@ -25,6 +25,7 @@ try {
 // 初始化设置系统 - 一次性加载所有设置
 const settingsStore = useSettingsStore()
 const appTitle = useSettingRef('app:title')
+const siteLogo = useSettingRef('app:logoUrl')
 const rssEnabled = useSettingRef('publishing:rss.enabled')
 const appearanceTheme = useSettingRef('app:appearance.theme')
 const publicThemeStyle = usePublicThemeStyle()
@@ -37,6 +38,7 @@ const {
   returnRoute,
   isDirectAccess,
   sourcePhotoIds,
+  sourcePhotos,
 } = storeToRefs(viewerState)
 
 useHead({
@@ -45,17 +47,26 @@ useHead({
 })
 
 useHead(() => ({
-  link:
-    rssEnabled.value === false
+  link: [
+    {
+      rel: 'icon',
+      href: String(siteLogo.value || '').trim() || '/lumaatlas-icon.svg',
+    },
+    {
+      rel: 'apple-touch-icon',
+      href: String(siteLogo.value || '').trim() || '/apple-touch-icon.png',
+    },
+    ...(rssEnabled.value === false
       ? []
       : [
           {
-            rel: 'alternate',
+            rel: 'alternate' as const,
             type: 'application/rss+xml',
             title: `${appTitle.value || 'LumaAtlas'} RSS`,
             href: '/rss.xml',
           },
-        ],
+        ]),
+  ],
 }))
 
 // Only administrators can load hidden photos. This keeps the data source in
@@ -74,6 +85,11 @@ const shouldLoadPhotoLibrary = computed(
     route.path === '/dashboard/settings/general',
 )
 const requestFetch = useRequestFetch()
+const publicPage = useState('public-photo-page', () => 1)
+const publicTotalPages = useState('public-photo-total-pages', () => 1)
+const directPhotoOnly = useState('public-photo-direct-only', () => false)
+const loadingMore = ref(false)
+const toast = useToast()
 
 // Resolve every Pinia-backed composable before the first await. Vue's
 // injection context is not guaranteed to survive an async SSR boundary.
@@ -82,10 +98,30 @@ colorMode.preference = appearanceTheme.value as string
 
 const { data, refresh, status } = await useAsyncData(
   'global-photo-library',
-  () =>
-    shouldLoadPhotoLibrary.value
-      ? requestFetch<Photo[]>(apiEndpoint.value)
-      : Promise.resolve([] as Photo[]),
+  async () => {
+    if (!shouldLoadPhotoLibrary.value) {
+      directPhotoOnly.value = false
+      return [] as Photo[]
+    }
+    if (user.value?.isAdmin) return requestFetch<Photo[]>(apiEndpoint.value)
+    const slug = route.params.slug
+    const directPhotoId = Array.isArray(slug) ? slug[0] : null
+    if (directPhotoId) {
+      directPhotoOnly.value = true
+      const photo = await requestFetch<Photo>(
+        `/api/photos/${encodeURIComponent(directPhotoId)}`,
+      )
+      return [photo]
+    }
+    const response = await requestFetch<{
+      items: Photo[]
+      totalPages: number
+    }>('/api/photos/visible', { query: { page: 1, limit: 100 } })
+    publicPage.value = 1
+    publicTotalPages.value = response.totalPages
+    directPhotoOnly.value = false
+    return response.items
+  },
   {
     watch: [apiEndpoint, shouldLoadPhotoLibrary],
     default: () => [] as Photo[],
@@ -100,8 +136,62 @@ const photos = computed(() => {
 })
 
 const viewerPhotos = computed(() => {
-  return resolvePhotoCollection(photos.value, sourcePhotoIds.value)
+  return resolvePhotoCollection(
+    sourcePhotos.value || photos.value,
+    sourcePhotoIds.value,
+  )
 })
+
+const loadMorePhotos = async () => {
+  if (
+    !import.meta.client ||
+    route.path !== '/' ||
+    user.value?.isAdmin ||
+    loadingMore.value ||
+    publicPage.value >= publicTotalPages.value
+  )
+    return
+  loadingMore.value = true
+  try {
+    const nextPage = publicPage.value + 1
+    const response = await $fetch<{ items: Photo[]; totalPages: number }>(
+      '/api/photos/visible',
+      { query: { page: nextPage, limit: 100 } },
+    )
+    data.value = [...(data.value || []), ...response.items]
+    publicPage.value = nextPage
+    publicTotalPages.value = response.totalPages
+  } catch {
+    toast.add({ title: '加载更多照片失败，请稍后重试', color: 'error' })
+  } finally {
+    loadingMore.value = false
+  }
+}
+
+const onGalleryScroll = () => {
+  if (
+    document.documentElement.scrollHeight -
+      window.scrollY -
+      window.innerHeight <
+    1500
+  ) {
+    void loadMorePhotos()
+  }
+}
+onMounted(() => {
+  window.addEventListener('scroll', onGalleryScroll, { passive: true })
+  onGalleryScroll()
+})
+onBeforeUnmount(() => window.removeEventListener('scroll', onGalleryScroll))
+watch(
+  () => route.path,
+  async () => {
+    if (directPhotoOnly.value && !user.value?.isAdmin) {
+      await refresh()
+      onGalleryScroll()
+    }
+  },
+)
 
 const handleIndexChange = (newIndex: number) => {
   const photo = viewerPhotos.value[newIndex]

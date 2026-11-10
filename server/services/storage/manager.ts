@@ -111,6 +111,8 @@ export class StorageManager {
     config: StorageConfig,
     logger?: Logger['storage'],
   ): Promise<void> {
+    const previousProvider = this.provider
+    const previousProviderName = this.currentProviderName
     try {
       const oldProviderName = this.currentProviderName
       this.logger = logger || this.logger
@@ -136,6 +138,8 @@ export class StorageManager {
         timestamp: Date.now(),
       })
     } catch (error) {
+      this.provider = previousProvider
+      this.currentProviderName = previousProviderName
       this.logger?.error(
         `Failed to register storage provider: ${config.provider}`,
         error,

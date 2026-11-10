@@ -51,6 +51,7 @@ export default eventHandler(async (event) => {
           and(
             eq(tables.albumPhotos.photoId, photoId),
             eq(tables.albums.isHidden, false),
+            eq(tables.albums.visibility, 'public'),
           ),
         )
         .all()

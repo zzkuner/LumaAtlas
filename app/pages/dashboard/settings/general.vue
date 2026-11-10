@@ -1,4 +1,11 @@
 <script lang="ts" setup>
+import {
+  ABOUT_LINK_OPTIONS,
+  normalizeAboutLinks,
+  type AboutLinkId,
+  type AboutLinkSetting,
+} from '~~/shared/utils/about-links'
+
 definePageMeta({
   layout: 'dashboard',
 })
@@ -17,6 +24,8 @@ const appFields = computed(() =>
 )
 
 const contentAppearanceKeys = new Set([
+  'appearance.about.showAuthor',
+  'appearance.about.showAvatar',
   'appearance.home.socialLinks',
   'appearance.footer.enabled',
   'appearance.footer.text',
@@ -121,17 +130,28 @@ const handleAppSettingsSubmit = async () => {
   }
 }
 
-const socialLinks = computed<Record<string, string>>(() => {
-  const value = state['appearance.home.socialLinks']
-  return value && typeof value === 'object' && !Array.isArray(value)
-    ? (value as Record<string, string>)
-    : {}
-})
+const socialLinks = computed(() =>
+  normalizeAboutLinks(state['appearance.home.socialLinks']),
+)
 
-const updateSocialLink = (key: string, value: string) => {
+const updateSocialLink = (
+  key: AboutLinkId,
+  changes: Partial<AboutLinkSetting>,
+) => {
+  const current = state['appearance.home.socialLinks']
+  const stored =
+    current && typeof current === 'object' && !Array.isArray(current)
+      ? (current as Record<string, unknown>)
+      : {}
+  const previous = socialLinks.value[key]
+  const next = { ...previous, ...changes }
+  if (changes.url !== undefined) {
+    if (!changes.url.trim()) next.enabled = false
+    else if (!previous.url) next.enabled = true
+  }
   state['appearance.home.socialLinks'] = {
-    ...socialLinks.value,
-    [key]: value,
+    ...stored,
+    [key]: next,
   }
 }
 
@@ -221,6 +241,34 @@ const handleAppearanceSettingsSubmit = async () => {
                   作者介绍和外部链接只在关于页面集中呈现；首页是否引用作者简介由下方“首页信息”控制。
                 </p>
               </div>
+              <div class="grid gap-4 sm:grid-cols-2">
+                <label
+                  class="flex items-center justify-between gap-3 border-b border-neutral-200 py-3 text-sm dark:border-neutral-800"
+                >
+                  <span>显示作者名称</span>
+                  <USwitch
+                    :model-value="
+                      state['appearance.about.showAuthor'] !== false
+                    "
+                    @update:model-value="
+                      state['appearance.about.showAuthor'] = $event
+                    "
+                  />
+                </label>
+                <label
+                  class="flex items-center justify-between gap-3 border-b border-neutral-200 py-3 text-sm dark:border-neutral-800"
+                >
+                  <span>显示作者头像</span>
+                  <USwitch
+                    :model-value="
+                      state['appearance.about.showAvatar'] !== false
+                    "
+                    @update:model-value="
+                      state['appearance.about.showAvatar'] = $event
+                    "
+                  />
+                </label>
+              </div>
               <SettingField
                 v-for="field in aboutFields"
                 :key="field.key"
@@ -230,46 +278,21 @@ const handleAppearanceSettingsSubmit = async () => {
               />
 
               <div
-                class="grid gap-4 border-t border-neutral-200 pt-5 sm:grid-cols-2 dark:border-neutral-800"
+                class="border-t border-neutral-200 pt-5 dark:border-neutral-800"
               >
-                <UFormField label="个人网站">
-                  <UInput
-                    type="url"
-                    icon="lucide:link"
-                    :model-value="String(socialLinks.website || '')"
-                    @update:model-value="
-                      updateSocialLink('website', String($event))
-                    "
-                  />
-                </UFormField>
-                <UFormField label="Instagram">
-                  <UInput
-                    type="url"
-                    icon="simple-icons:instagram"
-                    :model-value="String(socialLinks.instagram || '')"
-                    @update:model-value="
-                      updateSocialLink('instagram', String($event))
-                    "
-                  />
-                </UFormField>
-                <UFormField label="X">
-                  <UInput
-                    type="url"
-                    icon="simple-icons:x"
-                    :model-value="String(socialLinks.x || '')"
-                    @update:model-value="updateSocialLink('x', String($event))"
-                  />
-                </UFormField>
-                <UFormField label="GitHub">
-                  <UInput
-                    type="url"
-                    icon="simple-icons:github"
-                    :model-value="String(socialLinks.github || '')"
-                    @update:model-value="
-                      updateSocialLink('github', String($event))
-                    "
-                  />
-                </UFormField>
+                <h5 class="text-sm font-medium">外部链接</h5>
+                <p class="mt-1 text-sm text-neutral-500">
+                  每条链接可以单独命名和显示；未填写地址时不会出现在前台。
+                </p>
+                <SettingAboutLinkEditor
+                  v-for="option in ABOUT_LINK_OPTIONS"
+                  :key="option.id"
+                  :id="option.id"
+                  :label="option.label"
+                  :icon="option.icon"
+                  :value="socialLinks[option.id]"
+                  @change="updateSocialLink"
+                />
               </div>
             </section>
 

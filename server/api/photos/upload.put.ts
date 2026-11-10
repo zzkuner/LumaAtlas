@@ -51,9 +51,39 @@ export default eventHandler(async (event) => {
     }
   }
 
-  // 使用流式处理而不是一次性读取整个文件到内存
-  const raw = await readRawBody(event, false)
-  if (!raw || !(raw instanceof Buffer)) {
+  const maxFileSizeMB =
+    (await settingsManager.get<number>('system', 'upload.maxFileSize')) ?? 256
+  const maxBytes = maxFileSizeMB * 1024 * 1024
+  const declaredLength = Number(getHeader(event, 'content-length'))
+  const tooLarge = (size: number) =>
+    createError({
+      statusCode: 413,
+      statusMessage: t('upload.error.tooLarge.title'),
+      data: {
+        title: t('upload.error.tooLarge.title'),
+        message: t('upload.error.tooLarge.message', {
+          size: (size / 1024 / 1024).toFixed(2),
+        }),
+        suggestion: t('upload.error.tooLarge.suggestion', {
+          maxSize: maxFileSizeMB,
+        }),
+      },
+    })
+  if (Number.isFinite(declaredLength) && declaredLength > maxBytes) {
+    throw tooLarge(declaredLength)
+  }
+
+  const chunks: Buffer[] = []
+  let receivedBytes = 0
+  for await (const chunk of event.node.req) {
+    const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)
+    receivedBytes += buffer.byteLength
+    if (receivedBytes > maxBytes) {
+      throw tooLarge(receivedBytes)
+    }
+    chunks.push(buffer)
+  }
+  if (receivedBytes === 0) {
     throw createError({
       statusCode: 400,
       statusMessage: t('upload.error.uploadFailed.title'),
@@ -63,25 +93,7 @@ export default eventHandler(async (event) => {
       },
     })
   }
-
-  // 简单大小限制（从设置中读取，默认 256MB）
-  const maxFileSizeMB =
-    (await settingsManager.get<number>('system', 'upload.maxFileSize')) ?? 256
-  const maxBytes = maxFileSizeMB * 1024 * 1024
-  if (raw.byteLength > maxBytes) {
-    const sizeInMB = (raw.byteLength / 1024 / 1024).toFixed(2)
-    throw createError({
-      statusCode: 413,
-      statusMessage: t('upload.error.tooLarge.title'),
-      data: {
-        title: t('upload.error.tooLarge.title'),
-        message: t('upload.error.tooLarge.message', { size: sizeInMB }),
-        suggestion: t('upload.error.tooLarge.suggestion', {
-          maxSize: maxFileSizeMB,
-        }),
-      },
-    })
-  }
+  const raw = Buffer.concat(chunks, receivedBytes)
 
   try {
     await storageProvider.create(key.replace(/^\/+/, ''), raw, contentType)

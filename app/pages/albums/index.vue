@@ -7,6 +7,7 @@ if (getSetting('app:appearance.home.showAlbumsNav') === false) {
 
 interface AlbumWithPhotos extends Album {
   photoIds?: string[]
+  coverPhoto?: Photo | null
 }
 
 const fetchAlbums = $fetch as unknown as <T>(url: string) => Promise<T>
@@ -84,7 +85,7 @@ const albumCards = computed(() =>
 
     return {
       album,
-      cover: cover || null,
+      cover: cover || album.coverPhoto || null,
       count: album.photoIds?.length || 0,
     }
   }),
@@ -93,7 +94,7 @@ const albumCards = computed(() =>
 
 <template>
   <div
-    class="relative min-h-svh overflow-x-hidden bg-white text-neutral-950 dark:bg-neutral-950 dark:text-white"
+    class="relative flex min-h-svh flex-col overflow-x-hidden bg-white text-neutral-950 dark:bg-neutral-950 dark:text-white"
     :style="themeStyle"
   >
     <MasonryItemHeader :show-gallery-controls="false" />
@@ -144,7 +145,7 @@ const albumCards = computed(() =>
     </div>
 
     <main
-      class="relative z-10 mx-auto w-full px-4 pb-20 sm:px-6 lg:px-8"
+      class="relative z-10 mx-auto w-full flex-1 px-4 pb-20 sm:px-6 lg:px-8"
       :class="backgroundPhotos.length ? 'pt-24 sm:pt-28' : 'pt-8 sm:pt-10'"
       :style="{ maxWidth: contentMaxWidth }"
     >
@@ -281,7 +282,10 @@ const albumCards = computed(() =>
       </div>
     </main>
 
-    <MasonryItemFooter :max-width="contentMaxWidth" />
+    <MasonryItemFooter
+      v-if="albumsStatus !== 'pending'"
+      :max-width="contentMaxWidth"
+    />
   </div>
 </template>
 

@@ -46,6 +46,12 @@ export const APP_SETTINGS_UI: Record<string, FieldUIConfig> = {
     type: 'input',
     placeholder: '例如：在光线里，记住来过的地方。',
   },
+  'appearance.about.showAuthor': {
+    type: 'toggle',
+  },
+  'appearance.about.showAvatar': {
+    type: 'toggle',
+  },
   'appearance.theme': {
     type: 'tabs',
     options: [

@@ -4,6 +4,18 @@ import { and, eq, tables, useDB } from '../utils/db'
 
 export default defineNitroPlugin(async (_nitroApp) => {
   const _settingsManager = settingsManager
+  const hasStoredAppSettings = Boolean(
+    useDB()
+      .select({ id: tables.settings.id })
+      .from(tables.settings)
+      .where(
+        and(
+          eq(tables.settings.namespace, 'app'),
+          eq(tables.settings.key, 'title'),
+        ),
+      )
+      .get(),
+  )
 
   // Mark initialization phase to prevent storage provider switch triggers
   // until storage manager is properly initialized in plugin 2_storage.ts
@@ -18,7 +30,9 @@ export default defineNitroPlugin(async (_nitroApp) => {
 
     // Migrate existing configurations from runtimeConfig
     // Note: Storage manager will be initialized in the next plugin (2_storage.ts)
-    await migrateRuntimeConfigToSettings()
+    if (!hasStoredAppSettings) {
+      await migrateRuntimeConfigToSettings()
+    }
 
     // Replace the technical migration label used by older installations.
     await normalizeLegacyStorageProviderNames()

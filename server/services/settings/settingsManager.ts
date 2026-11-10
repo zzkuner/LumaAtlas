@@ -274,18 +274,21 @@ export class SettingsManager {
     this._logger.info(`Setting ${namespace}:${key} updated`)
     this.settingsCache.set(cacheKey, value)
 
-    // Trigger storage provider switch if storage:provider is being changed
-    // Skip during initialization as storage manager is not yet initialized
     if (namespace === 'storage' && key === 'provider' && !this.isInitializing) {
-      // Use setImmediate to avoid blocking and handle async operation
-      setImmediate(() => {
-        this.triggerStorageProviderSwitch(value as number).catch((error) => {
-          this._logger.error(
-            'Failed to trigger storage provider switch:',
-            error,
-          )
-        })
-      })
+      try {
+        await this.triggerStorageProviderSwitch(Number(value))
+      } catch (error) {
+        db.update(tables.settings)
+          .set({
+            value: existing.value,
+            updatedAt: existing.updatedAt,
+            updatedBy: existing.updatedBy,
+          })
+          .where(eq(tables.settings.id, existing.id))
+          .run()
+        this.settingsCache.delete(cacheKey)
+        throw error
+      }
     }
   }
 
@@ -305,8 +308,7 @@ export class SettingsManager {
 
       const newProvider = await this.storage.getProviderById(providerId)
       if (!newProvider) {
-        this._logger.error(`Provider with ID ${providerId} not found`)
-        return
+        throw new Error(`Provider with ID ${providerId} not found`)
       }
 
       let storageManager = getGlobalStorageManager()
@@ -319,12 +321,12 @@ export class SettingsManager {
             newProvider.config,
             loggerModule.logger.dynamic('storage'),
           )
-          setGlobalStorageManager(storageManager)
 
           if (newProvider.config.provider === 'local') {
             const fs = await import('node:fs/promises')
             await fs.mkdir(newProvider.config.basePath, { recursive: true })
           }
+          setGlobalStorageManager(storageManager)
 
           this._logger.info('Storage manager bootstrap completed')
           return
@@ -333,7 +335,7 @@ export class SettingsManager {
             'Failed to bootstrap storage manager with new provider:',
             bootstrapError,
           )
-          return
+          throw bootstrapError
         }
       }
 
@@ -347,6 +349,110 @@ export class SettingsManager {
       )
     } catch (error) {
       this._logger.error('Failed to switch storage provider:', error)
+      throw error
+    }
+  }
+
+  async setMany(
+    updates: Array<{
+      namespace: SettingNamespace
+      key: SettingKey<SettingNamespace>
+      value: SettingValue
+    }>,
+    updatedBy?: number,
+  ): Promise<void> {
+    const db = useDB()
+    const uniqueKeys = new Set(
+      updates.map((item) => `${item.namespace}:${item.key}`),
+    )
+    if (uniqueKeys.size !== updates.length) {
+      throw new Error('Duplicate setting keys in batch')
+    }
+    let nextStorageProvider: number | undefined
+    const previousSettings: Array<{
+      id: number
+      value: string | null
+      updatedAt: Date
+      updatedBy: number | null
+    }> = []
+
+    db.transaction((transaction) => {
+      for (const update of updates) {
+        const existing = transaction
+          .select()
+          .from(tables.settings)
+          .where(
+            and(
+              eq(tables.settings.namespace, update.namespace),
+              eq(tables.settings.key, update.key),
+            ),
+          )
+          .get()
+        if (!existing) {
+          throw new Error(
+            `Setting ${update.namespace}:${update.key} does not exist`,
+          )
+        }
+        if (existing.isReadonly) {
+          throw new Error(
+            `Setting ${update.namespace}:${update.key} is readonly`,
+          )
+        }
+        if (!this.validateEnum(update.value, existing.enum)) {
+          throw new Error(
+            `Invalid value for setting ${update.namespace}:${update.key}`,
+          )
+        }
+        previousSettings.push({
+          id: existing.id,
+          value: existing.value,
+          updatedAt: existing.updatedAt,
+          updatedBy: existing.updatedBy,
+        })
+        transaction
+          .update(tables.settings)
+          .set({
+            value: this.serialize(update.value),
+            updatedAt: new Date(),
+            updatedBy: updatedBy ?? null,
+          })
+          .where(eq(tables.settings.id, existing.id))
+          .run()
+        if (update.namespace === 'storage' && update.key === 'provider') {
+          const providerId = Number(update.value)
+          const provider = transaction
+            .select({ id: tables.settings_storage_providers.id })
+            .from(tables.settings_storage_providers)
+            .where(eq(tables.settings_storage_providers.id, providerId))
+            .get()
+          if (!provider)
+            throw new Error(`Provider with ID ${providerId} not found`)
+          nextStorageProvider = providerId
+        }
+      }
+    })
+
+    this.clearCache()
+    if (nextStorageProvider !== undefined && !this.isInitializing) {
+      try {
+        await this.triggerStorageProviderSwitch(nextStorageProvider)
+      } catch (error) {
+        db.transaction((transaction) => {
+          for (const previous of previousSettings) {
+            transaction
+              .update(tables.settings)
+              .set({
+                value: previous.value,
+                updatedAt: previous.updatedAt,
+                updatedBy: previous.updatedBy,
+              })
+              .where(eq(tables.settings.id, previous.id))
+              .run()
+          }
+        })
+        this.clearCache()
+        throw error
+      }
     }
   }
 

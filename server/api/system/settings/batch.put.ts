@@ -41,9 +41,6 @@ export default eventHandler(async (event) => {
   )
 
   try {
-    let successCount = 0
-    const errors: Array<{ namespace: string; key: string; error: string }> = []
-
     // 获取当前用户ID，如果用户不存在于数据库则返回null
     const db = useDB()
     const currentUser = session.user.id
@@ -55,37 +52,11 @@ export default eventHandler(async (event) => {
       : null
     const updatedBy = currentUser ? currentUser.id : undefined
 
-    // 逐个更新设置
-    for (const update of body.updates) {
-      try {
-        await settingsManager.set(
-          update.namespace,
-          update.key,
-          update.value,
-          updatedBy,
-        )
-        successCount++
-      } catch (err) {
-        errors.push({
-          namespace: update.namespace,
-          key: update.key,
-          error: (err as Error).message,
-        })
-      }
-    }
-
-    // 如果有错误，返回部分成功的响应
-    if (errors.length > 0) {
-      return {
-        success: false,
-        updated: successCount,
-        errors,
-      }
-    }
+    await settingsManager.setMany(body.updates, updatedBy)
 
     return {
       success: true,
-      updated: successCount,
+      updated: body.updates.length,
     }
   } catch (error) {
     throw createError({

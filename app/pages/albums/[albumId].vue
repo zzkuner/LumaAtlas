@@ -92,6 +92,7 @@ const handleOpenViewer = (index: number) => {
     index,
     `/albums/${albumId.value}`,
     albumData.value?.photos?.map((albumPhoto) => albumPhoto.id) || [],
+    (albumData.value?.photos || []) as unknown as Photo[],
   )
   router.push(`/${photo.id}`)
 }
@@ -110,13 +111,13 @@ onUnmounted(() => window.removeEventListener('scroll', handleScroll))
 
 <template>
   <div
-    class="min-h-svh bg-white text-neutral-950 dark:bg-neutral-950 dark:text-white"
+    class="flex min-h-svh flex-col bg-white text-neutral-950 dark:bg-neutral-950 dark:text-white"
     :style="themeStyle"
   >
     <MasonryItemHeader :show-gallery-controls="false" />
 
     <main
-      class="mx-auto w-full px-4 pb-20 pt-8 sm:px-6 sm:pt-10 lg:px-8"
+      class="mx-auto w-full flex-1 px-4 pb-20 pt-8 sm:px-6 sm:pt-10 lg:px-8"
       :style="{ maxWidth: contentMaxWidth }"
     >
       <div
@@ -241,7 +242,10 @@ onUnmounted(() => window.removeEventListener('scroll', handleScroll))
       </div>
     </main>
 
-    <MasonryItemFooter :max-width="contentMaxWidth" />
+    <MasonryItemFooter
+      v-if="!pending"
+      :max-width="contentMaxWidth"
+    />
 
     <UTooltip
       v-if="showBackToTop"

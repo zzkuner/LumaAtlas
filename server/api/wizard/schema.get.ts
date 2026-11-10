@@ -4,21 +4,21 @@ import { getSettingUIConfig } from '~~/server/services/settings/ui-config'
 import type { FieldDescriptor } from '~~/shared/types/settings'
 
 export default eventHandler(async (event) => {
-  await requireWizardAccess(event, { allowAnonymousWithoutUser: true })
-
   const query = await getValidatedQuery(
     event,
     z.object({
       namespace: z.string().min(1),
     }).parse,
   )
+  await requireWizardAccess(event, {
+    allowAnonymousWithoutUser: true,
+    allowAnonymousSchema: query.namespace === 'admin',
+  })
 
   // 1. Admin Account Schema
   if (query.namespace === 'admin') {
-    // Use env variables for default values if configured
     const defaultUsername = process.env.CFRAME_ADMIN_NAME || 'admin'
     const defaultEmail = process.env.CFRAME_ADMIN_EMAIL || ''
-    const defaultPassword = process.env.CFRAME_ADMIN_PASSWORD || ''
 
     const fields: FieldDescriptor[] = [
       {
@@ -43,8 +43,8 @@ export default eventHandler(async (event) => {
         namespace: 'admin',
         key: 'password',
         type: 'string',
-        defaultValue: defaultPassword,
-        value: defaultPassword,
+        defaultValue: '',
+        value: '',
         label: 'wizard.admin.password.label',
         ui: { type: 'password', required: true },
       },
@@ -52,8 +52,8 @@ export default eventHandler(async (event) => {
         namespace: 'admin',
         key: 'confirmPassword',
         type: 'string',
-        defaultValue: defaultPassword,
-        value: defaultPassword,
+        defaultValue: '',
+        value: '',
         label: 'wizard.admin.confirmPassword.label',
         ui: { type: 'password', required: true },
       },

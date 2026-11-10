@@ -91,6 +91,24 @@ export const DEFAULT_SETTINGS = [
   },
   {
     namespace: 'app',
+    key: 'appearance.about.showAuthor',
+    type: 'boolean',
+    defaultValue: true,
+    label: 'Show author name',
+    description: 'Show the author name on the About page.',
+    isPublic: true,
+  },
+  {
+    namespace: 'app',
+    key: 'appearance.about.showAvatar',
+    type: 'boolean',
+    defaultValue: true,
+    label: 'Show author portrait',
+    description: 'Show the author portrait on the About page.',
+    isPublic: true,
+  },
+  {
+    namespace: 'app',
     key: 'appearance.theme',
     type: 'string',
     defaultValue: 'system',
@@ -331,7 +349,7 @@ export const DEFAULT_SETTINGS = [
       github: '',
     },
     label: 'Social links',
-    description: 'Links displayed in the public footer.',
+    description: 'Links displayed on the About page.',
     isPublic: true,
   },
   {

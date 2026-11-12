@@ -23,6 +23,7 @@ export default defineEventHandler(async (event) => {
     .select({
       thumbnailKey: tables.photos.thumbnailKey,
       storageKey: tables.photos.storageKey,
+      originalUrl: tables.photos.originalUrl,
     })
     .from(tables.photos)
     .where(visibilityCondition)
@@ -32,6 +33,9 @@ export default defineEventHandler(async (event) => {
     (key): key is string => Boolean(key),
   )
   if (!sourceKeys.length) {
+    if (photo?.originalUrl) {
+      return sendRedirect(event, photo.originalUrl, 302)
+    }
     throw createError({ statusCode: 404, statusMessage: 'Photo not found' })
   }
 

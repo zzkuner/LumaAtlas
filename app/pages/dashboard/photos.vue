@@ -158,6 +158,13 @@ interface EditFormState {
   description: string
   tags: string[]
   rating: number | null
+  exposure: {
+    fNumber: string
+    exposureTime: string
+    iso: string
+    focalLength: string
+    cameraModel: string
+  }
 }
 
 const editingPhoto = ref<Photo | null>(null)
@@ -172,6 +179,13 @@ const editFormState = reactive<EditFormState>({
   description: '',
   tags: [],
   rating: null,
+  exposure: {
+    fNumber: '',
+    exposureTime: '',
+    iso: '',
+    focalLength: '',
+    cameraModel: '',
+  },
 })
 
 const originalMetadata = ref<{
@@ -180,12 +194,20 @@ const originalMetadata = ref<{
   tags: string[]
   location: { latitude: number; longitude: number } | null
   rating: number | null
+  exposure: EditFormState['exposure']
 }>({
   title: '',
   description: '',
   tags: [],
   location: null,
   rating: null,
+  exposure: {
+    fNumber: '',
+    exposureTime: '',
+    iso: '',
+    focalLength: '',
+    cameraModel: '',
+  },
 })
 
 const locationSelection = ref<{ latitude: number; longitude: number } | null>(
@@ -261,6 +283,11 @@ const locationChanged = computed(() => {
 const ratingChanged = computed(
   () => editFormState.rating !== originalMetadata.value.rating,
 )
+const exposureChanged = computed(
+  () =>
+    JSON.stringify(editFormState.exposure) !==
+    JSON.stringify(originalMetadata.value.exposure),
+)
 
 const isMetadataDirty = computed(
   () =>
@@ -268,7 +295,8 @@ const isMetadataDirty = computed(
     descriptionChanged.value ||
     tagsChanged.value ||
     locationChanged.value ||
-    ratingChanged.value,
+    ratingChanged.value ||
+    exposureChanged.value,
 )
 
 const formattedCoordinates = computed(() => {
@@ -590,12 +618,20 @@ watch(isEditModalOpen, (open) => {
     editFormState.description = ''
     editFormState.tags = []
     editFormState.rating = null
+    Object.assign(editFormState.exposure, {
+      fNumber: '',
+      exposureTime: '',
+      iso: '',
+      focalLength: '',
+      cameraModel: '',
+    })
     originalMetadata.value = {
       title: '',
       description: '',
       tags: [],
       location: null,
       rating: null,
+      exposure: { ...editFormState.exposure },
     }
     locationSelection.value = null
     locationTouched.value = false
@@ -1506,6 +1542,21 @@ const openMetadataEditor = (photo: Photo) => {
   editFormState.tags = [...initialTags]
   editFormState.rating =
     typeof photo.exif?.Rating === 'number' ? photo.exif.Rating : null
+  const exposure = {
+    fNumber: photo.exif?.FNumber == null ? '' : String(photo.exif.FNumber),
+    exposureTime:
+      photo.exif?.ExposureTime == null ? '' : String(photo.exif.ExposureTime),
+    iso: photo.exif?.ISO == null ? '' : String(photo.exif.ISO),
+    focalLength:
+      photo.exif?.FocalLength == null
+        ? String(photo.exif?.FocalLengthIn35mmFormat || '').replace(
+            /\s*mm$/i,
+            '',
+          )
+        : String(photo.exif.FocalLength).replace(/\s*mm$/i, ''),
+    cameraModel: String(photo.exif?.Model || ''),
+  }
+  Object.assign(editFormState.exposure, exposure)
 
   const initialLocation = hasCoordinates
     ? {
@@ -1520,6 +1571,7 @@ const openMetadataEditor = (photo: Photo) => {
     tags: [...initialTags],
     location: initialLocation ? { ...initialLocation } : null,
     rating: typeof photo.exif?.Rating === 'number' ? photo.exif.Rating : null,
+    exposure: { ...exposure },
   }
 
   locationSelection.value = initialLocation ? { ...initialLocation } : null
@@ -1576,6 +1628,13 @@ const saveMetadataChanges = async () => {
       tags?: string[]
       location?: { latitude: number; longitude: number } | null
       rating?: number | null
+      exposure?: {
+        fNumber: number | null
+        exposureTime: string | null
+        iso: number | null
+        focalLength: number | null
+        cameraModel: string | null
+      }
     } = {}
 
     if (titleChanged.value) {
@@ -1591,7 +1650,17 @@ const saveMetadataChanges = async () => {
     }
 
     const shouldQueueLocationErase =
-      locationChanged.value && locationSelection.value === null
+      locationChanged.value &&
+      locationSelection.value === null &&
+      !!editingPhoto.value.storageKey
+
+    if (
+      locationChanged.value &&
+      locationSelection.value === null &&
+      !editingPhoto.value.storageKey
+    ) {
+      payload.location = null
+    }
 
     if (locationChanged.value && locationSelection.value) {
       payload.location = {
@@ -1602,6 +1671,26 @@ const saveMetadataChanges = async () => {
 
     if (ratingChanged.value) {
       payload.rating = editFormState.rating
+    }
+
+    if (exposureChanged.value) {
+      const value = editFormState.exposure
+      const numberOrNull = (raw: string) =>
+        raw.trim() ? Number(raw.trim()) : null
+      payload.exposure = {
+        fNumber: numberOrNull(value.fNumber),
+        exposureTime: value.exposureTime.trim() || null,
+        iso: numberOrNull(value.iso),
+        focalLength: numberOrNull(value.focalLength),
+        cameraModel: value.cameraModel.trim() || null,
+      }
+      if (
+        Object.values(payload.exposure).some(
+          (item) => typeof item === 'number' && !Number.isFinite(item),
+        )
+      ) {
+        throw new Error('拍摄参数请输入有效数字。')
+      }
     }
 
     let hasAnySuccessfulAction = false
@@ -2330,6 +2419,16 @@ onUnmounted(() => {
       <UDashboardNavbar :title="$t('dashboard.photos.toolbar.title')">
         <template #right>
           <div class="flex gap-2 items-center">
+            <UButton
+              to="/dashboard/import"
+              variant="soft"
+              color="neutral"
+              icon="lucide:link-2"
+              aria-label="添加图片链接"
+              title="添加图片链接"
+            >
+              <span class="hidden sm:inline">图片链接</span>
+            </UButton>
             <UButton
               variant="soft"
               color="neutral"
@@ -3131,6 +3230,65 @@ onUnmounted(() => {
                     />
                   </div>
                 </div>
+
+                <fieldset
+                  class="space-y-3 border-t border-neutral-200 pt-4 dark:border-neutral-800"
+                >
+                  <legend
+                    class="text-sm font-medium text-neutral-700 dark:text-neutral-200"
+                  >
+                    拍摄参数
+                  </legend>
+                  <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    <UFormField label="光圈 (f/)">
+                      <UInput
+                        v-model="editFormState.exposure.fNumber"
+                        type="number"
+                        min="0.1"
+                        max="128"
+                        step="0.1"
+                        placeholder="2.8"
+                        class="w-full"
+                      />
+                    </UFormField>
+                    <UFormField label="快门 (秒)">
+                      <UInput
+                        v-model="editFormState.exposure.exposureTime"
+                        placeholder="1/125"
+                        class="w-full"
+                      />
+                    </UFormField>
+                    <UFormField label="ISO">
+                      <UInput
+                        v-model="editFormState.exposure.iso"
+                        type="number"
+                        min="1"
+                        max="10000000"
+                        step="1"
+                        placeholder="100"
+                        class="w-full"
+                      />
+                    </UFormField>
+                    <UFormField label="焦距 (mm)">
+                      <UInput
+                        v-model="editFormState.exposure.focalLength"
+                        type="number"
+                        min="0.1"
+                        max="2000"
+                        step="0.1"
+                        placeholder="35"
+                        class="w-full"
+                      />
+                    </UFormField>
+                  </div>
+                  <UFormField label="相机型号">
+                    <UInput
+                      v-model="editFormState.exposure.cameraModel"
+                      placeholder="例如 Xiaomi 15 Ultra"
+                      class="w-full"
+                    />
+                  </UFormField>
+                </fieldset>
 
                 <div class="space-y-3">
                   <div class="flex items-center justify-between">

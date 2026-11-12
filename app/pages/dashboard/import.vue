@@ -19,6 +19,7 @@ const isScanning = ref(false)
 const isEnqueueing = ref(false)
 const scanResult = ref<StorageImportScanResult | null>(null)
 const remoteUrl = ref('')
+const saveRemoteToStorage = ref(true)
 const isImportingUrl = ref(false)
 const remoteImportError = ref('')
 
@@ -29,12 +30,19 @@ const importRemoteImage = async () => {
   try {
     await $fetch('/api/import/url', {
       method: 'POST',
-      body: { url: remoteUrl.value.trim() },
+      body: {
+        url: remoteUrl.value.trim(),
+        saveToStorage: saveRemoteToStorage.value,
+      },
     })
     remoteUrl.value = ''
     toast.add({
-      title: '图片已进入处理队列',
-      description: '处理完成后将在照片库显示。',
+      title: saveRemoteToStorage.value
+        ? '图片已进入处理队列'
+        : '图片链接已添加',
+      description: saveRemoteToStorage.value
+        ? '处理完成后将在照片库显示。'
+        : '图片由原站提供，原站失效或禁止外链时将无法显示。',
       color: 'success',
     })
   } catch (error: any) {
@@ -165,7 +173,7 @@ watch(includeUnchanged, () => {
               在线图片
             </h2>
             <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
-              粘贴公开图片的直接链接。图片会保存到当前存储，并按普通上传流程处理。
+              粘贴公开图片的直接链接，选择保存到本站或仅引用原图。
             </p>
           </div>
           <form
@@ -190,6 +198,12 @@ watch(includeUnchanged, () => {
               >导入图片</UButton
             >
           </form>
+          <UCheckbox
+            v-model="saveRemoteToStorage"
+            label="保存到本站存储"
+            description="关闭后只保存链接；原站删除图片、限制外链或更换地址时，本站也无法显示。"
+            :disabled="isImportingUrl"
+          />
           <p
             v-if="remoteImportError"
             role="alert"

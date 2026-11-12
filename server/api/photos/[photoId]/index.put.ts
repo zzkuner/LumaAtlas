@@ -27,6 +27,18 @@ const bodySchema = z.object({
     ])
     .optional(),
   rating: z.union([z.number().int().min(0).max(5), z.null()]).optional(),
+  exposure: z
+    .object({
+      fNumber: z.number().min(0.1).max(128).nullable(),
+      exposureTime: z
+        .string()
+        .regex(/^(?:\d+(?:\.\d+)?|\d+\/\d+)$/)
+        .nullable(),
+      iso: z.number().int().min(1).max(10000000).nullable(),
+      focalLength: z.number().min(0.1).max(2000).nullable(),
+      cameraModel: z.string().trim().max(200).nullable(),
+    })
+    .optional(),
 })
 
 const normalizeTags = (tags: string[] | undefined) => {
@@ -56,7 +68,8 @@ export default eventHandler(async (event) => {
     payload.description === undefined &&
     payload.tags === undefined &&
     payload.location === undefined &&
-    payload.rating === undefined
+    payload.rating === undefined &&
+    payload.exposure === undefined
   ) {
     throw createError({
       statusCode: 400,
@@ -76,6 +89,47 @@ export default eventHandler(async (event) => {
       statusCode: 404,
       statusMessage: t('dashboard.photos.messages.photoNotFound'),
     })
+  }
+
+  if (!photo.storageKey && photo.originalUrl) {
+    const nextExif = { ...photo.exif }
+    if (payload.rating !== undefined)
+      nextExif.Rating = payload.rating ?? undefined
+    if (payload.exposure) {
+      nextExif.FNumber = payload.exposure.fNumber ?? undefined
+      nextExif.ExposureTime = payload.exposure.exposureTime ?? undefined
+      nextExif.ISO = payload.exposure.iso ?? undefined
+      nextExif.FocalLength =
+        payload.exposure.focalLength == null
+          ? undefined
+          : String(payload.exposure.focalLength)
+      nextExif.FocalLengthIn35mmFormat =
+        payload.exposure.focalLength == null
+          ? undefined
+          : String(payload.exposure.focalLength)
+      nextExif.Model = payload.exposure.cameraModel ?? undefined
+    }
+    const updates: Record<string, any> = { exif: nextExif }
+    if (payload.title !== undefined) updates.title = payload.title || null
+    if (payload.description !== undefined)
+      updates.description = payload.description || null
+    if (payload.tags !== undefined) updates.tags = normalizeTags(payload.tags)
+    if (payload.location !== undefined) {
+      updates.latitude = payload.location?.latitude ?? null
+      updates.longitude = payload.location?.longitude ?? null
+      updates.country = null
+      updates.city = null
+      updates.locationName = null
+    }
+    db.update(tables.photos)
+      .set(updates)
+      .where(eq(tables.photos.id, photoId))
+      .run()
+    return db
+      .select()
+      .from(tables.photos)
+      .where(eq(tables.photos.id, photoId))
+      .get()
   }
 
   if (!photo.storageKey) {
@@ -154,6 +208,14 @@ export default eventHandler(async (event) => {
     exifUpdates.Rating = payload.rating !== null ? payload.rating : null
   }
 
+  if (payload.exposure) {
+    exifUpdates.FNumber = payload.exposure.fNumber
+    exifUpdates.ExposureTime = payload.exposure.exposureTime
+    exifUpdates.ISO = payload.exposure.iso
+    exifUpdates.FocalLength = payload.exposure.focalLength
+    exifUpdates.Model = payload.exposure.cameraModel
+  }
+
   const tempRoot = tmpdir()
   await mkdir(tempRoot, { recursive: true })
   const tempDir = await mkdtemp(path.join(tempRoot, 'cframe-edit-'))
@@ -183,7 +245,23 @@ export default eventHandler(async (event) => {
     const exifData = await extractExifData(updatedBuffer)
 
     const updateData: Record<string, any> = {
-      exif: exifData,
+      exif: payload.exposure
+        ? {
+            ...exifData,
+            FNumber: payload.exposure.fNumber ?? undefined,
+            ExposureTime: payload.exposure.exposureTime ?? undefined,
+            ISO: payload.exposure.iso ?? undefined,
+            FocalLength:
+              payload.exposure.focalLength == null
+                ? undefined
+                : String(payload.exposure.focalLength),
+            FocalLengthIn35mmFormat:
+              payload.exposure.focalLength == null
+                ? undefined
+                : String(payload.exposure.focalLength),
+            Model: payload.exposure.cameraModel ?? undefined,
+          }
+        : exifData,
       fileSize: updatedBuffer.length,
       lastModified: new Date().toISOString(),
     }

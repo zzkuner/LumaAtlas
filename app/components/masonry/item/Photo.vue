@@ -631,34 +631,18 @@ onUnmounted(() => {
         :processing-state="processingState || null"
       />
 
-      <div
-        v-if="isFeed && (contentTitle || contentDescription)"
-        class="pointer-events-none absolute inset-0 z-10 bg-linear-to-t from-black/60 via-transparent via-55% to-transparent opacity-100 transition-opacity duration-500 ease-out md:from-black/75 md:via-black/5 md:via-45% md:opacity-0 md:group-hover:opacity-100"
-      >
-        <div
-          class="absolute inset-x-0 bottom-0 translate-y-0 px-4 py-4 text-white opacity-100 transition-all duration-500 ease-out md:translate-y-5 md:px-7 md:py-7 md:opacity-0 md:group-hover:translate-y-0 md:group-hover:opacity-100"
-        >
-          <h3
-            v-if="contentTitle"
-            class="line-clamp-1 font-display text-base font-medium leading-6 drop-shadow-sm md:line-clamp-2 md:text-lg md:font-medium md:leading-7"
-          >
-            {{ contentTitle }}
-          </h3>
-          <p
-            v-if="contentDescription"
-            class="mt-1 line-clamp-1 max-w-2xl text-xs leading-5 text-white/78 drop-shadow-sm md:mt-2 md:line-clamp-3 md:text-sm md:leading-6 md:text-white/85"
-          >
-            {{ contentDescription }}
-          </p>
-        </div>
-      </div>
-
       <!-- Photo info overlay (bottom) -->
       <div
         v-if="
           !isFeed &&
           showPhotoInfo &&
-          (contentTitle || contentDescription || photo.dateTaken || photo.city)
+          (contentTitle ||
+            contentDescription ||
+            photo.dateTaken ||
+            photo.city ||
+            photo.exif?.Make ||
+            photo.exif?.Model ||
+            hasExposureParameters)
         "
         v-show="shouldShowInfoOverlay"
         class="pointer-events-none absolute inset-x-0 bottom-0 translate-y-3 bg-linear-to-t from-black/70 via-black/30 to-transparent p-3 opacity-0 transition-all duration-300 ease-out group-hover:translate-y-0 group-hover:opacity-100"
@@ -721,7 +705,8 @@ onUnmounted(() => {
             <div
               v-if="
                 photo.exif &&
-                (photo.exif.FNumber ||
+                (photo.exif.FocalLengthIn35mmFormat ||
+                  photo.exif.FNumber ||
                   photo.exif.ExposureTime ||
                   photo.exif.ISO)
               "
@@ -781,10 +766,31 @@ onUnmounted(() => {
     </div>
 
     <div
-      v-if="showBigPhotoInfo && isFeed"
+      v-if="isFeed && (contentTitle || contentDescription || showBigPhotoInfo)"
       class="mx-auto w-full max-w-6xl border-b border-neutral-200/70 py-3 dark:border-neutral-800/70"
     >
-      <div class="flex min-w-0 items-center gap-4 px-1 sm:px-2">
+      <div
+        v-if="contentTitle || contentDescription"
+        class="mb-3 px-1 sm:mb-4 sm:px-2"
+      >
+        <h3
+          v-if="contentTitle"
+          class="font-display text-lg font-medium leading-snug text-neutral-950 sm:text-xl dark:text-white"
+          :style="{ fontFamily: 'var(--la-heading-font)' }"
+        >
+          {{ contentTitle }}
+        </h3>
+        <p
+          v-if="contentDescription"
+          class="mt-1 line-clamp-2 font-display text-sm leading-6 text-neutral-500 sm:line-clamp-3 dark:text-neutral-400"
+        >
+          {{ contentDescription }}
+        </p>
+      </div>
+      <div
+        v-if="showBigPhotoInfo"
+        class="flex min-w-0 items-center gap-4 px-1 sm:px-2"
+      >
         <div class="min-w-0 flex-1 font-sans sm:hidden">
           <div
             v-if="hasExposureParameters"

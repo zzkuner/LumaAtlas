@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest'
 
-import { applySettingsFieldsToState } from '../../app/utils/settingsForm'
+import {
+  applySettingsFieldsToState,
+  getChangedSettingFields,
+} from '../../app/utils/settingsForm'
 
 const fields = [
   { key: 'title', value: 'Saved title' },
@@ -26,5 +29,24 @@ describe('applySettingsFieldsToState', () => {
     })
 
     expect(state).toEqual({ title: 'Saved title', layout: 'grid' })
+  })
+})
+
+describe('getChangedSettingFields', () => {
+  it('submits only edited settings and preserves hidden provider fields', () => {
+    const state = {
+      provider: 'mapbox',
+      'mapbox.token': 'existing-token',
+      'maplibre.token': 'hidden-token',
+    }
+    const mapFields = [
+      { key: 'provider', value: 'maplibre' },
+      { key: 'mapbox.token', value: 'existing-token' },
+      { key: 'maplibre.token', value: 'hidden-token' },
+    ]
+
+    expect(getChangedSettingFields(state, mapFields)).toEqual({
+      provider: 'mapbox',
+    })
   })
 })

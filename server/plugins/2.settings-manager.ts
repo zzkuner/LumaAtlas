@@ -4,17 +4,15 @@ import { and, eq, tables, useDB } from '../utils/db'
 
 export default defineNitroPlugin(async (_nitroApp) => {
   const _settingsManager = settingsManager
-  const hasStoredAppSettings = Boolean(
+  const storedSettings = new Set(
     useDB()
-      .select({ id: tables.settings.id })
+      .select({
+        namespace: tables.settings.namespace,
+        key: tables.settings.key,
+      })
       .from(tables.settings)
-      .where(
-        and(
-          eq(tables.settings.namespace, 'app'),
-          eq(tables.settings.key, 'title'),
-        ),
-      )
-      .get(),
+      .all()
+      .map(({ namespace, key }) => `${namespace}:${key}`),
   )
 
   // Mark initialization phase to prevent storage provider switch triggers
@@ -30,9 +28,7 @@ export default defineNitroPlugin(async (_nitroApp) => {
 
     // Migrate existing configurations from runtimeConfig
     // Note: Storage manager will be initialized in the next plugin (2_storage.ts)
-    if (!hasStoredAppSettings) {
-      await migrateRuntimeConfigToSettings()
-    }
+    await migrateRuntimeConfigToSettings(storedSettings)
 
     // Replace the technical migration label used by older installations.
     await normalizeLegacyStorageProviderNames()
@@ -47,9 +43,11 @@ export default defineNitroPlugin(async (_nitroApp) => {
 /**
  * Migrate existing configurations from runtimeConfig to the settings system
  */
-async function migrateRuntimeConfigToSettings() {
+async function migrateRuntimeConfigToSettings(storedSettings: Set<string>) {
   const config = useRuntimeConfig() as any
   const _logger = logger.dynamic('settings-migration')
+  const isNewSetting = (namespace: string, key: string) =>
+    !storedSettings.has(`${namespace}:${key}`)
 
   try {
     // Migrate app settings
@@ -63,7 +61,7 @@ async function migrateRuntimeConfigToSettings() {
       }
 
       for (const [key, value] of Object.entries(appSettings)) {
-        if (value) {
+        if (value && isNewSetting('app', key)) {
           try {
             await settingsManager.set('app', key as any, value, undefined, true)
             _logger.debug(`Migrated app.${key}`)
@@ -75,7 +73,10 @@ async function migrateRuntimeConfigToSettings() {
     }
 
     // Migrate map settings
-    if (config.public.map) {
+    if (
+      config.public.map &&
+      ![...storedSettings].some((key) => key.startsWith('map:'))
+    ) {
       _logger.info('Migrating map settings')
       const mapSettings = {
         provider: config.public.map.provider,
@@ -99,7 +100,10 @@ async function migrateRuntimeConfigToSettings() {
 
     // Migrate auth settings (GitHub OAuth)
     const githubOauthConfig = config.oauth?.github || {}
-    if (config.public?.oauth?.github?.enabled === true) {
+    if (
+      config.public?.oauth?.github?.enabled === true &&
+      isNewSetting('system', 'auth.github.enabled')
+    ) {
       try {
         await settingsManager.set(
           'system',
@@ -120,7 +124,11 @@ async function migrateRuntimeConfigToSettings() {
     }
 
     for (const [key, value] of Object.entries(githubOauthSettings)) {
-      if (typeof value === 'string' && value.length > 0) {
+      if (
+        typeof value === 'string' &&
+        value.length > 0 &&
+        isNewSetting('system', key)
+      ) {
         try {
           await settingsManager.set(
             'system',
@@ -137,7 +145,10 @@ async function migrateRuntimeConfigToSettings() {
     }
 
     // Migrate storage configuration and set as active provider
-    if (config.STORAGE_PROVIDER || config.provider) {
+    if (
+      (config.STORAGE_PROVIDER || config.provider) &&
+      isNewSetting('storage', 'provider')
+    ) {
       _logger.info('Migrating storage configuration')
 
       const storageProvider = config.STORAGE_PROVIDER || 's3'

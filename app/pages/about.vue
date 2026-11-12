@@ -75,7 +75,7 @@ const socialLinks = computed(() => {
     <MasonryItemHeader :show-gallery-controls="false" />
 
     <main
-      class="mx-auto w-full flex-1 px-5 pb-20 pt-14 sm:px-8 sm:pb-24 sm:pt-20 lg:px-10"
+      class="mx-auto w-full flex-1 px-5 pb-16 pt-10 sm:px-8 sm:pb-20 sm:pt-14 lg:px-10"
       :style="{ maxWidth: contentMaxWidth }"
     >
       <article class="mx-auto w-full max-w-[48rem]">
@@ -85,7 +85,7 @@ const socialLinks = computed(() => {
           <p class="text-sm text-neutral-500 dark:text-neutral-400">
             关于 · {{ siteTitle }}
           </p>
-          <div class="mt-12 flex items-start justify-between gap-8 sm:mt-16">
+          <div class="mt-9 flex items-start justify-between gap-8 sm:mt-11">
             <h1
               class="min-w-0 font-display text-3xl font-normal leading-snug sm:text-4xl"
               :style="{ fontFamily: 'var(--la-heading-font)' }"
@@ -101,7 +101,7 @@ const socialLinks = computed(() => {
           </div>
           <p
             v-if="leadBelowHeading"
-            class="mt-9 max-w-[40rem] font-display text-xl leading-relaxed text-neutral-700 sm:mt-11 sm:text-2xl dark:text-neutral-300"
+            class="mt-6 max-w-[40rem] font-display text-xl leading-relaxed text-neutral-700 sm:mt-7 sm:text-2xl dark:text-neutral-300"
           >
             {{ aboutLead }}
           </p>
@@ -109,7 +109,7 @@ const socialLinks = computed(() => {
 
         <div
           v-if="paragraphs.length"
-          class="mt-12 space-y-7 border-t border-neutral-200 pt-9 font-display text-base leading-9 text-neutral-600 sm:mt-14 sm:pt-11 sm:text-lg sm:leading-10 dark:border-neutral-800 dark:text-neutral-400"
+          class="mt-6 space-y-7 border-t border-neutral-200 pt-5 font-display text-base leading-9 text-neutral-600 sm:mt-7 sm:pt-6 sm:text-lg sm:leading-10 dark:border-neutral-800 dark:text-neutral-400"
         >
           <p
             v-for="(paragraph, index) in paragraphs"
@@ -122,7 +122,7 @@ const socialLinks = computed(() => {
 
         <nav
           v-if="socialLinks.length"
-          class="mt-14 border-t border-neutral-200 pt-7 sm:mt-16 dark:border-neutral-800"
+          class="mt-9 border-t border-neutral-200 pt-6 sm:mt-11 dark:border-neutral-800"
           aria-label="作者链接"
         >
           <p class="mb-5 text-sm text-neutral-500 dark:text-neutral-400">

@@ -7,6 +7,20 @@ type SettingFieldValue = {
 export const resolvedSettingFieldValue = (field: SettingFieldValue) =>
   field.value ?? field.defaultValue ?? null
 
+export const getChangedSettingFields = (
+  state: Record<string, unknown>,
+  fields: readonly SettingFieldValue[],
+) =>
+  Object.fromEntries(
+    fields
+      .filter(
+        (field) =>
+          JSON.stringify(state[field.key] ?? null) !==
+          JSON.stringify(resolvedSettingFieldValue(field)),
+      )
+      .map((field) => [field.key, state[field.key]]),
+  )
+
 export const applySettingsFieldsToState = (
   state: Record<string, unknown>,
   fields: SettingFieldValue[],

@@ -37,10 +37,9 @@ const sameValue = (left: any, right: any) =>
 const getDefaultFieldValue = (field: (typeof mapFields.value)[number]) =>
   field.value ?? field.defaultValue ?? null
 
-const isMapDirty = computed(() =>
-  mapFields.value.some(
-    (field) => !sameValue(mapState[field.key], getDefaultFieldValue(field)),
-  ),
+const isMapDirty = computed(
+  () =>
+    Object.keys(getChangedSettingFields(mapState, mapFields.value)).length > 0,
 )
 
 const isLocationDirty = computed(() =>
@@ -68,9 +67,8 @@ const resetLocationSettings = () => {
 }
 
 const handleMapSettingsSubmit = async () => {
-  const mapData = Object.fromEntries(
-    mapFields.value.map((f) => [f.key, mapState[f.key]]),
-  )
+  const mapData = getChangedSettingFields(mapState, mapFields.value)
+  if (Object.keys(mapData).length === 0) return
   try {
     await submitMap(mapData)
   } catch {
@@ -79,9 +77,11 @@ const handleMapSettingsSubmit = async () => {
 }
 
 const handleLocationSettingsSubmit = async () => {
-  const locationData = Object.fromEntries(
-    locationFields.value.map((f) => [f.key, locationState[f.key]]),
+  const locationData = getChangedSettingFields(
+    locationState,
+    locationFields.value,
   )
+  if (Object.keys(locationData).length === 0) return
   try {
     await submitLocation(locationData)
   } catch {

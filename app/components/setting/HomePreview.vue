@@ -369,16 +369,17 @@ const itemRatio = (naturalRatio: number) => {
               >
                 {{ item.title }}
               </div>
-            </div>
-            <div
-              v-if="layout === 'big' && item.title"
-              class="mt-2 border-l-2 border-neutral-300 py-0.5 pl-2.5 font-display text-[10px] font-medium leading-snug text-neutral-900 dark:border-neutral-700 dark:text-white"
-            >
-              {{ item.title }}
+              <div
+                v-if="layout === 'big' && item.title"
+                class="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/75 to-transparent px-2.5 pb-2 pt-6 text-[11px] font-medium text-white opacity-0 transition-opacity group-hover:opacity-100"
+                :style="{ fontFamily: 'var(--preview-heading-font)' }"
+              >
+                {{ item.title }}
+              </div>
             </div>
             <div
               v-if="layout === 'big' && showBigPhotoInfo"
-              class="grid grid-cols-2 gap-x-5 gap-y-2 border-b border-neutral-200 py-2.5 text-[8px] dark:border-neutral-800"
+              class="flex flex-wrap gap-x-5 gap-y-2 border-b border-neutral-200 py-2.5 text-[8px] dark:border-neutral-800"
             >
               <span class="flex min-w-0 flex-col gap-0.5">
                 <span class="text-[7px] text-neutral-400">参数</span>

@@ -746,55 +746,64 @@ onUnmounted(() => {
           </div>
         </div>
       </div>
-    </div>
 
-    <div
-      v-if="isFeed && (contentTitle || contentDescription || showBigPhotoInfo)"
-      class="mx-auto w-full max-w-6xl border-b border-neutral-200/70 py-3 dark:border-neutral-800/70"
-    >
       <div
-        v-if="contentTitle || contentDescription"
-        class="mb-3 border-l-2 border-neutral-300 py-1 pl-4 pr-2 sm:mb-4 sm:pl-5 dark:border-neutral-700"
+        v-if="isFeed && (contentTitle || contentDescription)"
+        class="photo-big-caption pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-linear-to-t from-black/75 via-black/20 to-transparent px-4 pb-4 pt-14 text-white sm:px-6 sm:pb-6"
       >
         <h3
           v-if="contentTitle"
-          class="font-display text-[1.35rem] font-medium leading-snug text-neutral-950 sm:text-[1.7rem] dark:text-white"
+          class="font-display text-xl font-medium leading-snug sm:text-2xl"
           :style="{ fontFamily: 'var(--la-heading-font)' }"
         >
           {{ contentTitle }}
         </h3>
         <p
           v-if="contentDescription"
-          class="mt-1.5 line-clamp-2 font-display text-sm leading-relaxed text-neutral-500 sm:line-clamp-3 sm:text-base dark:text-neutral-400"
+          class="mt-1 line-clamp-2 text-sm leading-relaxed text-white/85"
         >
           {{ contentDescription }}
         </p>
       </div>
-      <div
-        v-if="showBigPhotoInfo"
-        class="flex min-w-0 items-center gap-4 px-1 sm:px-2"
-      >
+    </div>
+
+    <div
+      v-if="
+        isFeed &&
+        showBigPhotoInfo &&
+        (hasExposureParameters ||
+          photo.exif?.Make ||
+          photo.exif?.Model ||
+          formattedLocation ||
+          photo.dateTaken)
+      "
+      class="mx-auto w-full max-w-6xl border-b border-neutral-200/70 py-3 dark:border-neutral-800/70"
+    >
+      <div class="flex min-w-0 items-start gap-3 px-1 sm:px-2">
         <div class="min-w-0 flex-1 font-sans sm:hidden">
           <div
             v-if="hasExposureParameters"
-            class="flex min-w-0 items-center gap-3 overflow-hidden whitespace-nowrap text-xs leading-5 text-neutral-700 tabular-nums dark:text-neutral-300"
+            class="flex min-w-0 items-center gap-3 overflow-x-auto whitespace-nowrap text-xs leading-6 text-neutral-700 tabular-nums [scrollbar-width:none] dark:text-neutral-300"
           >
             <span
               v-if="formattedFocalLength"
-              class="shrink-0"
+              class="inline-flex shrink-0 items-center gap-1"
             >
+              <Icon name="lucide:focus" class="size-3.5 text-neutral-500" />
               {{ formattedFocalLength }}
             </span>
             <span
               v-if="photo.exif?.FNumber"
-              class="shrink-0"
+              class="inline-flex shrink-0 items-center gap-1"
             >
+              <Icon name="lucide:aperture" class="size-3.5 text-neutral-500" />
               ƒ/{{ photo.exif.FNumber }}
             </span>
             <span
               v-if="photo.exif?.ExposureTime"
-              class="shrink-0"
+              class="inline-flex shrink-0 items-center gap-1"
             >
+              <Icon name="lucide:timer" class="size-3.5 text-neutral-500" />
               {{ formatExposureTime(photo.exif.ExposureTime) }}
             </span>
             <span
@@ -845,31 +854,33 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <div
-          class="hidden min-w-0 flex-1 flex-wrap items-center gap-x-7 gap-y-2 font-sans text-sm leading-6 text-neutral-800 sm:flex dark:text-neutral-200"
-        >
+        <div class="hidden min-w-0 flex-1 flex-wrap items-start gap-x-8 gap-y-3 font-sans text-sm leading-6 text-neutral-800 sm:flex dark:text-neutral-200">
           <div
             v-if="hasExposureParameters"
-            class="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1 tabular-nums"
+            class="min-w-0 tabular-nums"
             aria-label="拍摄参数"
           >
+            <span class="mb-0.5 block text-xs text-neutral-500 dark:text-neutral-400">参数</span>
             <span class="flex flex-wrap items-center gap-x-3 gap-y-1">
               <span
                 v-if="formattedFocalLength"
-                class="whitespace-nowrap"
+                class="inline-flex items-center gap-1 whitespace-nowrap"
               >
+                <Icon name="lucide:focus" class="size-4 text-neutral-500" />
                 {{ formattedFocalLength }}
               </span>
               <span
                 v-if="photo.exif?.FNumber"
-                class="whitespace-nowrap"
+                class="inline-flex items-center gap-1 whitespace-nowrap"
               >
+                <Icon name="lucide:aperture" class="size-4 text-neutral-500" />
                 ƒ/{{ photo.exif.FNumber }}
               </span>
               <span
                 v-if="photo.exif?.ExposureTime"
-                class="whitespace-nowrap"
+                class="inline-flex items-center gap-1 whitespace-nowrap"
               >
+                <Icon name="lucide:timer" class="size-4 text-neutral-500" />
                 {{ formatExposureTime(photo.exif.ExposureTime) }}
               </span>
               <span
@@ -883,45 +894,44 @@ onUnmounted(() => {
 
           <div
             v-if="photo.exif?.Make || photo.exif?.Model"
-            class="flex min-w-0 max-w-56 items-center gap-1.5"
+            class="min-w-0 max-w-56"
             aria-label="相机"
           >
-            <Icon
-              name="lucide:camera"
-              class="size-4 shrink-0 text-neutral-500 dark:text-neutral-400"
-            />
+            <span class="mb-0.5 block text-xs text-neutral-500 dark:text-neutral-400">相机</span>
             <span
-              class="min-w-0 truncate"
+              class="flex min-w-0 items-center gap-1.5"
               :title="formatCameraInfo(photo.exif.Make, photo.exif.Model)"
             >
-              {{ formatCameraInfo(photo.exif.Make, photo.exif.Model) }}
+              <Icon name="lucide:camera" class="size-4 shrink-0 text-neutral-500" />
+              <span class="min-w-0 truncate">{{ formatCameraInfo(photo.exif.Make, photo.exif.Model) }}</span>
             </span>
           </div>
 
           <div
             v-if="formattedLocation"
-            class="flex min-w-0 max-w-64 items-center gap-1.5"
+            class="min-w-0 max-w-64"
             aria-label="拍摄位置"
           >
-            <Icon
-              name="lucide:map-pin"
-              class="size-4 shrink-0 text-neutral-500 dark:text-neutral-400"
-            />
-            <span
-              class="min-w-0 truncate"
-              :title="formattedLocation"
-              >{{ formattedLocation }}</span
-            >
+            <span class="mb-0.5 block text-xs text-neutral-500 dark:text-neutral-400">位置</span>
+            <span class="flex min-w-0 items-center gap-1.5" :title="formattedLocation">
+              <Icon name="lucide:map-pin" class="size-4 shrink-0 text-neutral-500" />
+              <span class="min-w-0 truncate">{{ formattedLocation }}</span>
+            </span>
           </div>
 
-          <time
+          <div
             v-if="photo.dateTaken"
-            :datetime="$dayjs(photo.dateTaken).toISOString()"
-            class="whitespace-nowrap text-neutral-500 tabular-nums dark:text-neutral-400"
             aria-label="拍摄时间"
           >
-            {{ $dayjs(photo.dateTaken).format('YYYY.MM.DD · HH:mm') }}
-          </time>
+            <span class="mb-0.5 block text-xs text-neutral-500 dark:text-neutral-400">时间</span>
+            <time
+              :datetime="$dayjs(photo.dateTaken).toISOString()"
+              class="inline-flex items-center gap-1.5 whitespace-nowrap tabular-nums"
+            >
+              <Icon name="lucide:clock-3" class="size-4 text-neutral-500" />
+              {{ $dayjs(photo.dateTaken).format('YYYY.MM.DD · HH:mm') }}
+            </time>
+          </div>
         </div>
 
         <UTooltip text="查看详情">
@@ -957,6 +967,26 @@ onUnmounted(() => {
 }
 
 .photo-item:focus-visible .photo-thumb-overlay {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.photo-big-caption {
+  opacity: 0;
+  transform: translateY(0.5rem);
+  transition:
+    opacity 220ms ease,
+    transform 220ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .photo-item:hover .photo-big-caption {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.photo-item:focus-visible .photo-big-caption {
   opacity: 1;
   transform: translateY(0);
 }

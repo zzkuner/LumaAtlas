@@ -107,9 +107,8 @@ const resetSectionSettings = (section: SystemSectionWithFields) => {
 const handleSectionSettingsSubmit = async (
   section: SystemSectionWithFields,
 ) => {
-  const systemData = Object.fromEntries(
-    section.fields.map((f) => [f.key, systemState[f.key]]),
-  )
+  const systemData = getChangedSettingFields(systemState, section.fields)
+  if (Object.keys(systemData).length === 0) return
 
   try {
     await submitSystem(systemData)

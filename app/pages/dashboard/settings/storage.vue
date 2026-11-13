@@ -17,6 +17,8 @@ useHead({
 })
 
 const toast = useToast()
+const pendingDeleteStorage = ref<SettingStorageProvider | null>(null)
+const deletingStorage = ref(false)
 const checkingStorage = ref(false)
 const { data: storageHealth, refresh: refreshStorageHealth } = await useFetch<{
   status: 'healthy' | 'degraded' | 'unavailable'
@@ -41,12 +43,11 @@ const checkStorageHealth = async () => {
   }
 }
 
-const { data: currentStorageProvider, refresh: refreshCurrentStorageProvider } =
-  await useFetch<{
-    namespace: string
-    key: string
-    value: SettingValue
-  }>('/api/system/settings/storage/provider')
+const { data: currentStorageProvider } = await useFetch<{
+  namespace: string
+  key: string
+  value: SettingValue
+}>('/api/system/settings/storage/provider')
 
 const {
   data: availableStorage,
@@ -138,7 +139,9 @@ const availableStorageColumns: TableColumn<SettingStorageProvider>[] = [
             icon: 'tabler:trash',
             disabled:
               currentStorageProvider.value?.value === cell.row.original.id,
-            onClick: () => onStorageDelete(cell.row.original.id),
+            onClick: () => {
+              pendingDeleteStorage.value = cell.row.original
+            },
           },
           { default: () => '删除' },
         ),
@@ -171,13 +174,17 @@ const resetStorageDefault = () => {
 
 const handleStorageSettingsSubmit = async (close?: () => void) => {
   try {
-    await $fetch('/api/system/settings/storage/provider', {
+    const savedProvider = await $fetch<{
+      namespace: string
+      key: string
+      value: SettingValue
+    }>('/api/system/settings/storage/provider', {
       method: 'PUT',
       body: {
         value: storageSettingsState.storageConfigId,
       },
     })
-    refreshCurrentStorageProvider()
+    currentStorageProvider.value = savedProvider
     close?.()
     toast.add({
       title: '设置已保存',
@@ -397,12 +404,18 @@ const onStorageConfigSubmit = async (
   }
 }
 
-const onStorageDelete = async (storageId: number) => {
+const onStorageDelete = async () => {
+  if (!pendingDeleteStorage.value) return
+  const storageId = pendingDeleteStorage.value.id
+  deletingStorage.value = true
   try {
     await $fetch(`/api/system/settings/storage-config/${storageId}`, {
       method: 'DELETE',
     })
-    refreshAvailableStorage()
+    pendingDeleteStorage.value = null
+    availableStorage.value = (availableStorage.value ?? []).filter(
+      (provider) => provider.id !== storageId,
+    )
     toast.add({
       title: '存储方案已删除',
       color: 'success',
@@ -413,7 +426,13 @@ const onStorageDelete = async (storageId: number) => {
       description: (error as Error).message,
       color: 'error',
     })
+  } finally {
+    deletingStorage.value = false
   }
+}
+
+const closeStorageDeleteConfirmation = () => {
+  pendingDeleteStorage.value = null
 }
 </script>
 
@@ -425,9 +444,44 @@ const onStorageDelete = async (storageId: number) => {
 
     <template #body>
       <div class="mx-auto w-full max-w-5xl space-y-6">
+        <UModal
+          :open="pendingDeleteStorage !== null"
+          @update:open="
+            (open) => {
+              if (!open) pendingDeleteStorage = null
+            }
+          "
+        >
+          <template #body>
+            <h2 class="text-lg font-semibold">删除存储方案</h2>
+            <p class="mt-2 text-sm text-muted">
+              将删除“{{
+                pendingDeleteStorage?.name
+              }}”的连接配置，不会删除存储中的文件。若旧照片仍依赖此方案，删除后可能无法访问，请先确认已完成迁移。
+            </p>
+          </template>
+          <template #footer>
+            <div class="flex w-full justify-end gap-2">
+              <UButton
+                color="neutral"
+                variant="ghost"
+                :disabled="deletingStorage"
+                @click="closeStorageDeleteConfirmation"
+                >取消</UButton
+              >
+              <UButton
+                color="error"
+                icon="lucide:trash-2"
+                :loading="deletingStorage"
+                @click="onStorageDelete"
+                >删除方案</UButton
+              >
+            </div>
+          </template>
+        </UModal>
         <DashboardPageIntro
           :title="$t('title.storageSettings')"
-          description="管理默认存储方案与可用存储提供者。此页面的设置仅影响后续上传文件。"
+          description="管理照片存储连接。切换方案不会迁移旧文件，可能影响已有照片的访问。"
           icon="lucide:database"
         />
 
@@ -581,7 +635,7 @@ const onStorageDelete = async (storageId: number) => {
                     color="neutral"
                     variant="subtle"
                     title="注意"
-                    description="变更存储方案之后上传的文件将会存储到新的存储方案中，原方案中已有文件不会被迁移。"
+                    description="新照片将写入所选方案，旧文件不会迁移。当前照片读取也依赖正在使用的存储连接；切换前请确认旧文件可从新方案访问，或先完成迁移。"
                     icon="tabler:arrows-exchange"
                   />
                 </template>

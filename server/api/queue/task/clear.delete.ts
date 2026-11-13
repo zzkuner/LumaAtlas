@@ -11,12 +11,12 @@ export default defineEventHandler(async (event) => {
     const query = getQuery(event)
     const {
       includeCompleted = 'true',
-      includeFailed = 'true',
+      includeFailed = 'false',
       olderThanDays,
     } = await z
       .object({
         includeCompleted: z.string().optional().default('true'),
-        includeFailed: z.string().optional().default('true'),
+        includeFailed: z.string().optional().default('false'),
         olderThanDays: z.string().optional(),
       })
       .parseAsync(query)

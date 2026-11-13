@@ -16,7 +16,11 @@ const toast = useToast()
 
 // 状态管理
 const isLoading = ref(false)
-const selectedTasks = ref<number[]>([])
+const isDeleting = ref(false)
+const isClearConfirmOpen = ref(false)
+const includeCompleted = ref(true)
+const includeFailed = ref(false)
+const deleteTargetTaskId = ref<number | null>(null)
 const statusFilter = ref<string>('all')
 const typeFilter = ref<string>('all')
 const page = ref(1)
@@ -47,13 +51,22 @@ const queueStats = computed(
       failed: 0,
     },
 )
+const clearCount = computed(
+  () =>
+    (includeCompleted.value ? queueStats.value.completed : 0) +
+    (includeFailed.value ? queueStats.value.failed : 0),
+)
+const openClearConfirmation = () => {
+  includeCompleted.value = true
+  includeFailed.value = false
+  isClearConfirmOpen.value = true
+}
 
 // 刷新数据
 const refreshData = async () => {
   isLoading.value = true
   try {
     await refreshQueue()
-    selectedTasks.value = []
   } finally {
     isLoading.value = false
   }
@@ -61,13 +74,14 @@ const refreshData = async () => {
 
 // 清理非活跃任务
 const clearNonActiveTasks = async () => {
+  if (clearCount.value === 0) return
   try {
     isLoading.value = true
     const result = await $fetch('/api/queue/task/clear', {
       method: 'DELETE',
       query: {
-        includeCompleted: 'true',
-        includeFailed: 'true',
+        includeCompleted: String(includeCompleted.value),
+        includeFailed: String(includeFailed.value),
       },
     })
 
@@ -77,6 +91,8 @@ const clearNonActiveTasks = async () => {
       color: 'success',
     })
 
+    isClearConfirmOpen.value = false
+    page.value = 1
     await refreshData()
   } catch (error: any) {
     console.error('Clear tasks failed:', error)
@@ -145,6 +161,7 @@ const retryAllFailedTasks = async () => {
 // 删除单个任务（仅适用于失败任务）
 const deleteTask = async (taskId: number) => {
   try {
+    isDeleting.value = true
     await $fetch(`/api/queue/failed/${taskId}`, {
       method: 'DELETE',
     })
@@ -154,6 +171,8 @@ const deleteTask = async (taskId: number) => {
       color: 'success',
     })
 
+    deleteTargetTaskId.value = null
+    page.value = 1
     await refreshData()
   } catch (error: any) {
     console.error('Delete task failed:', error)
@@ -162,6 +181,8 @@ const deleteTask = async (taskId: number) => {
       description: error?.message || '删除任务失败',
       color: 'error',
     })
+  } finally {
+    isDeleting.value = false
   }
 }
 
@@ -222,19 +243,29 @@ const mobileActions = computed(() => [
   {
     label: $t('dashboard.queue.actions.refresh'),
     icon: 'tabler:refresh',
-    onSelect: () => refreshData(),
+    onSelect: (): void => {
+      void refreshData()
+    },
   },
   {
     label: $t('dashboard.queue.actions.retryAll'),
     icon: 'tabler:repeat',
     color: 'warning' as const,
-    onSelect: () => retryAllFailedTasks(),
+    disabled: queueStats.value.failed === 0 || isLoading.value,
+    onSelect: (): void => {
+      void retryAllFailedTasks()
+    },
   },
   {
     label: $t('dashboard.queue.actions.clearNonActive'),
     icon: 'tabler:trash',
     color: 'error' as const,
-    onSelect: () => clearNonActiveTasks(),
+    disabled:
+      queueStats.value.completed + queueStats.value.failed === 0 ||
+      isLoading.value,
+    onSelect: (): void => {
+      openClearConfirmation()
+    },
   },
 ])
 
@@ -327,16 +358,18 @@ onBeforeUnmount(() => {
               color="warning"
               variant="soft"
               :loading="isLoading"
+              :disabled="queueStats.failed === 0"
               @click="retryAllFailedTasks"
             >
               {{ $t('dashboard.queue.actions.retryAll') }}
             </UButton>
             <UButton
               icon="tabler:trash"
-              color="error"
-              variant="soft"
+              color="neutral"
+              variant="outline"
               :loading="isLoading"
-              @click="clearNonActiveTasks"
+              :disabled="queueStats.completed + queueStats.failed === 0"
+              @click="openClearConfirmation"
             >
               {{ $t('dashboard.queue.actions.clearNonActive') }}
             </UButton>
@@ -396,28 +429,41 @@ onBeforeUnmount(() => {
             <div
               class="flex flex-col gap-3 pb-2 lg:flex-row lg:items-center lg:justify-between"
             >
-              <h2 class="text-base font-semibold sm:text-lg">队列任务列表</h2>
+              <h2 class="text-base font-semibold sm:text-lg">
+                队列任务
+                <span class="ml-1 font-normal text-sm text-muted"
+                  >{{ queueData?.total ?? 0 }} 条</span
+                >
+              </h2>
               <div
                 class="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 lg:flex lg:w-auto"
               >
-                <USelectMenu
-                  v-model="statusFilter"
-                  :items="statusOptions"
-                  value-key="value"
-                  size="sm"
-                  variant="soft"
-                  class="w-full lg:w-36"
-                  :search-input="false"
-                />
-                <USelectMenu
-                  v-model="typeFilter"
-                  :items="typeOptions"
-                  value-key="value"
-                  size="sm"
-                  variant="soft"
-                  class="w-full lg:w-44"
-                  :search-input="false"
-                />
+                <div class="min-w-0">
+                  <p class="mb-1 text-xs text-muted">状态</p>
+                  <USelectMenu
+                    v-model="statusFilter"
+                    :items="statusOptions"
+                    value-key="value"
+                    size="sm"
+                    variant="soft"
+                    class="w-full lg:w-36"
+                    :search-input="false"
+                    aria-label="按状态筛选任务"
+                  />
+                </div>
+                <div class="min-w-0">
+                  <p class="mb-1 text-xs text-muted">类型</p>
+                  <USelectMenu
+                    v-model="typeFilter"
+                    :items="typeOptions"
+                    value-key="value"
+                    size="sm"
+                    variant="soft"
+                    class="w-full lg:w-44"
+                    :search-input="false"
+                    aria-label="按类型筛选任务"
+                  />
+                </div>
               </div>
             </div>
           </template>
@@ -507,7 +553,7 @@ onBeforeUnmount(() => {
                     size="xs"
                     variant="soft"
                     color="error"
-                    @click="deleteTask(row.original.id)"
+                    @click="deleteTargetTaskId = row.original.id"
                   >
                     {{ $t('dashboard.queue.buttons.delete') }}
                   </UButton>
@@ -713,7 +759,7 @@ onBeforeUnmount(() => {
                     size="xs"
                     variant="soft"
                     color="error"
-                    @click="deleteTask(task.id)"
+                    @click="deleteTargetTaskId = task.id"
                   >
                     {{ $t('dashboard.queue.buttons.delete') }}
                   </UButton>
@@ -792,6 +838,98 @@ onBeforeUnmount(() => {
           </div>
         </UCard>
       </div>
+
+      <UModal v-model:open="isClearConfirmOpen">
+        <template #body>
+          <div class="space-y-4">
+            <div>
+              <h2 class="text-lg font-semibold">清理任务记录</h2>
+              <p class="mt-1 text-sm text-muted">
+                将清理全队列中所选状态的任务记录，不受当前列表筛选影响；照片不会删除。清理后无法找回处理记录和错误详情。
+              </p>
+            </div>
+            <div class="space-y-3 rounded-md border border-default p-4">
+              <UCheckbox
+                v-model="includeCompleted"
+                :label="`已完成 (${queueStats.completed})`"
+                :disabled="queueStats.completed === 0 || isLoading"
+              />
+              <UCheckbox
+                v-model="includeFailed"
+                :label="`失败记录 (${queueStats.failed})`"
+                :disabled="queueStats.failed === 0 || isLoading"
+              />
+            </div>
+            <p
+              v-if="includeFailed"
+              class="text-sm text-error"
+            >
+              失败记录包含排查问题所需的错误信息，建议先确认已不再需要。
+            </p>
+          </div>
+        </template>
+        <template #footer>
+          <div class="flex w-full justify-end gap-2">
+            <UButton
+              color="neutral"
+              variant="ghost"
+              :disabled="isLoading"
+              @click="isClearConfirmOpen = false"
+              >取消</UButton
+            >
+            <UButton
+              color="error"
+              icon="lucide:trash-2"
+              :loading="isLoading"
+              :disabled="clearCount === 0"
+              @click="clearNonActiveTasks"
+            >
+              清理 {{ clearCount }} 条
+            </UButton>
+          </div>
+        </template>
+      </UModal>
+
+      <UModal
+        :open="deleteTargetTaskId !== null"
+        @update:open="
+          (open) => {
+            if (!open) deleteTargetTaskId = null
+          }
+        "
+      >
+        <template #body>
+          <div>
+            <h2 class="text-lg font-semibold">
+              删除失败任务 #{{ deleteTargetTaskId }}
+            </h2>
+            <p class="mt-2 text-sm text-muted">
+              该任务的错误记录将永久删除，照片不会受影响。
+            </p>
+          </div>
+        </template>
+        <template #footer>
+          <div class="flex w-full justify-end gap-2">
+            <UButton
+              color="neutral"
+              variant="ghost"
+              :disabled="isDeleting"
+              @click="deleteTargetTaskId = null"
+              >取消</UButton
+            >
+            <UButton
+              color="error"
+              icon="lucide:trash-2"
+              :loading="isDeleting"
+              :disabled="deleteTargetTaskId === null"
+              @click="
+                deleteTargetTaskId !== null && deleteTask(deleteTargetTaskId)
+              "
+              >删除任务</UButton
+            >
+          </div>
+        </template>
+      </UModal>
     </template>
   </UDashboardPanel>
 </template>

@@ -21,6 +21,16 @@ export const getChangedSettingFields = (
       .map((field) => [field.key, state[field.key]]),
   )
 
+export const applySubmittedSettingsToFields = <T extends SettingFieldValue>(
+  fields: T[],
+  submitted: Record<string, unknown>,
+): T[] =>
+  fields.map((field) =>
+    Object.hasOwn(submitted, field.key)
+      ? { ...field, value: submitted[field.key] }
+      : field,
+  )
+
 export const applySettingsFieldsToState = (
   state: Record<string, unknown>,
   fields: SettingFieldValue[],

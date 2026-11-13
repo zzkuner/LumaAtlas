@@ -59,6 +59,13 @@ export default eventHandler(async (event) => {
       return { success: true }
     }
     case 'DELETE': {
+      const activeProviderId = await settingsManager.get('storage', 'provider')
+      if (Number(activeProviderId) === storageConfigId) {
+        throw createError({
+          statusCode: 409,
+          statusMessage: 'Cannot delete the active storage provider',
+        })
+      }
       await settingsManager.storage.deleteProvider(storageConfigId)
       return { success: true }
     }

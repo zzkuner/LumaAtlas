@@ -36,9 +36,8 @@ const resetPrivacySettings = () => {
 }
 
 const handlePrivacySettingsSubmit = async () => {
-  const privacyData = Object.fromEntries(
-    privacyFields.value.map((f) => [f.key, privacyState[f.key]]),
-  )
+  const privacyData = getChangedSettingFields(privacyState, privacyFields.value)
+  if (Object.keys(privacyData).length === 0) return
 
   try {
     await submitPrivacy(privacyData)

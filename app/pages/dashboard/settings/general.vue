@@ -120,9 +120,8 @@ const updateAppearanceSetting = (key: string, value: unknown) => {
 }
 
 const handleAppSettingsSubmit = async () => {
-  const appData = Object.fromEntries(
-    contentFields.value.map((f) => [f.key, state[f.key]]),
-  )
+  const appData = getChangedSettingFields(state, contentFields.value)
+  if (Object.keys(appData).length === 0) return
   try {
     await submit(appData)
   } catch {
@@ -156,9 +155,8 @@ const updateSocialLink = (
 }
 
 const handleAppearanceSettingsSubmit = async () => {
-  const appearanceData = Object.fromEntries(
-    appearanceFields.value.map((f) => [f.key, state[f.key]]),
-  )
+  const appearanceData = getChangedSettingFields(state, appearanceFields.value)
+  if (Object.keys(appearanceData).length === 0) return
   try {
     await submit(appearanceData)
     if (state['appearance.theme']) {

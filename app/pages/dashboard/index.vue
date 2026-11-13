@@ -15,6 +15,10 @@ const { photos } = usePhotos()
 
 const { data: dashboardStats, refresh: refreshStats } =
   await useFetch('/api/system/stats')
+const { data: queueSummary, refresh: refreshQueueSummary } = await useFetch(
+  '/api/queue/task/list',
+  { query: { limit: 1 } },
+)
 
 const isLoading = ref(false)
 
@@ -22,18 +26,43 @@ const isLoading = ref(false)
 const selectedYear = ref<number | 'recent'>('recent')
 
 const refreshData = async () => {
+  if (isLoading.value) return
   isLoading.value = true
   try {
-    await refreshStats()
+    await Promise.all([refreshStats(), refreshQueueSummary()])
   } finally {
     isLoading.value = false
   }
 }
 
-const refreshInterval = setInterval(refreshData, 5000)
+const queueStatus = computed(() => {
+  const stats = queueSummary.value?.stats
+  if (!stats) return '未知'
+  if (stats.failed > 0) return `${stats.failed} 个失败`
+  if (stats.processing > 0) return `${stats.processing} 个处理中`
+  if (stats.pending > 0) return `${stats.pending} 个等待中`
+  return '空闲'
+})
+const queueStatusColor = computed(() => {
+  const stats = queueSummary.value?.stats
+  if (stats?.failed) return 'red'
+  if (stats?.processing) return 'blue'
+  if (stats?.pending) return 'orange'
+  return 'gray'
+})
+
+let refreshInterval: ReturnType<typeof setInterval> | undefined
+const refreshWhenVisible = () => {
+  if (document.visibilityState === 'visible') void refreshData()
+}
+onMounted(() => {
+  refreshInterval = setInterval(refreshWhenVisible, 30000)
+  document.addEventListener('visibilitychange', refreshWhenVisible)
+})
 
 onBeforeUnmount(() => {
-  clearInterval(refreshInterval)
+  if (refreshInterval) clearInterval(refreshInterval)
+  document.removeEventListener('visibilitychange', refreshWhenVisible)
 })
 
 const systemStatus = computed(() => {
@@ -189,12 +218,8 @@ const yearOptions = computed(() => {
           <DashboardIndicator
             :title="$t('dashboard.overview.indicator.queueStatus.title')"
             icon="tabler:loader"
-            color="orange"
-            :value="
-              (dashboardStats?.workerPool?.activeWorkers || 0) > 0
-                ? $t('dashboard.overview.indicator.queueStatus.processing')
-                : $t('dashboard.overview.indicator.queueStatus.pending')
-            "
+            :color="queueStatusColor"
+            :value="queueStatus"
             clickable
             @click="$router.push('/dashboard/queue')"
           />

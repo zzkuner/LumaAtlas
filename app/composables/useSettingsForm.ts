@@ -29,6 +29,7 @@ export function useSettingsForm(namespace: string) {
   const fetchFields = async (options?: {
     preserveState?: boolean
     refreshKeys?: ReadonlySet<string>
+    silent?: boolean
   }) => {
     loading.value = true
     error.value = null
@@ -44,14 +45,18 @@ export function useSettingsForm(namespace: string) {
       fields.value = response.fields
 
       applySettingsFieldsToState(state, response.fields, options)
+      return true
     } catch (err) {
       const message = (err as Error).message
       error.value = message
-      toast.add({
-        title: '加载设置失败',
-        description: message,
-        color: 'error',
-      })
+      if (!options?.silent) {
+        toast.add({
+          title: '加载设置失败',
+          description: message,
+          color: 'error',
+        })
+      }
+      return false
     } finally {
       loading.value = false
     }
@@ -66,6 +71,7 @@ export function useSettingsForm(namespace: string) {
    * await submit({ title: 'New Title', slogan: 'New Slogan' })
    */
   const submit = async (data: Record<string, any>) => {
+    if (Object.keys(data).length === 0) return
     loading.value = true
     error.value = null
 
@@ -86,19 +92,28 @@ export function useSettingsForm(namespace: string) {
       )
       if (!result.success) throw new Error('部分设置未保存，请刷新后重试')
 
-      // 刷新全局设置状态，确保所有使用 getSetting() 的地方都能获取到最新值
-      await refreshSettings()
+      fields.value = applySubmittedSettingsToFields(fields.value, data)
+
+      let synchronized = true
+      try {
+        await refreshSettings()
+      } catch {
+        synchronized = false
+      }
 
       // Refresh submitted values and their baselines without discarding drafts
       // from other sections that share the same settings namespace.
-      await fetchFields({
+      const fieldsRefreshed = await fetchFields({
         preserveState: true,
         refreshKeys: new Set(Object.keys(data)),
+        silent: true,
       })
+      if (!fieldsRefreshed) synchronized = false
 
       toast.add({
-        title: '设置已保存',
-        color: 'success',
+        title: synchronized ? '设置已保存' : '设置已保存，页面状态未完全同步',
+        description: synchronized ? undefined : '请刷新页面确认最新设置。',
+        color: synchronized ? 'success' : 'warning',
       })
     } catch (err) {
       const message = (err as Error).message

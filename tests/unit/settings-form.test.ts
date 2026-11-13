@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  applySubmittedSettingsToFields,
   applySettingsFieldsToState,
   getChangedSettingFields,
 } from '../../app/utils/settingsForm'
@@ -48,5 +49,17 @@ describe('getChangedSettingFields', () => {
     expect(getChangedSettingFields(state, mapFields)).toEqual({
       provider: 'mapbox',
     })
+  })
+})
+
+describe('applySubmittedSettingsToFields', () => {
+  it('updates saved baselines without touching drafts in other sections', () => {
+    expect(
+      applySubmittedSettingsToFields(fields, { title: 'New title' }),
+    ).toEqual([
+      { key: 'title', value: 'New title' },
+      { key: 'layout', value: 'masonry', defaultValue: 'grid' },
+    ])
+    expect(fields[0]?.value).toBe('Saved title')
   })
 })

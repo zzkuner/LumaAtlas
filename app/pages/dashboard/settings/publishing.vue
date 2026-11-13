@@ -38,9 +38,8 @@ const resetSettings = () => {
 }
 
 const handleSubmit = async () => {
-  const data = Object.fromEntries(
-    fields.value.map((field) => [field.key, state[field.key]]),
-  )
+  const data = getChangedSettingFields(state, fields.value)
+  if (Object.keys(data).length === 0) return
 
   try {
     await submit(data)

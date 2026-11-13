@@ -12,12 +12,14 @@ const props = withDefaults(
     layoutMode?: GalleryLayout
     columnCount?: GalleryColumns
     showGalleryControls?: boolean
+    mapOverlay?: boolean
   }>(),
   {
     viewMode: 'all',
     layoutMode: 'masonry',
     columnCount: 'auto',
     showGalleryControls: true,
+    mapOverlay: false,
   },
 )
 
@@ -212,7 +214,12 @@ const {
 
 <template>
   <header
-    class="sticky top-0 z-40 w-full shrink-0 border-b border-neutral-200/70 bg-white/95 backdrop-blur-xl dark:border-neutral-800/70 dark:bg-neutral-950/95"
+    class="top-0 z-40 w-full shrink-0 backdrop-blur-xl"
+    :class="
+      mapOverlay
+        ? 'absolute border-b border-neutral-200/40 bg-white/80 dark:border-neutral-800/40 dark:bg-neutral-950/80'
+        : 'sticky border-b border-neutral-200/70 bg-white/95 dark:border-neutral-800/70 dark:bg-neutral-950/95'
+    "
   >
     <div
       class="mx-auto px-4 py-3 sm:px-6 lg:px-8"

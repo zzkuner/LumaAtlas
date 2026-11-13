@@ -369,16 +369,12 @@ const itemRatio = (naturalRatio: number) => {
               >
                 {{ item.title }}
               </div>
-              <div
-                v-if="layout === 'big' && item.title"
-                class="absolute inset-0 bg-linear-to-t from-black/70 via-transparent to-transparent opacity-0 transition-opacity group-hover:opacity-100"
-              >
-                <span
-                  class="absolute inset-x-0 bottom-0 px-2.5 py-2 text-[9px] font-medium text-white"
-                >
-                  {{ item.title }}
-                </span>
-              </div>
+            </div>
+            <div
+              v-if="layout === 'big' && item.title"
+              class="mt-2 border-l-2 border-neutral-300 py-0.5 pl-2.5 font-display text-[10px] font-medium leading-snug text-neutral-900 dark:border-neutral-700 dark:text-white"
+            >
+              {{ item.title }}
             </div>
             <div
               v-if="layout === 'big' && showBigPhotoInfo"

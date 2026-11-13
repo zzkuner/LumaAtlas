@@ -480,7 +480,7 @@ const toggleHomeModule = (id: HomeModuleId, visible: boolean) => {
             <span class="min-w-0 pr-4">
               <span class="block">瀑布流与方格悬浮信息</span>
               <span class="mt-1 block text-xs leading-5 text-neutral-500">
-                仅桌面端生效；鼠标停在缩略图上时显示标题、说明与拍摄参数。
+                桌面端鼠标悬停或键盘聚焦缩略图时显示；未填写标题或说明时只显示已有拍摄信息。
               </span>
             </span>
             <USwitch

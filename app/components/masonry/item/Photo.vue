@@ -127,22 +127,6 @@ const bigFrameStyle = computed(() =>
     : undefined,
 )
 
-// Show info overlay only when not playing video or video has finished
-const shouldShowInfoOverlay = computed(() => {
-  if (!props.photo.isLivePhoto) return true
-
-  // On mobile, don't show overlay when touching or playing video
-  if (isMobile.value) {
-    if (isTouching.value || isVideoPlaying.value) return false
-    return true
-  }
-
-  // On desktop, show overlay when hovering but not playing video
-  if (!isHovering.value) return true
-  if (isVideoPlaying.value) return false
-  return isVideoLoaded.value
-})
-
 // Methods
 const handleImageError = () => {
   console.warn(`Failed to load image: ${props.photo.thumbnailUrl}`)
@@ -529,7 +513,7 @@ onUnmounted(() => {
 <template>
   <div
     ref="photoRef"
-    class="w-full cursor-pointer select-none transition-all duration-300 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+    class="photo-item w-full cursor-pointer select-none transition-all duration-300 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
     role="button"
     tabindex="0"
     :aria-label="contentTitle ? `查看照片：${contentTitle}` : '查看照片详情'"
@@ -644,8 +628,7 @@ onUnmounted(() => {
             photo.exif?.Model ||
             hasExposureParameters)
         "
-        v-show="shouldShowInfoOverlay"
-        class="pointer-events-none absolute inset-x-0 bottom-0 translate-y-3 bg-linear-to-t from-black/70 via-black/30 to-transparent p-3 opacity-0 transition-all duration-300 ease-out group-hover:translate-y-0 group-hover:opacity-100"
+        class="photo-thumb-overlay pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-linear-to-t from-black/80 via-black/40 to-transparent p-3 text-white"
       >
         <div class="text-white flex flex-col gap-1">
           <div class="flex flex-col">
@@ -771,18 +754,18 @@ onUnmounted(() => {
     >
       <div
         v-if="contentTitle || contentDescription"
-        class="mb-3 px-1 sm:mb-4 sm:px-2"
+        class="mb-3 border-l-2 border-neutral-300 py-1 pl-4 pr-2 sm:mb-4 sm:pl-5 dark:border-neutral-700"
       >
         <h3
           v-if="contentTitle"
-          class="font-display text-lg font-medium leading-snug text-neutral-950 sm:text-xl dark:text-white"
+          class="font-display text-[1.35rem] font-medium leading-snug text-neutral-950 sm:text-[1.7rem] dark:text-white"
           :style="{ fontFamily: 'var(--la-heading-font)' }"
         >
           {{ contentTitle }}
         </h3>
         <p
           v-if="contentDescription"
-          class="mt-1 line-clamp-2 font-display text-sm leading-6 text-neutral-500 sm:line-clamp-3 dark:text-neutral-400"
+          class="mt-1.5 line-clamp-2 font-display text-sm leading-relaxed text-neutral-500 sm:line-clamp-3 sm:text-base dark:text-neutral-400"
         >
           {{ contentDescription }}
         </p>
@@ -957,4 +940,24 @@ onUnmounted(() => {
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.photo-thumb-overlay {
+  opacity: 0;
+  transform: translateY(0.75rem);
+  transition:
+    opacity 220ms ease,
+    transform 220ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .photo-item:hover .photo-thumb-overlay {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.photo-item:focus-visible .photo-thumb-overlay {
+  opacity: 1;
+  transform: translateY(0);
+}
+</style>

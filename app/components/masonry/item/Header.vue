@@ -142,6 +142,7 @@ const viewItems: Array<{
 ]
 
 const gallerySettingsOpen = ref(false)
+const desktopViewOpen = ref(false)
 const mobileLayoutOpen = ref(false)
 const currentViewItem = computed(
   () =>
@@ -151,6 +152,7 @@ const currentViewItem = computed(
 const selectViewMode = (value: HomeViewMode) => {
   emit('update:viewMode', value)
   gallerySettingsOpen.value = false
+  desktopViewOpen.value = false
 }
 
 const selectLayoutMode = (value: GalleryLayout) => {
@@ -228,17 +230,17 @@ const {
       <div class="relative flex min-h-10 items-center justify-between gap-3">
         <NuxtLink
           to="/"
-          class="inline-flex min-w-0 items-center gap-3 text-neutral-950 dark:text-white"
+          class="inline-flex min-w-0 items-center gap-2 text-neutral-950 sm:gap-3 dark:text-white"
         >
           <img
             v-if="siteLogo"
             :src="siteLogo"
             :alt="siteTitle"
-            class="size-9 shrink-0 object-contain"
+            class="size-8 shrink-0 object-contain sm:size-9"
           />
           <span
             v-else
-            class="flex size-9 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-neutral-800 dark:bg-neutral-900 dark:text-neutral-200"
+            class="flex size-8 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-neutral-800 sm:size-9 dark:bg-neutral-900 dark:text-neutral-200"
           >
             <Icon
               name="lucide:aperture"
@@ -246,7 +248,7 @@ const {
             />
           </span>
           <span
-            class="font-brand truncate text-[1.35rem] font-normal sm:text-[1.6rem]"
+            class="font-brand truncate text-lg font-normal sm:text-[1.6rem]"
             >{{ siteTitle }}</span
           >
         </NuxtLink>
@@ -342,7 +344,7 @@ const {
                     v-for="item in layoutItems"
                     :key="item.value"
                     type="button"
-                    class="flex min-h-16 min-w-0 flex-col items-center justify-center gap-1 rounded-md border px-1.5 py-2 text-center text-xs transition-colors"
+                    class="flex min-h-16 min-w-0 flex-col items-center justify-center gap-1 rounded-md border px-1.5 py-2 text-center text-xs transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                     :class="layoutMode === item.value
                       ? 'border-neutral-400 bg-neutral-100 text-neutral-950 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white'
                       : 'border-neutral-200 text-neutral-600 hover:bg-neutral-50 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-900'"
@@ -372,8 +374,43 @@ const {
             </template>
           </UPopover>
 
+          <div v-if="showGalleryControls" class="hidden sm:block">
+            <UPopover v-model:open="desktopViewOpen">
+              <UTooltip text="浏览">
+                <UButton
+                  :icon="currentViewItem.icon"
+                  size="sm"
+                  color="neutral"
+                  :variant="viewMode === 'all' ? 'ghost' : 'soft'"
+                  :aria-label="`浏览：${currentViewItem.label}`"
+                >
+                  <span class="hidden lg:inline">{{ currentViewItem.label }}</span>
+                </UButton>
+              </UTooltip>
+              <template #content>
+                <div class="w-44 p-1.5 font-sans" role="group" aria-label="浏览照片">
+                  <button
+                    v-for="item in viewItems"
+                    :key="item.value"
+                    type="button"
+                    :aria-pressed="viewMode === item.value"
+                    class="flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                    :class="viewMode === item.value
+                      ? 'bg-neutral-100 text-neutral-950 dark:bg-neutral-800 dark:text-white'
+                      : 'text-neutral-600 hover:bg-neutral-50 dark:text-neutral-300 dark:hover:bg-neutral-900'"
+                    @click="selectViewMode(item.value)"
+                  >
+                    <Icon :name="item.icon" class="size-4 shrink-0" />
+                    <span class="min-w-0 flex-1">{{ item.label }}</span>
+                    <Icon v-if="viewMode === item.value" name="lucide:check" class="size-4 shrink-0" />
+                  </button>
+                </div>
+              </template>
+            </UPopover>
+          </div>
+
+          <div v-if="showGalleryControls" class="sm:hidden">
           <UDrawer
-            v-if="showGalleryControls"
             v-model:open="gallerySettingsOpen"
             title="浏览"
             description="选择首页展示的照片范围"
@@ -389,11 +426,7 @@ const {
                 color="neutral"
                 :variant="viewMode === 'all' ? 'ghost' : 'soft'"
                 aria-label="浏览"
-              >
-                <span class="hidden lg:inline">{{
-                  currentViewItem.label
-                }}</span>
-              </UButton>
+              />
             </UTooltip>
 
             <template #body>
@@ -436,6 +469,7 @@ const {
               </div>
             </template>
           </UDrawer>
+          </div>
 
           <UPopover v-if="showGalleryControls">
             <UTooltip :text="$t('ui.action.filter.tooltip')">

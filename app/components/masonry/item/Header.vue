@@ -437,12 +437,12 @@ const {
                   <p class="mb-3 text-sm font-medium text-neutral-500">
                     浏览照片
                   </p>
-                  <div class="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                  <div class="grid grid-cols-1 gap-2 min-[380px]:grid-cols-2 sm:grid-cols-3">
                     <button
                       v-for="item in viewItems"
                       :key="item.value"
                       type="button"
-                      class="flex min-h-24 items-start gap-3 rounded-md border p-3 text-left transition-colors"
+                      class="flex min-h-20 items-start gap-3 rounded-md border p-3 text-left transition-colors min-[380px]:min-h-24"
                       :class="
                         viewMode === item.value
                           ? 'border-[var(--la-accent)] bg-neutral-100 text-neutral-950 dark:bg-neutral-900 dark:text-white'

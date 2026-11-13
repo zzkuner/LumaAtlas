@@ -112,6 +112,15 @@ const hasExposureParameters = computed(
     !!props.photo.exif?.ExposureTime ||
     !!props.photo.exif?.ISO,
 )
+const exposureParameterCount = computed(
+  () =>
+    [
+      formattedFocalLength.value,
+      props.photo.exif?.FNumber,
+      props.photo.exif?.ExposureTime,
+      props.photo.exif?.ISO,
+    ].filter(Boolean).length,
+)
 const thumbnailSizes = computed(() =>
   isFeed.value
     ? '(max-width: 1024px) 100vw, 960px'
@@ -783,25 +792,28 @@ onUnmounted(() => {
         <div class="flex min-w-0 flex-col items-center gap-1.5 text-center">
           <div
             v-if="hasExposureParameters"
-            class="flex min-w-0 flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs leading-5 text-neutral-800 tabular-nums dark:text-neutral-200"
+            class="w-full gap-x-2 gap-y-1.5 text-xs leading-5 text-neutral-800 tabular-nums dark:text-neutral-200"
+            :class="exposureParameterCount === 4
+              ? 'grid grid-cols-2 justify-items-center'
+              : 'flex flex-wrap justify-center'"
           >
             <span
               v-if="formattedFocalLength"
-              class="inline-flex shrink-0 items-center gap-1"
+              class="inline-flex items-center gap-1 whitespace-nowrap"
             >
               <Icon name="lucide:focus" class="size-3.5 text-neutral-500" />
               {{ formattedFocalLength }}
             </span>
             <span
               v-if="photo.exif?.FNumber"
-              class="inline-flex shrink-0 items-center gap-1"
+              class="inline-flex items-center gap-1 whitespace-nowrap"
             >
               <Icon name="lucide:aperture" class="size-3.5 text-neutral-500" />
               ƒ/{{ photo.exif.FNumber }}
             </span>
             <span
               v-if="photo.exif?.ExposureTime"
-              class="inline-flex shrink-0 items-center gap-1"
+              class="inline-flex items-center gap-1 whitespace-nowrap"
             >
               <Icon name="lucide:timer" class="size-3.5 text-neutral-500" />
               {{ formatExposureTime(photo.exif.ExposureTime) }}
@@ -933,7 +945,7 @@ onUnmounted(() => {
           color="neutral"
           variant="ghost"
           size="sm"
-          class="absolute right-1 top-1/2 -translate-y-1/2 sm:right-2"
+          class="absolute right-1 top-1 sm:right-2 sm:top-1/2 sm:-translate-y-1/2"
           aria-label="查看详情"
           @click.stop="emit('openViewer', index)"
         />

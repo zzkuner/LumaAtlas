@@ -379,9 +379,9 @@ const itemRatio = (naturalRatio: number) => {
             </div>
             <div
               v-if="layout === 'big' && showBigPhotoInfo"
-              class="flex flex-wrap gap-x-5 gap-y-2 border-b border-neutral-200 py-2.5 text-[8px] dark:border-neutral-800"
+              class="flex flex-wrap justify-center gap-x-5 gap-y-2 border-b border-neutral-200 py-2.5 text-center text-[8px] dark:border-neutral-800"
             >
-              <span class="flex min-w-0 flex-col gap-0.5">
+              <span class="flex min-w-0 flex-col items-center gap-0.5">
                 <span class="text-[7px] text-neutral-400">参数</span>
                 <span class="flex flex-wrap gap-x-1.5">
                   <span class="inline-flex items-center gap-0.5">
@@ -409,7 +409,7 @@ const itemRatio = (naturalRatio: number) => {
                   </span>
                 </span>
               </span>
-              <span class="flex min-w-0 flex-col gap-0.5">
+              <span class="flex min-w-0 flex-col items-center gap-0.5">
                 <span class="text-[7px] text-neutral-400">相机</span>
                 <span class="inline-flex items-center gap-1">
                   <Icon
@@ -418,7 +418,7 @@ const itemRatio = (naturalRatio: number) => {
                   />FUJIFILM X-T5
                 </span>
               </span>
-              <span class="flex min-w-0 flex-col gap-0.5">
+              <span class="flex min-w-0 flex-col items-center gap-0.5">
                 <span class="text-[7px] text-neutral-400">位置</span>
                 <span class="inline-flex items-center gap-1">
                   <Icon
@@ -427,7 +427,7 @@ const itemRatio = (naturalRatio: number) => {
                   />Hangzhou, China
                 </span>
               </span>
-              <span class="flex min-w-0 flex-col gap-0.5">
+              <span class="flex min-w-0 flex-col items-center gap-0.5">
                 <span class="text-[7px] text-neutral-400">时间</span>
                 <span class="inline-flex items-center gap-1">
                   <Icon

@@ -335,20 +335,23 @@ const {
               />
             </UTooltip>
             <template #content>
-              <div class="w-64 p-3 font-sans">
+              <div class="w-[min(22rem,calc(100vw-2rem))] p-3 font-sans">
                 <p class="mb-2 text-xs text-neutral-500">展示方式</p>
-                <div class="grid grid-cols-3 gap-1">
-                  <UButton
+                <div class="grid grid-cols-3 gap-2" role="group" aria-label="展示方式">
+                  <button
                     v-for="item in layoutItems"
                     :key="item.value"
-                    :icon="item.icon"
-                    :label="item.label"
-                    size="sm"
-                    color="neutral"
-                    :variant="layoutMode === item.value ? 'soft' : 'ghost'"
-                    class="justify-center"
+                    type="button"
+                    class="flex min-h-16 min-w-0 flex-col items-center justify-center gap-1 rounded-md border px-1.5 py-2 text-center text-xs transition-colors"
+                    :class="layoutMode === item.value
+                      ? 'border-neutral-400 bg-neutral-100 text-neutral-950 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white'
+                      : 'border-neutral-200 text-neutral-600 hover:bg-neutral-50 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-900'"
+                    :aria-pressed="layoutMode === item.value"
                     @click="selectLayoutMode(item.value)"
-                  />
+                  >
+                    <Icon :name="item.icon" class="size-5 shrink-0" />
+                    <span class="whitespace-nowrap">{{ item.label }}</span>
+                  </button>
                 </div>
                 <template v-if="layoutMode !== 'big'">
                   <p class="mb-2 mt-4 text-xs text-neutral-500">显示列数</p>

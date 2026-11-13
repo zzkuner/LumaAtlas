@@ -777,13 +777,13 @@ onUnmounted(() => {
           formattedLocation ||
           photo.dateTaken)
       "
-      class="mx-auto w-full max-w-6xl border-b border-neutral-200/70 py-3 dark:border-neutral-800/70"
+      class="relative mx-auto w-full max-w-6xl border-b border-neutral-200/70 px-10 py-3 sm:px-12 sm:py-4 dark:border-neutral-800/70"
     >
-      <div class="flex min-w-0 items-start gap-3 px-1 sm:px-2">
-        <div class="min-w-0 flex-1 font-sans sm:hidden">
+      <div class="min-w-0 font-sans sm:hidden">
+        <div class="flex min-w-0 flex-col items-center gap-1.5 text-center">
           <div
             v-if="hasExposureParameters"
-            class="flex min-w-0 items-center gap-3 overflow-x-auto whitespace-nowrap text-xs leading-6 text-neutral-700 tabular-nums [scrollbar-width:none] dark:text-neutral-300"
+            class="flex min-w-0 flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs leading-5 text-neutral-800 tabular-nums dark:text-neutral-200"
           >
             <span
               v-if="formattedFocalLength"
@@ -808,60 +808,52 @@ onUnmounted(() => {
             </span>
             <span
               v-if="photo.exif?.ISO"
-              class="shrink-0"
+              class="whitespace-nowrap"
             >
               ISO {{ photo.exif.ISO }}
             </span>
           </div>
 
           <div
-            v-else
-            class="flex min-w-0 items-center gap-2 overflow-hidden whitespace-nowrap text-xs leading-5 text-neutral-500 dark:text-neutral-400"
+            v-if="formattedLocation"
+            class="flex max-w-full min-w-0 items-center justify-center gap-1.5 text-[13px] font-medium leading-5 text-neutral-700 dark:text-neutral-200"
+            aria-label="拍摄位置"
+          >
+            <Icon name="lucide:map-pin" class="size-3.5 shrink-0" />
+            <span class="min-w-0 truncate" :title="formattedLocation">{{ formattedLocation }}</span>
+          </div>
+
+          <div
+            v-if="photo.exif?.Make || photo.exif?.Model || photo.dateTaken"
+            class="flex min-w-0 flex-wrap items-center justify-center gap-x-3 gap-y-0.5 text-[11px] leading-5 text-neutral-500 dark:text-neutral-400"
           >
             <span
               v-if="photo.exif?.Make || photo.exif?.Model"
-              class="flex min-w-0 items-center gap-1"
+              class="inline-flex min-w-0 max-w-full items-center gap-1"
             >
-              <Icon
-                name="lucide:camera"
-                class="size-3.5 shrink-0"
-              />
-              <span class="truncate">
-                {{ formatCameraInfo(photo.exif.Make, photo.exif.Model) }}
-              </span>
-            </span>
-            <span
-              v-else-if="formattedLocation"
-              class="flex min-w-0 flex-1 items-center gap-1"
-            >
-              <Icon
-                name="lucide:map-pin"
-                class="size-3.5 shrink-0"
-              />
-              <span class="truncate">{{ formattedLocation }}</span>
+              <Icon name="lucide:camera" class="size-3 shrink-0" />
+              <span class="truncate">{{ formatCameraInfo(photo.exif.Make, photo.exif.Model) }}</span>
             </span>
             <time
-              v-else-if="photo.dateTaken"
+              v-if="photo.dateTaken"
               :datetime="$dayjs(photo.dateTaken).toISOString()"
-              class="inline-flex min-w-0 items-center gap-1 tabular-nums"
+              class="inline-flex items-center gap-1 whitespace-nowrap tabular-nums"
             >
-              <Icon
-                name="lucide:clock-3"
-                class="size-3.5"
-              />
-              {{ $dayjs(photo.dateTaken).format('MM.DD HH:mm') }}
+              <Icon name="lucide:clock-3" class="size-3" />
+              {{ $dayjs(photo.dateTaken).format('YYYY.MM.DD HH:mm') }}
             </time>
           </div>
         </div>
+      </div>
 
-        <div class="hidden min-w-0 flex-1 flex-wrap items-start gap-x-8 gap-y-3 font-sans text-sm leading-6 text-neutral-800 sm:flex dark:text-neutral-200">
+      <div class="hidden min-w-0 flex-wrap items-start justify-center gap-x-8 gap-y-3 font-sans text-sm leading-6 text-neutral-800 sm:flex dark:text-neutral-200">
           <div
             v-if="hasExposureParameters"
-            class="min-w-0 tabular-nums"
+            class="min-w-0 text-center tabular-nums"
             aria-label="拍摄参数"
           >
             <span class="mb-0.5 block text-xs text-neutral-500 dark:text-neutral-400">参数</span>
-            <span class="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <span class="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
               <span
                 v-if="formattedFocalLength"
                 class="inline-flex items-center gap-1 whitespace-nowrap"
@@ -894,12 +886,12 @@ onUnmounted(() => {
 
           <div
             v-if="photo.exif?.Make || photo.exif?.Model"
-            class="min-w-0 max-w-56"
+            class="min-w-0 max-w-56 text-center"
             aria-label="相机"
           >
             <span class="mb-0.5 block text-xs text-neutral-500 dark:text-neutral-400">相机</span>
             <span
-              class="flex min-w-0 items-center gap-1.5"
+              class="flex min-w-0 items-center justify-center gap-1.5"
               :title="formatCameraInfo(photo.exif.Make, photo.exif.Model)"
             >
               <Icon name="lucide:camera" class="size-4 shrink-0 text-neutral-500" />
@@ -909,11 +901,11 @@ onUnmounted(() => {
 
           <div
             v-if="formattedLocation"
-            class="min-w-0 max-w-64"
+            class="min-w-0 max-w-64 text-center"
             aria-label="拍摄位置"
           >
             <span class="mb-0.5 block text-xs text-neutral-500 dark:text-neutral-400">位置</span>
-            <span class="flex min-w-0 items-center gap-1.5" :title="formattedLocation">
+            <span class="flex min-w-0 items-center justify-center gap-1.5" :title="formattedLocation">
               <Icon name="lucide:map-pin" class="size-4 shrink-0 text-neutral-500" />
               <span class="min-w-0 truncate">{{ formattedLocation }}</span>
             </span>
@@ -921,6 +913,7 @@ onUnmounted(() => {
 
           <div
             v-if="photo.dateTaken"
+            class="text-center"
             aria-label="拍摄时间"
           >
             <span class="mb-0.5 block text-xs text-neutral-500 dark:text-neutral-400">时间</span>
@@ -932,20 +925,19 @@ onUnmounted(() => {
               {{ $dayjs(photo.dateTaken).format('YYYY.MM.DD · HH:mm') }}
             </time>
           </div>
-        </div>
-
-        <UTooltip text="查看详情">
-          <UButton
-            icon="lucide:ellipsis"
-            color="neutral"
-            variant="ghost"
-            size="sm"
-            class="-mr-2 shrink-0"
-            aria-label="查看详情"
-            @click.stop="emit('openViewer', index)"
-          />
-        </UTooltip>
       </div>
+
+      <UTooltip text="查看详情">
+        <UButton
+          icon="lucide:ellipsis"
+          color="neutral"
+          variant="ghost"
+          size="sm"
+          class="absolute right-1 top-1/2 -translate-y-1/2 sm:right-2"
+          aria-label="查看详情"
+          @click.stop="emit('openViewer', index)"
+        />
+      </UTooltip>
     </div>
   </div>
 </template>

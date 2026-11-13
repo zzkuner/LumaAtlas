@@ -82,18 +82,21 @@ const startSearch = () => {
 </script>
 
 <template>
-  <div class="space-y-1.5 w-[calc(100vw-34px)] sm:w-md">
-    <div class="flex items-center justify-between">
-      <h3 class="text-sm font-bold text-neutral-900 dark:text-white p-2">
+  <div class="w-[min(20.5rem,calc(100vw-3rem))] space-y-2 sm:w-md">
+    <div class="flex min-w-0 items-center justify-between gap-2">
+      <h3
+        class="min-w-0 truncate text-sm font-semibold text-neutral-900 dark:text-white"
+      >
         {{ $t('ui.action.filter.title') }}
       </h3>
-      <div class="flex items-center gap-1">
+      <div class="flex shrink-0 items-center gap-0.5">
         <UButton
           v-if="hasActiveFilters"
           size="sm"
           variant="ghost"
           color="neutral"
           icon="tabler:filter-x"
+          :aria-label="$t('ui.action.filter.clearAll')"
           @click="
             () => {
               clearAllFilters()
@@ -102,7 +105,9 @@ const startSearch = () => {
             }
           "
         >
-          {{ $t('ui.action.filter.clearAll') }}
+          <span class="hidden sm:inline">{{
+            $t('ui.action.filter.clearAll')
+          }}</span>
         </UButton>
         <!-- 搜索功能 -->
         <div
@@ -114,7 +119,7 @@ const startSearch = () => {
             size="sm"
             icon="tabler:search"
             placeholder="搜索文件名等..."
-            class="w-32"
+            class="w-24 sm:w-32"
             @keydown.escape="isSearchMode = false"
           />
           <UButton
@@ -149,6 +154,28 @@ const startSearch = () => {
         </UTooltip>
       </div>
     </div>
+    <div
+      class="grid grid-cols-5 gap-1 border-b border-neutral-200 pb-1 sm:hidden dark:border-neutral-800"
+      role="tablist"
+      aria-label="筛选类别"
+    >
+      <button
+        v-for="item in tabItems"
+        :key="item.value"
+        type="button"
+        role="tab"
+        :aria-selected="currentTab === item.value"
+        class="min-w-0 rounded-sm px-0.5 py-1.5 text-center text-xs leading-4 transition-colors"
+        :class="
+          currentTab === item.value
+            ? 'bg-neutral-100 font-medium text-neutral-950 dark:bg-neutral-800 dark:text-white'
+            : 'text-neutral-500 dark:text-neutral-400'
+        "
+        @click="currentTab = String(item.value)"
+      >
+        {{ item.label }}
+      </button>
+    </div>
     <!-- 标签页 -->
     <UTabs
       v-model="currentTab"
@@ -156,7 +183,7 @@ const startSearch = () => {
       size="xs"
       :items="tabItems"
       :ui="{
-        list: 'bg-white/30 dark:bg-neutral-800/50',
+        list: 'hidden bg-white/30 sm:flex dark:bg-neutral-800/50',
         indicator: 'bg-white/80',
         trigger:
           'data-[state=inactive]:text-muted data-[state=active]:text-default dark:data-[state=active]:text-inverted',

@@ -337,21 +337,30 @@ const {
               />
             </UTooltip>
             <template #content>
-              <div class="w-[min(22rem,calc(100vw-2rem))] p-3 font-sans">
-                <p class="mb-2 text-xs text-neutral-500">展示方式</p>
-                <div class="grid grid-cols-3 gap-2" role="group" aria-label="展示方式">
+              <div class="w-[min(20rem,calc(100vw-2rem))] p-2.5 font-sans">
+                <p class="mb-2 px-1 text-[11px] text-neutral-500">展示方式</p>
+                <div
+                  class="grid grid-cols-3 gap-1 rounded-md bg-neutral-100 p-1 dark:bg-neutral-900"
+                  role="group"
+                  aria-label="展示方式"
+                >
                   <button
                     v-for="item in layoutItems"
                     :key="item.value"
                     type="button"
-                    class="flex min-h-16 min-w-0 flex-col items-center justify-center gap-1 rounded-md border px-1.5 py-2 text-center text-xs transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-                    :class="layoutMode === item.value
-                      ? 'border-neutral-400 bg-neutral-100 text-neutral-950 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white'
-                      : 'border-neutral-200 text-neutral-600 hover:bg-neutral-50 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-900'"
+                    class="flex min-h-12 min-w-0 flex-col items-center justify-center gap-0.5 rounded-sm px-1 py-1.5 text-center text-[11px] leading-4 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                    :class="
+                      layoutMode === item.value
+                        ? 'bg-white text-neutral-950 shadow-sm dark:bg-neutral-800 dark:text-white'
+                        : 'text-neutral-600 hover:text-neutral-950 dark:text-neutral-300 dark:hover:text-white'
+                    "
                     :aria-pressed="layoutMode === item.value"
                     @click="selectLayoutMode(item.value)"
                   >
-                    <Icon :name="item.icon" class="size-5 shrink-0" />
+                    <Icon
+                      :name="item.icon"
+                      class="size-4 shrink-0"
+                    />
                     <span class="whitespace-nowrap">{{ item.label }}</span>
                   </button>
                 </div>
@@ -362,10 +371,10 @@ const {
                       v-for="item in columnItems"
                       :key="item.value"
                       :label="item.label"
-                      size="sm"
+                      size="xs"
                       color="neutral"
                       :variant="columnCount === item.value ? 'soft' : 'ghost'"
-                      class="justify-center"
+                      class="justify-center text-xs"
                       @click="selectColumnCount(item.value)"
                     />
                   </div>
@@ -374,7 +383,10 @@ const {
             </template>
           </UPopover>
 
-          <div v-if="showGalleryControls" class="hidden sm:block">
+          <div
+            v-if="showGalleryControls"
+            class="hidden sm:block"
+          >
             <UPopover v-model:open="desktopViewOpen">
               <UTooltip text="浏览">
                 <UButton
@@ -384,91 +396,111 @@ const {
                   :variant="viewMode === 'all' ? 'ghost' : 'soft'"
                   :aria-label="`浏览：${currentViewItem.label}`"
                 >
-                  <span class="hidden lg:inline">{{ currentViewItem.label }}</span>
+                  <span class="hidden lg:inline">{{
+                    currentViewItem.label
+                  }}</span>
                 </UButton>
               </UTooltip>
               <template #content>
-                <div class="w-44 p-1.5 font-sans" role="group" aria-label="浏览照片">
+                <div
+                  class="w-44 p-1.5 font-sans"
+                  role="group"
+                  aria-label="浏览照片"
+                >
                   <button
                     v-for="item in viewItems"
                     :key="item.value"
                     type="button"
                     :aria-pressed="viewMode === item.value"
                     class="flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-left text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-                    :class="viewMode === item.value
-                      ? 'bg-neutral-100 text-neutral-950 dark:bg-neutral-800 dark:text-white'
-                      : 'text-neutral-600 hover:bg-neutral-50 dark:text-neutral-300 dark:hover:bg-neutral-900'"
+                    :class="
+                      viewMode === item.value
+                        ? 'bg-neutral-100 text-neutral-950 dark:bg-neutral-800 dark:text-white'
+                        : 'text-neutral-600 hover:bg-neutral-50 dark:text-neutral-300 dark:hover:bg-neutral-900'
+                    "
                     @click="selectViewMode(item.value)"
                   >
-                    <Icon :name="item.icon" class="size-4 shrink-0" />
+                    <Icon
+                      :name="item.icon"
+                      class="size-4 shrink-0"
+                    />
                     <span class="min-w-0 flex-1">{{ item.label }}</span>
-                    <Icon v-if="viewMode === item.value" name="lucide:check" class="size-4 shrink-0" />
+                    <Icon
+                      v-if="viewMode === item.value"
+                      name="lucide:check"
+                      class="size-4 shrink-0"
+                    />
                   </button>
                 </div>
               </template>
             </UPopover>
           </div>
 
-          <div v-if="showGalleryControls" class="sm:hidden">
-          <UDrawer
-            v-model:open="gallerySettingsOpen"
-            title="浏览"
-            description="选择首页展示的照片范围"
-            :ui="{
-              content: 'max-h-[88svh]',
-              body: 'p-0 sm:p-0',
-            }"
+          <div
+            v-if="showGalleryControls"
+            class="sm:hidden"
           >
-            <UTooltip text="浏览">
-              <UButton
-                :icon="currentViewItem.icon"
-                size="sm"
-                color="neutral"
-                :variant="viewMode === 'all' ? 'ghost' : 'soft'"
-                aria-label="浏览"
-              />
-            </UTooltip>
+            <UDrawer
+              v-model:open="gallerySettingsOpen"
+              title="浏览"
+              description="选择首页展示的照片范围"
+              :ui="{
+                content: 'max-h-[88svh]',
+                body: 'p-0 sm:p-0',
+              }"
+            >
+              <UTooltip text="浏览">
+                <UButton
+                  :icon="currentViewItem.icon"
+                  size="sm"
+                  color="neutral"
+                  :variant="viewMode === 'all' ? 'ghost' : 'soft'"
+                  aria-label="浏览"
+                />
+              </UTooltip>
 
-            <template #body>
-              <div
-                class="mx-auto w-full max-w-3xl overflow-y-auto px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:px-6"
-              >
-                <section>
-                  <p class="mb-3 text-sm font-medium text-neutral-500">
-                    浏览照片
-                  </p>
-                  <div class="grid grid-cols-1 gap-2 min-[380px]:grid-cols-2 sm:grid-cols-3">
-                    <button
-                      v-for="item in viewItems"
-                      :key="item.value"
-                      type="button"
-                      class="flex min-h-20 items-start gap-3 rounded-md border p-3 text-left transition-colors min-[380px]:min-h-24"
-                      :class="
-                        viewMode === item.value
-                          ? 'border-[var(--la-accent)] bg-neutral-100 text-neutral-950 dark:bg-neutral-900 dark:text-white'
-                          : 'border-neutral-200 text-neutral-600 hover:bg-neutral-50 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-900/60'
-                      "
-                      @click="selectViewMode(item.value)"
+              <template #body>
+                <div
+                  class="mx-auto w-full max-w-3xl overflow-y-auto px-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:px-6"
+                >
+                  <section>
+                    <p class="mb-3 text-sm font-medium text-neutral-500">
+                      浏览照片
+                    </p>
+                    <div
+                      class="grid grid-cols-1 gap-2 min-[380px]:grid-cols-2 sm:grid-cols-3"
                     >
-                      <Icon
-                        :name="item.icon"
-                        class="mt-0.5 size-5 shrink-0"
-                      />
-                      <span class="min-w-0">
-                        <span class="block text-base font-medium">{{
-                          item.label
-                        }}</span>
-                        <span
-                          class="mt-1 line-clamp-2 block text-xs leading-5 text-neutral-500 dark:text-neutral-400"
-                          >{{ item.description }}</span
-                        >
-                      </span>
-                    </button>
-                  </div>
-                </section>
-              </div>
-            </template>
-          </UDrawer>
+                      <button
+                        v-for="item in viewItems"
+                        :key="item.value"
+                        type="button"
+                        class="flex min-h-20 items-start gap-3 rounded-md border p-3 text-left transition-colors min-[380px]:min-h-24"
+                        :class="
+                          viewMode === item.value
+                            ? 'border-[var(--la-accent)] bg-neutral-100 text-neutral-950 dark:bg-neutral-900 dark:text-white'
+                            : 'border-neutral-200 text-neutral-600 hover:bg-neutral-50 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-900/60'
+                        "
+                        @click="selectViewMode(item.value)"
+                      >
+                        <Icon
+                          :name="item.icon"
+                          class="mt-0.5 size-5 shrink-0"
+                        />
+                        <span class="min-w-0">
+                          <span class="block text-base font-medium">{{
+                            item.label
+                          }}</span>
+                          <span
+                            class="mt-1 line-clamp-2 block text-xs leading-5 text-neutral-500 dark:text-neutral-400"
+                            >{{ item.description }}</span
+                          >
+                        </span>
+                      </button>
+                    </div>
+                  </section>
+                </div>
+              </template>
+            </UDrawer>
           </div>
 
           <UPopover v-if="showGalleryControls">
@@ -489,12 +521,9 @@ const {
               </UChip>
             </UTooltip>
             <template #content>
-              <UCard
-                class="max-w-[calc(100vw-1rem)]"
-                variant="glassmorphism"
-              >
+              <div class="p-3 sm:p-4">
                 <OverlayFilterPanel />
-              </UCard>
+              </div>
             </template>
           </UPopover>
 

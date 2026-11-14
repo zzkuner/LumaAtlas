@@ -4,6 +4,10 @@ import type {
   DiscoveryLocation,
   DiscoveryMode,
 } from '~/composables/usePhotoDiscovery'
+import {
+  availableGalleryColumns,
+  effectiveGalleryColumns,
+} from '~/utils/gallery-columns'
 
 type HomeViewMode = 'all' | DiscoveryMode
 type GalleryLayout = 'big' | 'masonry' | 'grid'
@@ -83,6 +87,10 @@ const dateRange = ref<string>()
 const visiblePhotos = ref(new Set<number>())
 
 const isMobile = useMediaQuery('(max-width: 768px)')
+const isCompactGallery = useMediaQuery('(max-width: 639px)')
+const { width: viewportWidth } = useWindowSize()
+const galleryElement = ref<HTMLElement | null>(null)
+const { width: galleryWidth } = useElementSize(galleryElement)
 const { batchProcessLivePhotos } = useLivePhotoProcessor()
 
 const processedBatch = ref(new Set<string>())
@@ -179,8 +187,15 @@ const masonryGap = computed(() => {
 })
 const galleryGap = computed(() => {
   if (galleryLayout.value !== 'big') return masonryGap.value
-  return Math.max(isMobile.value ? 20 : 28, masonryGap.value * 2)
+  return isMobile.value ? 8 : Math.max(28, masonryGap.value * 2)
 })
+const availableColumns = computed(() =>
+  availableGalleryColumns(
+    Math.min(galleryWidth.value || Infinity, viewportWidth.value - 24),
+    masonryGap.value,
+    isCompactGallery.value,
+  ),
+)
 const columnWidth = computed(() => {
   if (galleryColumns.value === 'auto') {
     const widths = {
@@ -197,23 +212,19 @@ const columnWidth = computed(() => {
 
 const maxColumns = computed(() => {
   if (galleryColumns.value !== 'auto') {
-    return isMobile.value
-      ? Math.min(2, galleryColumns.value)
-      : galleryColumns.value
+    return effectiveGalleryColumns(galleryColumns.value, availableColumns.value)
   }
-  if (isMobile.value) return 2
 
   const value = Number(getSetting('app:appearance.home.maxColumns') ?? 6)
-  return Math.min(8, Math.max(2, Number.isFinite(value) ? value : 6))
+  const configured = Math.min(8, Math.max(2, Number.isFinite(value) ? value : 6))
+  return Math.min(configured, availableColumns.value)
 })
 
 const minColumns = computed(() => {
   if (galleryColumns.value !== 'auto') {
-    return isMobile.value
-      ? Math.min(2, galleryColumns.value)
-      : galleryColumns.value
+    return effectiveGalleryColumns(galleryColumns.value, availableColumns.value)
   }
-  return 2
+  return Math.min(2, availableColumns.value)
 })
 
 const galleryMaxWidth = computed(() => {
@@ -224,20 +235,6 @@ const galleryMaxWidth = computed(() => {
       full: '1920px',
     }[contentWidth.value] ?? '1600px'
   )
-})
-
-const gridClass = computed(() => {
-  const classes: Record<number, string> = {
-    2: 'grid-cols-2',
-    3: 'grid-cols-2 sm:grid-cols-3',
-    4: 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4',
-    5: 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5',
-    6: 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6',
-    7: 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-7',
-    8: 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-8',
-  }
-
-  return classes[maxColumns.value] ?? classes[6]
 })
 
 // Prepare items for masonry-wall
@@ -538,7 +535,7 @@ onMounted(() => {
       if (
         preferences.columns === 'auto' ||
         (typeof preferences.columns === 'number' &&
-          preferences.columns >= 2 &&
+          preferences.columns >= 1 &&
           preferences.columns <= 8)
       ) {
         visitorColumns.value = preferences.columns
@@ -638,6 +635,7 @@ watch(currentPhotoIndex, (newIndex) => {
       :view-mode="viewMode"
       :layout-mode="galleryLayout"
       :column-count="galleryColumns"
+      :max-column-count="availableColumns"
       :style="{ order: moduleOrder('header') }"
       @update:view-mode="setViewMode"
       @update:layout-mode="setGalleryLayout"
@@ -688,7 +686,7 @@ watch(currentPhotoIndex, (newIndex) => {
       class="mx-auto w-full flex-1 px-3 pb-3 sm:px-5 sm:pb-5 lg:px-7 lg:pb-7"
       :style="{ maxWidth: galleryMaxWidth, order: moduleOrder('gallery') }"
     >
-      <div class="relative">
+      <div ref="galleryElement" class="relative">
         <section
           v-if="
             (viewMode === 'nearby' || viewMode === 'faraway') &&
@@ -801,11 +799,19 @@ watch(currentPhotoIndex, (newIndex) => {
 
         <div
           v-else
-          :class="[
-            'grid',
-            galleryLayout === 'grid' ? gridClass : 'grid-cols-1',
-          ]"
-          :style="{ gap: `${galleryGap}px` }"
+          class="grid"
+          :class="
+            galleryLayout === 'grid'
+              ? 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6'
+              : 'grid-cols-1'
+          "
+          :style="{
+            gap: `${galleryGap}px`,
+            gridTemplateColumns:
+              galleryLayout === 'grid' && galleryWidth > 0 && viewportWidth > 0
+                ? `repeat(${maxColumns}, minmax(0, 1fr))`
+                : undefined,
+          }"
         >
           <MasonryItem
             v-for="item in masonryItems"

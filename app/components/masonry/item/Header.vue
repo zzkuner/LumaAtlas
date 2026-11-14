@@ -11,6 +11,7 @@ const props = withDefaults(
     viewMode?: HomeViewMode
     layoutMode?: GalleryLayout
     columnCount?: GalleryColumns
+    maxColumnCount?: number
     showGalleryControls?: boolean
     mapOverlay?: boolean
   }>(),
@@ -18,6 +19,7 @@ const props = withDefaults(
     viewMode: 'all',
     layoutMode: 'masonry',
     columnCount: 'auto',
+    maxColumnCount: 8,
     showGalleryControls: true,
     mapOverlay: false,
   },
@@ -162,7 +164,6 @@ const selectLayoutMode = (value: GalleryLayout) => {
 
 const selectColumnCount = (value: GalleryColumns) => {
   emit('update:columnCount', value)
-  mobileLayoutOpen.value = false
 }
 
 const layoutItems: Array<{
@@ -182,11 +183,30 @@ const currentLayoutItem = computed(
 
 const columnItems: Array<{ value: GalleryColumns; label: string }> = [
   { value: 'auto', label: '自动' },
-  ...Array.from({ length: 7 }, (_, index) => ({
-    value: index + 2,
-    label: String(index + 2),
+  ...Array.from({ length: 8 }, (_, index) => ({
+    value: index + 1,
+    label: String(index + 1),
   })),
 ]
+const availableColumnItems = computed(() =>
+  columnItems.filter(
+    (item) => item.value === 'auto' || item.value <= props.maxColumnCount,
+  ),
+)
+const displayedColumnCount = computed(() =>
+  props.columnCount === 'auto'
+    ? 'auto'
+    : Math.min(props.columnCount, props.maxColumnCount),
+)
+const columnFeedback = computed(() => {
+  if (props.columnCount === 'auto') {
+    return `自动布局，当前屏宽最多 ${props.maxColumnCount} 列`
+  }
+  if (props.columnCount > props.maxColumnCount) {
+    return `原选 ${props.columnCount} 列，当前屏宽显示 ${props.maxColumnCount} 列`
+  }
+  return `当前显示 ${props.columnCount} 列`
+})
 
 const isDark = computed({
   get: () => colorMode.value === 'dark',
@@ -307,16 +327,19 @@ const {
                   </div>
                   <div class="mt-3 grid grid-cols-4 gap-1">
                     <UButton
-                      v-for="item in columnItems"
+                      v-for="item in availableColumnItems"
                       :key="item.value"
                       :label="item.label"
                       size="sm"
                       color="neutral"
-                      :variant="columnCount === item.value ? 'soft' : 'ghost'"
+                      :variant="displayedColumnCount === item.value ? 'soft' : 'ghost'"
                       class="justify-center"
                       @click="emit('update:columnCount', item.value)"
                     />
                   </div>
+                  <p class="mt-2 text-xs text-neutral-500" aria-live="polite">
+                    {{ columnFeedback }}
+                  </p>
                 </div>
               </template>
             </UPopover>
@@ -366,18 +389,21 @@ const {
                 </div>
                 <template v-if="layoutMode !== 'big'">
                   <p class="mb-2 mt-4 text-xs text-neutral-500">显示列数</p>
-                  <div class="grid grid-cols-4 gap-1">
+                  <div class="grid grid-cols-3 gap-1">
                     <UButton
-                      v-for="item in columnItems"
+                      v-for="item in availableColumnItems"
                       :key="item.value"
                       :label="item.label"
                       size="xs"
                       color="neutral"
-                      :variant="columnCount === item.value ? 'soft' : 'ghost'"
+                      :variant="displayedColumnCount === item.value ? 'soft' : 'ghost'"
                       class="justify-center text-xs"
                       @click="selectColumnCount(item.value)"
                     />
                   </div>
+                  <p class="mt-2 text-[11px] text-neutral-500" aria-live="polite">
+                    {{ columnFeedback }}
+                  </p>
                 </template>
               </div>
             </template>

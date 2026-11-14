@@ -518,7 +518,7 @@ onUnmounted(() => {
     tabindex="0"
     :aria-label="contentTitle ? `查看照片：${contentTitle}` : '查看照片详情'"
     :class="{
-      'flex flex-col py-1 sm:py-4': isBig,
+      'flex flex-col sm:py-4': isBig,
     }"
     :style="{
       transform: 'translateZ(0)',
@@ -996,7 +996,7 @@ onUnmounted(() => {
           color="neutral"
           variant="ghost"
           size="sm"
-          class="absolute right-1 top-1 sm:right-2 sm:top-1/2 sm:-translate-y-1/2"
+          class="absolute right-1 top-1/2 -translate-y-1/2 sm:right-2"
           aria-label="查看详情"
           @click.stop="emit('openViewer', index)"
         />

@@ -185,7 +185,7 @@ async function migrateRuntimeConfigToSettings(storedSettings: Set<string>) {
 
               const providerId = await settingsManager.storage.addProvider({
                 name: providerName,
-                provider: storageProvider as 's3' | 'local' | 'openlist',
+                provider: storageProvider as 's3' | 'r2' | 'local' | 'openlist',
                 config: normalizedConfig,
               })
 
@@ -219,6 +219,7 @@ function getDefaultStorageProviderName(provider: string): string {
     {
       local: 'Local storage',
       s3: 'S3 storage',
+      r2: 'Cloudflare R2',
       openlist: 'OpenList storage',
     }[provider] || `${provider} storage`
   )
@@ -297,6 +298,17 @@ function normalizeProviderConfig(provider: string, config: any): any {
         forcePathStyle: config.forcePathStyle ?? false,
       }
 
+    case 'r2':
+      return {
+        provider: 'r2',
+        accountId: config.accountId || '',
+        bucket: config.bucket || '',
+        accessKeyId: config.accessKeyId || '',
+        secretAccessKey: config.secretAccessKey || '',
+        prefix: config.prefix || 'photos',
+        cdnUrl: config.cdnUrl || '',
+      }
+
     case 'local':
       return {
         provider: 'local',
@@ -339,6 +351,13 @@ function isRuntimeProviderConfigUsable(config: any): boolean {
     case 's3':
       return Boolean(
         config.endpoint &&
+        config.bucket &&
+        config.accessKeyId &&
+        config.secretAccessKey,
+      )
+    case 'r2':
+      return Boolean(
+        config.accountId &&
         config.bucket &&
         config.accessKeyId &&
         config.secretAccessKey,

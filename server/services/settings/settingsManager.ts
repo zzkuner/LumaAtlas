@@ -311,6 +311,11 @@ export class SettingsManager {
         throw new Error(`Provider with ID ${providerId} not found`)
       }
 
+      if (newProvider.config.provider === 'r2') {
+        const { R2StorageProvider } = await import('~~/server/services/storage')
+        await new R2StorageProvider(newProvider.config).probe()
+      }
+
       let storageManager = getGlobalStorageManager()
       if (!storageManager) {
         this._logger.info(
@@ -567,20 +572,54 @@ export class SettingsManager {
       const existing = await this.getProviderById(id)
       if (!existing) return
 
+      const nextConfig = providerConfig.config
+        ? ({
+            ...existing.config,
+            ...providerConfig.config,
+          } as NewSettingStorageProvider['config'])
+        : existing.config
+      const activeProviderId = await settingsManager.get<number>(
+        'storage',
+        'provider',
+      )
+      const refreshActiveR2 =
+        activeProviderId === id && nextConfig.provider === 'r2'
+
+      if (refreshActiveR2) {
+        const { r2StorageConfigSchema } =
+          await import('~~/shared/types/storage')
+        const { R2StorageProvider } = await import('~~/server/services/storage')
+        await new R2StorageProvider(
+          r2StorageConfigSchema.parse(nextConfig),
+        ).probe()
+      }
+
       db.update(tables.settings_storage_providers)
         .set({
           name: providerConfig.name ?? existing.name,
           provider: providerConfig.provider ?? existing.provider,
-          config: providerConfig.config
-            ? ({
-                ...existing.config,
-                ...providerConfig.config,
-              } as NewSettingStorageProvider['config'])
-            : existing.config,
+          config: nextConfig,
           updatedAt: new Date(),
         })
         .where(eq(tables.settings_storage_providers.id, id))
         .run()
+
+      if (refreshActiveR2) {
+        try {
+          await settingsManager.set('storage', 'provider', id)
+        } catch (error) {
+          db.update(tables.settings_storage_providers)
+            .set({
+              name: existing.name,
+              provider: existing.provider,
+              config: existing.config,
+              updatedAt: existing.updatedAt,
+            })
+            .where(eq(tables.settings_storage_providers.id, id))
+            .run()
+          throw error
+        }
+      }
     },
 
     async deleteProvider(id: number): Promise<void> {

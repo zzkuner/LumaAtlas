@@ -472,6 +472,12 @@ export const STORAGE_SETTINGS_UI: Record<string, FieldUIConfig> = {
         description: 'settings.storage.provider.options.s3.description',
       },
       {
+        label: 'settings.storage.provider.options.r2.label',
+        value: 'r2',
+        icon: 'lucide:cloud-upload',
+        description: 'settings.storage.provider.options.r2.description',
+      },
+      {
         label: 'settings.storage.provider.options.openlist.label',
         value: 'openlist',
         icon: 'tabler:stack',
@@ -553,6 +559,51 @@ export const STORAGE_SETTINGS_UI: Record<string, FieldUIConfig> = {
     type: 'number',
     help: 'settings.storage.s3.maxKeys.description',
     visibleIf: { fieldKey: 'provider', value: 's3' },
+  },
+  // Cloudflare R2
+  'r2.accountId': {
+    type: 'input',
+    required: true,
+    help: 'settings.storage.r2.accountId.description',
+    visibleIf: { fieldKey: 'provider', value: 'r2' },
+  },
+  'r2.bucket': {
+    type: 'input',
+    required: true,
+    help: 'settings.storage.r2.bucket.description',
+    visibleIf: { fieldKey: 'provider', value: 'r2' },
+  },
+  'r2.jurisdiction': {
+    type: 'select',
+    options: [
+      { label: '默认', value: 'default' },
+      { label: 'EU', value: 'eu' },
+      { label: 'US', value: 'us' },
+    ],
+    help: 'settings.storage.r2.jurisdiction.description',
+    visibleIf: { fieldKey: 'provider', value: 'r2' },
+  },
+  'r2.accessKeyId': {
+    type: 'input',
+    required: true,
+    help: 'settings.storage.r2.accessKeyId.description',
+    visibleIf: { fieldKey: 'provider', value: 'r2' },
+  },
+  'r2.secretAccessKey': {
+    type: 'password',
+    required: true,
+    help: 'settings.storage.r2.secretAccessKey.description',
+    visibleIf: { fieldKey: 'provider', value: 'r2' },
+  },
+  'r2.prefix': {
+    type: 'input',
+    help: 'settings.storage.r2.prefix.description',
+    visibleIf: { fieldKey: 'provider', value: 'r2' },
+  },
+  'r2.cdnUrl': {
+    type: 'url',
+    help: 'settings.storage.r2.cdnUrl.description',
+    visibleIf: { fieldKey: 'provider', value: 'r2' },
   },
   // OpenList
   'openlist.baseUrl': {

@@ -1596,7 +1596,11 @@
           },
           "s3": {
             "label": "S3 Compatible",
-            "description": "Use AWS S3, Cloudflare R2, or other S3-compatible services."
+            "description": "Use AWS S3 or another S3-compatible service."
+          },
+          "r2": {
+            "label": "Cloudflare R2",
+            "description": "Use a private R2 bucket without public access or browser CORS."
           },
           "openlist": {
             "label": "OpenList",
@@ -1641,6 +1645,15 @@
           "label": "Max Keys",
           "description": "Maximum number of keys to retrieve per request"
         }
+      },
+      "r2": {
+        "accountId": { "label": "Cloudflare Account ID", "description": "The 32-character account ID from R2 Overview." },
+        "jurisdiction": { "label": "Data jurisdiction", "description": "Choose EU or US only for jurisdiction-restricted buckets." },
+        "bucket": { "label": "Bucket name", "description": "Create the bucket in Cloudflare R2 first." },
+        "accessKeyId": { "label": "Access Key ID", "description": "Access key generated from an R2 API token." },
+        "secretAccessKey": { "label": "Secret Access Key", "description": "Secret key generated from an R2 API token." },
+        "prefix": { "label": "Photo prefix", "description": "Directory for new photos; photos is recommended." },
+        "cdnUrl": { "label": "Public image domain (optional)", "description": "Leave empty to serve a private bucket through this site." }
       },
       "local": {
         "basePath": {

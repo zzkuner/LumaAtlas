@@ -187,7 +187,7 @@ const masonryGap = computed(() => {
 })
 const galleryGap = computed(() => {
   if (galleryLayout.value !== 'big') return masonryGap.value
-  return isMobile.value ? 8 : Math.max(28, masonryGap.value * 2)
+  return isMobile.value ? 4 : Math.max(12, masonryGap.value)
 })
 const availableColumns = computed(() =>
   availableGalleryColumns(
@@ -216,7 +216,10 @@ const maxColumns = computed(() => {
   }
 
   const value = Number(getSetting('app:appearance.home.maxColumns') ?? 6)
-  const configured = Math.min(8, Math.max(2, Number.isFinite(value) ? value : 6))
+  const configured = Math.min(
+    8,
+    Math.max(2, Number.isFinite(value) ? value : 6),
+  )
   return Math.min(configured, availableColumns.value)
 })
 
@@ -686,7 +689,10 @@ watch(currentPhotoIndex, (newIndex) => {
       class="mx-auto w-full flex-1 px-3 pb-3 sm:px-5 sm:pb-5 lg:px-7 lg:pb-7"
       :style="{ maxWidth: galleryMaxWidth, order: moduleOrder('gallery') }"
     >
-      <div ref="galleryElement" class="relative">
+      <div
+        ref="galleryElement"
+        class="relative"
+      >
         <section
           v-if="
             (viewMode === 'nearby' || viewMode === 'faraway') &&

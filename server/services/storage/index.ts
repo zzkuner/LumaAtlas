@@ -2,6 +2,7 @@ export type { StorageProvider, StorageObject } from './interfaces'
 
 export {
   s3StorageConfigSchema,
+  r2StorageConfigSchema,
   localStorageConfigSchema,
   openListStorageConfigSchema,
   storageConfigSchema,
@@ -9,6 +10,7 @@ export {
 
 export type {
   S3StorageConfig,
+  R2StorageConfig,
   LocalStorageConfig,
   OpenListStorageConfig,
   StorageConfig,
@@ -23,6 +25,7 @@ export type {
 } from './manager'
 
 export { S3StorageProvider } from './providers/s3'
+export { R2StorageProvider } from './providers/r2'
 export { LocalStorageProvider } from './providers/local'
 export { OpenListStorageProvider } from './providers/openlist'
 

@@ -3,6 +3,7 @@ import { settingsManager } from '~~/server/services/settings/settingsManager'
 import {
   localStorageConfigSchema,
   openListStorageConfigSchema,
+  r2StorageConfigSchema,
   s3StorageConfigSchema,
 } from '~~/server/services/storage'
 
@@ -21,6 +22,11 @@ export default eventHandler(async (event) => {
             name: z.string(),
             provider: z.literal('s3'),
             config: s3StorageConfigSchema,
+          }),
+          z.object({
+            name: z.string().trim().min(1),
+            provider: z.literal('r2'),
+            config: r2StorageConfigSchema,
           }),
           z.object({
             name: z.string(),

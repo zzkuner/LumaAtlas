@@ -518,7 +518,7 @@ onUnmounted(() => {
     tabindex="0"
     :aria-label="contentTitle ? `查看照片：${contentTitle}` : '查看照片详情'"
     :class="{
-      'flex flex-col sm:py-4': isBig,
+      'flex flex-col sm:py-2': isBig,
     }"
     :style="{
       transform: 'translateZ(0)',

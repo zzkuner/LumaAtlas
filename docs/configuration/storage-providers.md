@@ -5,6 +5,7 @@ ChronoFrame supports multiple storage backends to save your photos and thumbnail
 | Provider                                    | Support | Use Case                                | Cost               |
 | ------------------------------------------- | :-----: | --------------------------------------- | ------------------ |
 | [**S3 Compatible**](#s3-compatible-storage) |   ✅    | Production environment, cloud storage   | Varies by provider |
+| [**Cloudflare R2**](#cloudflare-r2) | ✅ | Remote photo storage | Usage-based |
 | [**Local Filesystem**](#local-filesystem)   |   ✅    | Testing environment, offline deployment | Free               |
 | [**OpenList**](#openlist-storage)           |   ✅    | Personal cloud storage, NAS             | Free               |
 
@@ -43,18 +44,6 @@ NUXT_PROVIDER_S3_REGION=us-east-1
 NUXT_PROVIDER_S3_ACCESS_KEY_ID=AKIA...
 NUXT_PROVIDER_S3_SECRET_ACCESS_KEY=...
 NUXT_PROVIDER_S3_CDN_URL=https://d1234567890.cloudfront.net
-```
-
-#### Cloudflare R2
-
-```bash
-NUXT_STORAGE_PROVIDER=s3
-NUXT_PROVIDER_S3_ENDPOINT=https://[account-id].r2.cloudflarestorage.com
-NUXT_PROVIDER_S3_BUCKET=chronoframe
-NUXT_PROVIDER_S3_REGION=auto
-NUXT_PROVIDER_S3_ACCESS_KEY_ID=...
-NUXT_PROVIDER_S3_SECRET_ACCESS_KEY=...
-NUXT_PROVIDER_S3_CDN_URL=https://photos.example.com
 ```
 
 #### Alibaba Cloud OSS
@@ -110,6 +99,16 @@ Recommended CORS configuration:
   }
 ]
 ```
+
+## Cloudflare R2
+
+1. Create an R2 bucket in Cloudflare, then create an Object Read & Write API token scoped to that bucket. Save its Access Key ID and Secret Access Key; do not use a global Cloudflare API key.
+2. In the dashboard, open Settings → Storage Providers and add Cloudflare R2. Enter the account ID, bucket, credentials, and photo prefix. Select EU or US only for jurisdiction-restricted buckets.
+3. Test the connection and save the provider. For existing photos, use Migrate Photos to R2 on the same page: copy and verify first, then confirm the switch. Changing the default provider directly does not copy old photos. Source files are never deleted; the database, settings, and accounts remain on the server's data volume.
+
+The migration copies originals, thumbnails, and live-photo videos referenced by photo records. Pause uploads and edits during migration. Re-running skips identical destination objects and refuses to overwrite conflicting ones. Progress lives in the running server process; after a restart, run the copy again to resume verification.
+
+Leave Public Image Domain empty to serve a private bucket through the application. Browser uploads also pass through the application, so R2 CORS and public bucket access are not required. If you provide a domain, first bind that HTTPS custom domain to the R2 bucket in Cloudflare; do not use the S3 API endpoint here.
 
 ## Local Filesystem
 

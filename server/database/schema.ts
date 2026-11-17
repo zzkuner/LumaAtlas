@@ -341,7 +341,7 @@ export const settings_storage_providers = sqliteTable(
     id: integer('id').primaryKey({ autoIncrement: true }),
     name: text('name').notNull(),
     provider: text('provider', {
-      enum: ['s3', 'local', 'openlist'],
+      enum: ['s3', 'r2', 'local', 'openlist'],
     }).notNull(),
     config: text('config', { mode: 'json' }).$type<StorageConfig>().notNull(),
     createdAt: integer('created_at', { mode: 'timestamp' })

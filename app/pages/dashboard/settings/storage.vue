@@ -3,6 +3,7 @@ import { UBadge, UButton, UChip } from '#components'
 import type { TableColumn } from '@nuxt/ui'
 import {
   s3StorageConfigSchema,
+  r2StorageConfigSchema,
   localStorageConfigSchema,
   openListStorageConfigSchema,
   type StorageConfig,
@@ -43,11 +44,12 @@ const checkStorageHealth = async () => {
   }
 }
 
-const { data: currentStorageProvider } = await useFetch<{
-  namespace: string
-  key: string
-  value: SettingValue
-}>('/api/system/settings/storage/provider')
+const { data: currentStorageProvider, refresh: refreshCurrentStorageProvider } =
+  await useFetch<{
+    namespace: string
+    key: string
+    value: SettingValue
+  }>('/api/system/settings/storage/provider')
 
 const {
   data: availableStorage,
@@ -59,18 +61,150 @@ const {
 
 const PROVIDER_ICON = {
   s3: 'tabler:brand-aws',
+  r2: 'lucide:cloud-upload',
   local: 'tabler:database',
   openlist: 'tabler:cloud',
 }
 
 const PROVIDER_LABEL = {
   s3: 'S3 兼容存储',
+  r2: 'Cloudflare R2',
   local: '本地存储',
   openlist: 'OpenList',
 }
 
 const isActiveProvider = (provider: SettingStorageProvider) =>
   currentStorageProvider.value?.value === provider.id
+
+type MigrationStage = 'copying' | 'copied' | 'verifying' | 'complete' | 'failed'
+interface MigrationStatus {
+  id: string
+  sourceProviderId: number
+  targetProviderId: number
+  targetName: string
+  stage: MigrationStage
+  total: number
+  processed: number
+  copied: number
+  reused: number
+  error: string | null
+}
+
+const migrationStatus = ref<MigrationStatus | null>(null)
+const migrationStatusUrl: string = '/api/system/settings/storage-migration'
+const requestMigration = async <T>(
+  url: string,
+  options?: RequestInit,
+): Promise<T> => {
+  const response = await fetch(url, {
+    credentials: 'same-origin',
+    headers: { 'Content-Type': 'application/json' },
+    ...options,
+  })
+  const body = await response.text()
+  const result = body ? JSON.parse(body) : null
+  if (!response.ok) {
+    throw new Error(
+      result?.statusMessage || result?.message || `HTTP ${response.status}`,
+    )
+  }
+  return result as T
+}
+const refreshMigrationStatus = async () => {
+  migrationStatus.value = await requestMigration<MigrationStatus | null>(
+    migrationStatusUrl,
+  )
+}
+const migrationTargetId = ref<number | undefined>(
+  availableStorage.value?.find(
+    (item) => item.provider === 'r2' && !isActiveProvider(item),
+  )?.id,
+)
+const migrationSubmitting = ref(false)
+const migrationBusy = computed(
+  () =>
+    migrationSubmitting.value ||
+    migrationStatus.value?.stage === 'copying' ||
+    migrationStatus.value?.stage === 'verifying',
+)
+
+let migrationPollTimer: ReturnType<typeof setInterval> | undefined
+onMounted(() => {
+  void refreshMigrationStatus().catch(() => undefined)
+  migrationPollTimer = setInterval(() => {
+    if (migrationBusy.value) {
+      void refreshMigrationStatus().catch(() => undefined)
+    }
+  }, 1500)
+})
+onUnmounted(() => {
+  if (migrationPollTimer) clearInterval(migrationPollTimer)
+})
+
+watch(
+  () => migrationStatus.value?.stage,
+  async (stage, previous) => {
+    if (stage === 'complete' && previous !== 'complete') {
+      await refreshCurrentStorageProvider()
+      await refreshStorageHealth()
+      resetStorageDefault()
+      migrationTargetId.value = availableStorage.value?.find(
+        (item) => item.provider === 'r2' && !isActiveProvider(item),
+      )?.id
+    }
+  },
+)
+
+const startMigration = async () => {
+  if (!migrationTargetId.value) return
+  migrationSubmitting.value = true
+  try {
+    migrationStatus.value = await requestMigration<MigrationStatus>(
+      migrationStatusUrl,
+      {
+        method: 'POST',
+        body: JSON.stringify({ targetProviderId: migrationTargetId.value }),
+      },
+    )
+    toast.add({ title: '开始复制照片文件', color: 'success' })
+  } catch (error) {
+    toast.add({
+      title: '无法开始迁移',
+      description: (error as Error).message,
+      color: 'error',
+    })
+  } finally {
+    migrationSubmitting.value = false
+  }
+}
+
+const activateMigration = async () => {
+  if (!migrationStatus.value || migrationStatus.value.stage !== 'copied') return
+  migrationSubmitting.value = true
+  try {
+    migrationStatus.value = await requestMigration<MigrationStatus>(
+      `${migrationStatusUrl}/activate`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ jobId: migrationStatus.value.id }),
+      },
+    )
+    toast.add({ title: '正在复核文件并切换存储', color: 'success' })
+  } catch (error) {
+    toast.add({
+      title: '无法切换存储',
+      description: (error as Error).message,
+      color: 'error',
+    })
+  } finally {
+    migrationSubmitting.value = false
+  }
+}
+
+const confirmActivateMigration = (close: () => void) => {
+  void activateMigration()
+  close()
+}
 
 const getProviderDisplayName = (provider: SettingStorageProvider) => {
   if (/^Migrated\s+.+\s+Provider$/i.test(provider.name)) {
@@ -201,6 +335,7 @@ const handleStorageSettingsSubmit = async (close?: () => void) => {
 
 const providerOptions = [
   { label: 'AWS S3 兼容存储', value: 's3', icon: PROVIDER_ICON.s3 },
+  { label: 'Cloudflare R2', value: 'r2', icon: PROVIDER_ICON.r2 },
   { label: '本地存储', value: 'local', icon: PROVIDER_ICON.local },
   { label: 'OpenList', value: 'openlist', icon: PROVIDER_ICON.openlist },
 ]
@@ -218,6 +353,47 @@ const storageConfigState = reactive<{
     prefix: '/photos',
   } as any,
 })
+const testingR2 = ref(false)
+const r2Verified = ref(false)
+
+watch(
+  () => storageConfigState.config,
+  () => {
+    r2Verified.value = false
+  },
+  { deep: true },
+)
+
+const testR2Connection = async () => {
+  const parsed = r2StorageConfigSchema.safeParse(storageConfigState.config)
+  if (!parsed.success) {
+    toast.add({
+      title: '请先填写完整的 R2 配置',
+      description: parsed.error.issues[0]?.message,
+      color: 'warning',
+    })
+    return
+  }
+
+  testingR2.value = true
+  try {
+    await $fetch('/api/system/settings/storage-config/verify', {
+      method: 'POST',
+      body: parsed.data,
+    })
+    r2Verified.value = true
+    toast.add({ title: 'R2 连接成功', color: 'success' })
+  } catch (error) {
+    r2Verified.value = false
+    toast.add({
+      title: 'R2 连接失败',
+      description: (error as Error).message,
+      color: 'error',
+    })
+  } finally {
+    testingR2.value = false
+  }
+}
 
 // 根据 provider 值动态选择对应的 schema
 const currentStorageSchema = computed(() => {
@@ -227,6 +403,8 @@ const currentStorageSchema = computed(() => {
       return localStorageConfigSchema
     case 'openlist':
       return openListStorageConfigSchema
+    case 'r2':
+      return r2StorageConfigSchema
     case 's3':
     default:
       return s3StorageConfigSchema
@@ -249,6 +427,13 @@ const getStorageConfigDefaults = (provider: string): Partial<StorageConfig> => {
         deleteEndpoint: '/api/fs/remove',
         metaEndpoint: '/api/fs/get',
         pathField: 'path',
+      } as any
+    case 'r2':
+      return {
+        provider: 'r2',
+        jurisdiction: 'default',
+        prefix: 'photos',
+        cdnUrl: '',
       } as any
     case 's3':
     default:
@@ -326,6 +511,45 @@ const storageFieldsConfig = computed<Record<string, any>>(() => {
           description: $t(`${baseKey}.cdnUrl.description`),
         },
       }
+    case 'r2':
+      return {
+        provider: { hidden: true },
+        accountId: {
+          label: 'Cloudflare 账户 ID',
+          description: 'R2 概览中的 32 位账户 ID，不是 API 令牌。',
+          placeholder: '32 位账户 ID',
+        },
+        jurisdiction: {
+          label: '数据地域',
+          description: '仅当存储桶创建在 EU 或 US 专属地域时选择对应选项。',
+          selectProps: {
+            items: [
+              { label: '默认', value: 'default' },
+              { label: 'EU', value: 'eu' },
+              { label: 'US', value: 'us' },
+            ],
+          },
+        },
+        bucket: {
+          label: '存储桶名称',
+          description: '先在 Cloudflare R2 中创建存储桶。',
+        },
+        accessKeyId: { label: 'Access Key ID' },
+        secretAccessKey: {
+          label: 'Secret Access Key',
+          inputProps: { type: 'password', autocomplete: 'new-password' },
+        },
+        prefix: {
+          label: '照片目录前缀',
+          description: '新上传的照片写入这个前缀；建议保留 photos。',
+        },
+        cdnUrl: {
+          label: '公开图片域名（可选）',
+          description:
+            '留空时由本站代理读取私有桶；填写已绑定 R2 桶的 HTTPS 自定义域名可加速访问。',
+          placeholder: 'https://images.example.com',
+        },
+      }
     case 's3':
     default:
       return {
@@ -394,6 +618,7 @@ const onStorageConfigSubmit = async (
     storageConfigState.name = ''
     storageConfigState.provider = 's3'
     storageConfigState.config = getStorageConfigDefaults('s3')
+    r2Verified.value = false
     close?.()
   } catch (error) {
     toast.add({
@@ -481,7 +706,7 @@ const closeStorageDeleteConfirmation = () => {
         </UModal>
         <DashboardPageIntro
           :title="$t('title.storageSettings')"
-          description="管理照片存储连接。切换方案不会迁移旧文件，可能影响已有照片的访问。"
+          description="管理照片存储连接。已有照片请先使用迁移工具复制并校验。"
           icon="lucide:database"
         />
 
@@ -540,6 +765,145 @@ const closeStorageDeleteConfirmation = () => {
             >
               {{ storageHealth?.message || '正在检测存储状态。' }}
             </p>
+          </div>
+        </section>
+
+        <section
+          class="rounded-md border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-950"
+        >
+          <header
+            class="border-b border-neutral-200 px-5 py-4 dark:border-neutral-800"
+          >
+            <h3
+              class="text-base font-semibold text-neutral-900 dark:text-neutral-100"
+            >
+              迁移照片到 R2
+            </h3>
+          </header>
+          <div class="space-y-4 px-5 py-5">
+            <p class="text-sm leading-6 text-neutral-600 dark:text-neutral-400">
+              先复制原图、缩略图和实况视频并逐一校验，完成后再单独切换默认存储。源文件不会删除；迁移期间请暂停上传和编辑照片。
+            </p>
+            <UFormField
+              label="目标 R2 方案"
+              class="max-w-sm"
+            >
+              <USelectMenu
+                v-model="migrationTargetId"
+                :items="
+                  availableStorage
+                    ?.filter(
+                      (item) =>
+                        item.provider === 'r2' && !isActiveProvider(item),
+                    )
+                    .map((item) => ({
+                      label: getProviderDisplayName(item),
+                      value: item.id,
+                    })) || []
+                "
+                label-key="label"
+                value-key="value"
+                placeholder="选择已创建的 R2 方案"
+                :disabled="migrationBusy || migrationStatus?.stage === 'copied'"
+                class="w-full"
+              />
+            </UFormField>
+            <div class="flex flex-wrap items-center gap-2">
+              <UButton
+                icon="lucide:copy"
+                color="neutral"
+                variant="outline"
+                :disabled="
+                  !migrationTargetId ||
+                  migrationBusy ||
+                  migrationStatus?.stage === 'copied'
+                "
+                :loading="
+                  migrationSubmitting && migrationStatus?.stage !== 'verifying'
+                "
+                @click="startMigration"
+              >
+                {{
+                  migrationStatus?.stage === 'failed'
+                    ? '重新复制并校验'
+                    : '复制并校验'
+                }}
+              </UButton>
+              <UModal
+                v-if="migrationStatus?.stage === 'copied'"
+                title="切换默认存储"
+                :ui="{ footer: 'justify-end' }"
+              >
+                <UButton
+                  icon="lucide:check"
+                  color="primary"
+                  >切换到 R2</UButton
+                >
+                <template #body>
+                  <p class="text-sm leading-6">
+                    已校验
+                    {{ migrationStatus.processed }} 个文件。切换后网站将从 R2
+                    读取照片，原存储文件仍保留。请先确认已备份数据库与数据目录。
+                  </p>
+                </template>
+                <template #footer="{ close }">
+                  <UButton
+                    color="neutral"
+                    variant="outline"
+                    @click="close"
+                    >取消</UButton
+                  >
+                  <UButton
+                    icon="lucide:check"
+                    :loading="migrationSubmitting"
+                    @click="confirmActivateMigration(close)"
+                  >
+                    确认切换
+                  </UButton>
+                </template>
+              </UModal>
+            </div>
+            <div
+              v-if="migrationStatus"
+              class="space-y-2"
+              aria-live="polite"
+            >
+              <div
+                class="flex flex-wrap items-center justify-between gap-2 text-sm"
+              >
+                <span>
+                  {{
+                    migrationStatus.stage === 'copying'
+                      ? '正在复制'
+                      : migrationStatus.stage === 'copied'
+                        ? '复制完成，等待切换'
+                        : migrationStatus.stage === 'verifying'
+                          ? '正在复核并切换'
+                          : migrationStatus.stage === 'complete'
+                            ? '已切换到 R2'
+                            : '迁移失败'
+                  }}
+                </span>
+                <span class="tabular-nums text-neutral-500">
+                  {{ migrationStatus.processed }} / {{ migrationStatus.total }}
+                </span>
+              </div>
+              <progress
+                :value="migrationStatus.processed"
+                :max="Math.max(1, migrationStatus.total)"
+                class="h-1.5 w-full accent-primary"
+              />
+              <p class="text-xs text-neutral-500">
+                已复制 {{ migrationStatus.copied }} · 已校验复用
+                {{ migrationStatus.reused }}
+              </p>
+              <p
+                v-if="migrationStatus.error"
+                class="text-sm text-red-600 dark:text-red-400"
+              >
+                {{ migrationStatus.error }}。源存储未删除，可修复后重新运行。
+              </p>
+            </div>
           </div>
         </section>
 
@@ -712,6 +1076,8 @@ const closeStorageDeleteConfirmation = () => {
                             storageConfigState.provider = val
                             storageConfigState.config =
                               getStorageConfigDefaults(val)
+                            if (val === 'r2' && !storageConfigState.name.trim())
+                              storageConfigState.name = 'Cloudflare R2'
                           }
                         "
                       />
@@ -735,7 +1101,33 @@ const closeStorageDeleteConfirmation = () => {
                       :state="storageConfigState.config"
                       :fields-config="storageFieldsConfig"
                       @submit="onStorageConfigSubmit($event, close)"
-                    />
+                    >
+                      <div
+                        v-if="storageConfigState.provider === 'r2'"
+                        class="space-y-3 pt-2"
+                      >
+                        <UButton
+                          type="button"
+                          icon="lucide:plug-zap"
+                          color="neutral"
+                          variant="outline"
+                          :loading="testingR2"
+                          @click="testR2Connection"
+                        >
+                          测试连接
+                        </UButton>
+                        <p
+                          class="text-xs leading-5 text-neutral-500 dark:text-neutral-400"
+                          aria-live="polite"
+                        >
+                          {{
+                            r2Verified
+                              ? '连接已验证。创建方案后仍需手动设为默认。'
+                              : '建议先测试连接。上传会经过本站，无需配置 R2 跨域规则。切换默认存储不会迁移旧照片。'
+                          }}
+                        </p>
+                      </div>
+                    </AutoForm>
                   </div>
                 </template>
 
@@ -761,7 +1153,7 @@ const closeStorageDeleteConfirmation = () => {
             class="border-b border-neutral-200 px-5 py-3 text-sm leading-6 text-neutral-600 dark:border-neutral-800 dark:text-neutral-400"
           >
             安装时创建的本地存储就是当前照片目录，可直接使用。只有要更换磁盘目录或接入
-            S3、OpenList 时，才需要添加新的存储方案。
+            S3、Cloudflare R2、OpenList 时，才需要添加新的存储方案。
           </p>
 
           <div

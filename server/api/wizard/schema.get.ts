@@ -151,6 +151,49 @@ export default eventHandler(async (event) => {
         defaultValue: 1000,
         label: 'settings.storage.s3.maxKeys.label',
       },
+      // Cloudflare R2
+      {
+        key: 'r2.accountId',
+        type: 'string',
+        defaultValue: '',
+        label: 'settings.storage.r2.accountId.label',
+      },
+      {
+        key: 'r2.bucket',
+        type: 'string',
+        defaultValue: '',
+        label: 'settings.storage.r2.bucket.label',
+      },
+      {
+        key: 'r2.jurisdiction',
+        type: 'string',
+        defaultValue: 'default',
+        label: 'settings.storage.r2.jurisdiction.label',
+      },
+      {
+        key: 'r2.accessKeyId',
+        type: 'string',
+        defaultValue: '',
+        label: 'settings.storage.r2.accessKeyId.label',
+      },
+      {
+        key: 'r2.secretAccessKey',
+        type: 'string',
+        defaultValue: '',
+        label: 'settings.storage.r2.secretAccessKey.label',
+      },
+      {
+        key: 'r2.prefix',
+        type: 'string',
+        defaultValue: 'photos',
+        label: 'settings.storage.r2.prefix.label',
+      },
+      {
+        key: 'r2.cdnUrl',
+        type: 'string',
+        defaultValue: '',
+        label: 'settings.storage.r2.cdnUrl.label',
+      },
       // OpenList
       {
         key: 'openlist.baseUrl',

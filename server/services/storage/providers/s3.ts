@@ -2,6 +2,7 @@ import type { _Object, S3ClientConfig } from '@aws-sdk/client-s3'
 import {
   DeleteObjectCommand,
   GetObjectCommand,
+  HeadObjectCommand,
   ListObjectsV2Command,
   PutObjectCommand,
   S3Client,
@@ -141,8 +142,15 @@ export class S3StorageProvider implements StorageProvider {
           reject(err)
         })
       })
-    } catch {
-      return null
+    } catch (error) {
+      if (
+        (error as any).$metadata?.httpStatusCode === 404 ||
+        (error instanceof Error && error.name === 'NoSuchKey')
+      ) {
+        return null
+      }
+      this.logger?.error(`Failed to read object with key: ${key}`, error)
+      throw error
     }
   }
 
@@ -197,7 +205,7 @@ export class S3StorageProvider implements StorageProvider {
 
   async getFileMeta(key: string): Promise<StorageObject | null> {
     try {
-      const cmd = new GetObjectCommand({
+      const cmd = new HeadObjectCommand({
         Bucket: this.config.bucket,
         Key: key,
       })
@@ -223,7 +231,18 @@ export class S3StorageProvider implements StorageProvider {
     }
   }
 
-  async listAll(): Promise<StorageObject[]> {
+  async probe(): Promise<void> {
+    await this.client.send(
+      new ListObjectsV2Command({
+        Bucket: this.config.bucket,
+        Prefix: this.config.prefix,
+        MaxKeys: 1,
+      }),
+      { abortSignal: AbortSignal.timeout(10000) },
+    )
+  }
+
+  async listAll(prefix = this.config.prefix): Promise<StorageObject[]> {
     const objects: StorageObject[] = []
     let continuationToken: string | undefined
 
@@ -231,7 +250,7 @@ export class S3StorageProvider implements StorageProvider {
       const response = await this.client.send(
         new ListObjectsV2Command({
           Bucket: this.config.bucket,
-          Prefix: this.config.prefix,
+          Prefix: prefix,
           MaxKeys: Math.min(1000, Math.max(1, this.config.maxKeys || 1000)),
           ContinuationToken: continuationToken,
         }),

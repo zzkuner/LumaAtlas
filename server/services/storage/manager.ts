@@ -3,6 +3,7 @@ import { S3StorageProvider } from '.'
 import type { Logger } from '../../utils/logger'
 import { LocalStorageProvider } from './providers/local'
 import { OpenListStorageProvider } from './providers/openlist'
+import { R2StorageProvider } from './providers/r2'
 
 export type StorageManagerEventType = 'provider-changed' | 'provider-error'
 
@@ -26,6 +27,8 @@ export class StorageProviderFactory {
     switch (config.provider) {
       case 's3':
         return new S3StorageProvider(config, logger)
+      case 'r2':
+        return new R2StorageProvider(config, logger)
       case 'local':
         return new LocalStorageProvider(config, logger)
       case 'openlist':

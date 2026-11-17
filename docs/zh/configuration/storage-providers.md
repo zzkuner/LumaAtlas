@@ -5,6 +5,7 @@ ChronoFrame 支持多种存储后端来保存您的照片和缩略图。本文�
 | 提供器                            | 支持 | 适用场景           | 成本         |
 | --------------------------------- | :--: | ------------------ | ------------ |
 | [**S3 兼容存储**](#s3-兼容存储)   |  ✅  | 生产环境，云存储   | 按使用量计费 |
+| [**Cloudflare R2**](#cloudflare-r2) | ✅ | 远程照片存储 | 按使用量计费 |
 | [**本地文件系统**](#本地文件系统) |  ✅  | 测试环境，离线部署 | 免费         |
 | [**OpenList**](#openlist-存储)    |  ✅  | 个人云存储，NAS    | 免费         |
 
@@ -43,18 +44,6 @@ NUXT_PROVIDER_S3_REGION=us-east-1
 NUXT_PROVIDER_S3_ACCESS_KEY_ID=AKIA...
 NUXT_PROVIDER_S3_SECRET_ACCESS_KEY=...
 NUXT_PROVIDER_S3_CDN_URL=https://d1234567890.cloudfront.net
-```
-
-#### Cloudflare R2
-
-```bash
-NUXT_STORAGE_PROVIDER=s3
-NUXT_PROVIDER_S3_ENDPOINT=https://[account-id].r2.cloudflarestorage.com
-NUXT_PROVIDER_S3_BUCKET=chronoframe
-NUXT_PROVIDER_S3_REGION=auto
-NUXT_PROVIDER_S3_ACCESS_KEY_ID=...
-NUXT_PROVIDER_S3_SECRET_ACCESS_KEY=...
-NUXT_PROVIDER_S3_CDN_URL=https://photos.example.com
 ```
 
 #### 阿里云 OSS
@@ -110,6 +99,16 @@ NUXT_PROVIDER_S3_FORCE_PATH_STYLE=true
   }
 ]
 ```
+
+## Cloudflare R2
+
+1. 在 Cloudflare 创建 R2 存储桶，再创建仅限该桶的 Object Read & Write API 令牌。保存 Access Key ID 和 Secret Access Key；这里不使用 Cloudflare 全局 API Key。
+2. 在后台「设置 → 存储方案」新增 Cloudflare R2。填写账户 ID、存储桶、密钥和照片目录前缀；EU/US 专属地域桶需选择对应地域。
+3. 先点「测试连接」，再保存方案。已有照片请在同一页面使用「迁移照片到 R2」：先复制并校验，完成后再确认切换。直接更改默认方案不会复制旧照片。源文件不会被删除；数据库、设置和账号仍保存在服务器数据目录。
+
+迁移按数据库中照片引用的原图、缩略图和实况视频执行。迁移时请暂停上传与编辑；失败后可重新运行，内容相同的目标文件会复用，同名但内容不同的文件不会覆盖。任务状态保存在当前服务进程中，若服务重启，重新运行复制即可续行校验。
+
+公开图片域名可留空：应用会经本站代理读取私有桶，浏览器上传也经本站转发，无需公开桶或配置 R2 CORS。若填写域名，必须先在 Cloudflare 将 HTTPS 自定义域名绑定到该桶，图片便可由公开域名直接访问；不要在这里填写 R2 S3 API 地址。
 
 ## 本地文件系统
 

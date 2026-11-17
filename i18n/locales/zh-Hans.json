@@ -1600,7 +1600,11 @@
           },
           "s3": {
             "label": "S3 兼容存储",
-            "description": "使用 AWS S3、Cloudflare R2 或其他 S3 兼容服务。"
+            "description": "使用 AWS S3 或其他 S3 兼容服务。"
+          },
+          "r2": {
+            "label": "Cloudflare R2",
+            "description": "使用私有 R2 存储桶；无需公开桶或配置浏览器跨域。"
           },
           "openlist": {
             "label": "OpenList",
@@ -1645,6 +1649,15 @@
           "label": "最大密钥数",
           "description": "每个请求检索的最大密钥数"
         }
+      },
+      "r2": {
+        "accountId": { "label": "Cloudflare 账户 ID", "description": "R2 概览中的 32 位账户 ID。" },
+        "jurisdiction": { "label": "数据地域", "description": "仅 EU 或 US 专属地域桶需要选择对应地域。" },
+        "bucket": { "label": "存储桶名称", "description": "先在 Cloudflare R2 中创建存储桶。" },
+        "accessKeyId": { "label": "Access Key ID", "description": "R2 API 令牌生成的访问密钥 ID。" },
+        "secretAccessKey": { "label": "Secret Access Key", "description": "R2 API 令牌生成的秘密访问密钥。" },
+        "prefix": { "label": "照片目录前缀", "description": "新照片写入的目录，建议保留 photos。" },
+        "cdnUrl": { "label": "公开图片域名（可选）", "description": "留空时由本站代理读取私有桶。" }
       },
       "local": {
         "basePath": {

@@ -7,6 +7,7 @@ import { StorageProviderFactory } from './manager'
 import {
   collectPhotoAssetKeys,
   copyPhotoAsset,
+  migrationTargetConfig,
   type PhotoAssetRow,
 } from './migration-assets'
 
@@ -70,13 +71,8 @@ export async function startStorageMigration(
     const source = await settingsManager.storage.getActiveProvider()
     const target =
       await settingsManager.storage.getProviderById(targetProviderId)
-    if (
-      !source ||
-      !target ||
-      target.provider !== 'r2' ||
-      source.id === target.id
-    ) {
-      throw new Error('请选择非当前使用的 R2 存储方案')
+    if (!source || !target || source.id === target.id) {
+      throw new Error('请选择非当前使用的目标存储方案')
     }
 
     const keys = collectPhotoAssetKeys(loadPhotoAssets())
@@ -104,15 +100,16 @@ export async function startStorageMigration(
           source.config,
         )
         const targetProvider = StorageProviderFactory.createProvider(
-          target.config,
+          migrationTargetConfig(target.config),
         )
         if (
-          !('probe' in targetProvider) ||
-          typeof targetProvider.probe !== 'function'
+          'probe' in targetProvider &&
+          typeof targetProvider.probe === 'function'
         ) {
-          throw new Error('目标存储不支持连接检测')
+          await targetProvider.probe()
+        } else {
+          await targetProvider.listAll()
         }
-        await targetProvider.probe()
         for (const key of keys) {
           const outcome = await copyPhotoAsset(
             key,
@@ -213,7 +210,7 @@ export function activateStorageMigration(
         source.config,
       )
       const targetProvider = StorageProviderFactory.createProvider(
-        target.config,
+        migrationTargetConfig(target.config),
       )
       for (const key of job.keys) {
         const original = await sourceProvider.get(key)

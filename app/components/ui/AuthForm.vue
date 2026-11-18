@@ -16,6 +16,8 @@ const emit = defineEmits<{
   submit: [event: FormSubmitEvent<Schema>]
 }>()
 
+const siteLogo = useSettingRef('app:logoUrl')
+
 const schema = z.object({
   email: z.email($t('auth.form.errors.invalidEmail')),
   password: z.string().min(6, $t('auth.form.errors.invalidPassword')),
@@ -61,9 +63,9 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
       <!-- @note: this will not to be replaced with user avatar -->
       <div class="mb-2">
         <img
-          src="/web-app-manifest-192x192.png"
-          alt="App Logo"
-          class="size-24 rounded-full object-cover"
+          :src="String(siteLogo || '/web-app-manifest-192x192.png')"
+          alt="网站 Logo"
+          class="size-24 rounded-full object-contain"
         />
       </div>
       <!-- Title -->

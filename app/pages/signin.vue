@@ -9,6 +9,9 @@ useHead({
 const { fetch: fetchUserSession } = useUserSession()
 const config = useRuntimeConfig()
 const settingsStore = useSettingsStore()
+const siteTitle = computed(() =>
+  String(settingsStore.getSetting('app:title') || config.public.app.title),
+)
 const toast = useToast()
 const route = useRoute()
 const router = useRouter()
@@ -180,7 +183,7 @@ const signInWithPasskey = async () => {
     <AuthForm
       v-else
       :title="$t('auth.form.signin.title')"
-      :subtitle="$t('auth.form.signin.subtitle', [config.public.app.title])"
+      :subtitle="$t('auth.form.signin.subtitle', [siteTitle])"
       :loading="isLoading"
       :providers="[
         githubOauthEnabled && {

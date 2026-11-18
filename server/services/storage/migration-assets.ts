@@ -1,4 +1,5 @@
 import type { PhotoThumbnailVariant } from '~~/shared/types/photo'
+import type { StorageConfig } from '~~/shared/types/storage'
 import type { StorageProvider } from './interfaces'
 import { storageContentType } from './content-type'
 
@@ -11,6 +12,10 @@ export interface PhotoAssetRow {
   thumbnailVariants: PhotoThumbnailVariant[] | null
   livePhotoVideoKey: string | null
   livePhotoVideoUrl: string | null
+}
+
+export function migrationTargetConfig(config: StorageConfig): StorageConfig {
+  return config.provider === 's3' ? { ...config, prefix: '' } : config
 }
 
 export function collectPhotoAssetKeys(rows: PhotoAssetRow[]): string[] {
@@ -38,10 +43,8 @@ export async function copyPhotoAsset(
   const original = await source.get(key)
   if (!original) throw new Error(`源文件不存在：${key}`)
 
-  const targetMeta = await target.getFileMeta(key)
-  if (targetMeta) {
-    const existing = await target.get(key)
-    if (!existing) throw new Error(`目标文件无法读取：${key}`)
+  const existing = await target.get(key)
+  if (existing) {
     if (!existing.equals(original)) {
       throw new Error(`目标存储存在同名但内容不同的文件：${key}`)
     }

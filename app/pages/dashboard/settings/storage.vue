@@ -116,9 +116,7 @@ const refreshMigrationStatus = async () => {
   )
 }
 const migrationTargetId = ref<number | undefined>(
-  availableStorage.value?.find(
-    (item) => item.provider === 'r2' && !isActiveProvider(item),
-  )?.id,
+  availableStorage.value?.find((item) => !isActiveProvider(item))?.id,
 )
 const migrationSubmitting = ref(false)
 const migrationBusy = computed(
@@ -149,7 +147,7 @@ watch(
       await refreshStorageHealth()
       resetStorageDefault()
       migrationTargetId.value = availableStorage.value?.find(
-        (item) => item.provider === 'r2' && !isActiveProvider(item),
+        (item) => !isActiveProvider(item),
       )?.id
     }
   },
@@ -777,7 +775,7 @@ const closeStorageDeleteConfirmation = () => {
             <h3
               class="text-base font-semibold text-neutral-900 dark:text-neutral-100"
             >
-              迁移照片到 R2
+              存储空间迁移
             </h3>
           </header>
           <div class="space-y-4 px-5 py-5">
@@ -785,17 +783,14 @@ const closeStorageDeleteConfirmation = () => {
               先复制原图、缩略图和实况视频并逐一校验，完成后再单独切换默认存储。源文件不会删除；迁移期间请暂停上传和编辑照片。
             </p>
             <UFormField
-              label="目标 R2 方案"
+              label="目标存储方案"
               class="max-w-sm"
             >
               <USelectMenu
                 v-model="migrationTargetId"
                 :items="
                   availableStorage
-                    ?.filter(
-                      (item) =>
-                        item.provider === 'r2' && !isActiveProvider(item),
-                    )
+                    ?.filter((item) => !isActiveProvider(item))
                     .map((item) => ({
                       label: getProviderDisplayName(item),
                       value: item.id,
@@ -803,7 +798,7 @@ const closeStorageDeleteConfirmation = () => {
                 "
                 label-key="label"
                 value-key="value"
-                placeholder="选择已创建的 R2 方案"
+                placeholder="选择另一个存储方案"
                 :disabled="migrationBusy || migrationStatus?.stage === 'copied'"
                 class="w-full"
               />
@@ -837,12 +832,15 @@ const closeStorageDeleteConfirmation = () => {
                 <UButton
                   icon="lucide:check"
                   color="primary"
-                  >切换到 R2</UButton
+                  >切换到目标存储</UButton
                 >
                 <template #body>
                   <p class="text-sm leading-6">
                     已校验
-                    {{ migrationStatus.processed }} 个文件。切换后网站将从 R2
+                    {{
+                      migrationStatus.processed
+                    }}
+                    个文件。切换后网站将从目标存储
                     读取照片，原存储文件仍保留。请先确认已备份数据库与数据目录。
                   </p>
                 </template>
@@ -880,7 +878,7 @@ const closeStorageDeleteConfirmation = () => {
                         : migrationStatus.stage === 'verifying'
                           ? '正在复核并切换'
                           : migrationStatus.stage === 'complete'
-                            ? '已切换到 R2'
+                            ? '已切换到目标存储'
                             : '迁移失败'
                   }}
                 </span>

@@ -104,7 +104,7 @@ Recommended CORS configuration:
 
 1. Create an R2 bucket in Cloudflare, then create an Object Read & Write API token scoped to that bucket. Save its Access Key ID and Secret Access Key; do not use a global Cloudflare API key.
 2. In the dashboard, open Settings → Storage Providers and add Cloudflare R2. Enter the account ID, bucket, credentials, and photo prefix. Select EU or US only for jurisdiction-restricted buckets.
-3. Test the connection and save the provider. For existing photos, use Migrate Photos to R2 on the same page: copy and verify first, then confirm the switch. Changing the default provider directly does not copy old photos. Source files are never deleted; the database, settings, and accounts remain on the server's data volume.
+3. Test the connection and save the provider. For existing photos, use Storage Migration on the same page: select another configured provider, copy and verify first, then confirm the switch. The tool supports migration between Local, S3, OpenList, and R2 providers. Changing the default provider directly does not copy old photos. Source files are never deleted; the database, settings, and accounts remain on the server's data volume.
 
 The migration copies originals, thumbnails, and live-photo videos referenced by photo records. Pause uploads and edits during migration. Re-running skips identical destination objects and refuses to overwrite conflicting ones. Progress lives in the running server process; after a restart, run the copy again to resume verification.
 
